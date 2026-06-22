@@ -18,6 +18,7 @@ public partial class CustomQuoteBuilderWindow : Window
     private List<Material> _materials = new();
     private List<ExternalDiamond> _externalDiamonds = new();
     private bool _loading;
+    private bool _refreshingComparison;
 
     public CustomQuoteBuilderWindow()
     {
@@ -108,6 +109,7 @@ public partial class CustomQuoteBuilderWindow : Window
         OptionsList.ItemsSource = null;
         OptionsList.ItemsSource = _options;
         WorkflowStatusText.Text = _quote.Status;
+        RefreshQuoteOverview();
     }
 
     private void PullQuoteFields()
@@ -121,6 +123,7 @@ public partial class CustomQuoteBuilderWindow : Window
         _quote.Introduction = IntroductionBox.Text.Trim();
         _quote.CustomerNotes = CustomerNotesBox.Text.Trim();
         PullOptionFields();
+        RefreshQuoteOverview();
     }
 
     private void PullOptionFields()
@@ -155,10 +158,11 @@ public partial class CustomQuoteBuilderWindow : Window
     private void RefreshTotals(QuoteOption option)
     {
         var labour = option.LabourHours * option.LabourRate;
-        CostBreakdownText.Text = $"Labour {labour:C}  ·  Metal/materials {option.MetalCost:C}  ·  Stones {option.StoneCost:C}  ·  Setting {option.SettingCost:C}  ·  Findings {option.FindingsCost:C}  ·  Other {option.OtherCost:C}  ·  Markup {option.MarkupPercent:0.##}%";
+        CostBreakdownText.Text = $"Labour {labour:C} | Metal/materials {option.MetalCost:C} | Stones {option.StoneCost:C} | Setting {option.SettingCost:C} | Findings {option.FindingsCost:C} | Other {option.OtherCost:C} | Markup {option.MarkupPercent:0.##}%";
         TotalPriceText.Text = option.TotalPrice.ToString("C");
         DepositText.Text = $"Deposit {_quote.DepositPercent:0.##}%: {(option.TotalPrice * _quote.DepositPercent / 100m):C}";
         RefreshLinkedInventory(option);
+        RefreshQuoteOverview();
     }
 
     private void RefreshLinkedInventory(QuoteOption? option)
@@ -169,6 +173,8 @@ public partial class CustomQuoteBuilderWindow : Window
             LinkedMaterialsList.ItemsSource = null;
             LinkedExternalDiamondsList.ItemsSource = null;
             ReservationSummaryText.Text = string.Empty;
+            SelectedOptionSummaryText.Text = "Select an option to see quote totals and linked stock.";
+            RefreshQuoteOverview();
             return;
         }
 
@@ -186,6 +192,113 @@ public partial class CustomQuoteBuilderWindow : Window
         var reserved = _stoneLinks[option].Count(x => x.ReservationStatus == "Reserved") + _materialLinks[option].Count(x => x.ReservationStatus == "Reserved");
         var externalActive = _externalDiamondLinks[option].Count(x => x.LinkStatus is "Hold Confirmed" or "Ordered" or "Received");
         ReservationSummaryText.Text = $"Linked: {stoneCount} owned stone(s), {externalCount} external diamond(s), {materialCount} material line(s). Reserved owned allocations: {reserved}. External supplier active/ordered: {externalActive}.";
+        SelectedOptionSummaryText.Text = BuildSelectedOptionSummary(option);
+    }
+
+    private void RefreshQuoteOverview()
+    {
+        if (OptionComparisonGrid == null)
+            return;
+
+        foreach (var option in _options)
+        {
+            EnsureLinkCollections(option);
+            Calculate(option);
+        }
+
+        QuoteStatusText.Text = BuildQuoteStatusText();
+        QuoteExpiryText.Text = BuildQuoteExpiryText();
+        QuoteNextActionText.Text = BuildNextActionText();
+
+        var rows = _options.Select(CreateComparisonRow).ToList();
+        var selectedOption = OptionsList.SelectedItem as QuoteOption;
+        ComparisonSummaryText.Text = rows.Count == 0
+            ? "Add at least one option to compare prices, deposits, and linked stock."
+            : $"{rows.Count} option(s) | recommended {_options.Count(x => x.IsRecommended)} | accepted {(_quote.AcceptedOptionId.HasValue ? "yes" : "no")}.";
+
+        _refreshingComparison = true;
+        OptionComparisonGrid.ItemsSource = rows;
+        OptionComparisonGrid.SelectedItem = rows.FirstOrDefault(x => ReferenceEquals(x.Option, selectedOption) || (selectedOption?.Id > 0 && x.Option.Id == selectedOption.Id));
+        _refreshingComparison = false;
+
+        if (selectedOption != null)
+            SelectedOptionSummaryText.Text = BuildSelectedOptionSummary(selectedOption);
+    }
+
+    private string BuildQuoteStatusText()
+    {
+        var status = string.IsNullOrWhiteSpace(_quote.Status) ? "Draft" : _quote.Status;
+        var customer = CustomerCombo.SelectedItem is Customer c && c.Id > 0 ? c.FullName : "No customer selected";
+        var code = string.IsNullOrWhiteSpace(_quote.QuoteCode) ? "Unsaved quote" : _quote.QuoteCode;
+        return $"{code} | {status} | {customer}";
+    }
+
+    private string BuildQuoteExpiryText()
+    {
+        if (!_quote.ValidUntil.HasValue)
+            return "No quote expiry date is set.";
+
+        var days = (_quote.ValidUntil.Value.Date - DateTime.Today).Days;
+        if (days < 0)
+            return $"Expired {Math.Abs(days)} day(s) ago. Create a follow-up or update the valid-until date.";
+        if (days == 0)
+            return "Expires today. Follow up before sending or accepting changes.";
+        if (days <= 3)
+            return $"Expires in {days} day(s). Consider creating a customer follow-up.";
+        return $"Valid until {_quote.ValidUntil.Value:dd MMM yyyy}.";
+    }
+
+    private string BuildNextActionText()
+    {
+        var selected = OptionsList.SelectedItem as QuoteOption;
+        if (string.IsNullOrWhiteSpace(_quote.Title))
+            return "Enter the project title, customer, and quote details.";
+        if (_options.Count == 0)
+            return "Add a quote option before previewing or sending a proposal.";
+        if (selected == null)
+            return "Select an option to edit, compare, recommend, or accept.";
+        if (_quote.ValidUntil.HasValue && _quote.ValidUntil.Value.Date < DateTime.Today && _quote.Status is not "Accepted" and not "Converted to Job")
+            return "This quote is expired. Update the expiry date or create a follow-up before progressing.";
+        if (!_options.Any(x => x.IsRecommended))
+            return "Mark the strongest option as recommended, then preview the proposal.";
+        if (!_quote.AcceptedOptionId.HasValue)
+            return "Preview the proposal, record customer feedback, then accept the chosen option.";
+        if (_quote.AcceptedOptionId == selected.Id && !_quote.LinkedJobId.HasValue)
+            return "The selected option is accepted. Create the production job when ready.";
+        if (_quote.LinkedJobId.HasValue)
+            return "This quote is linked to a production job. Continue through production and payments.";
+        return "Select the accepted option or create a follow-up for the customer.";
+    }
+
+    private OptionComparisonRow CreateComparisonRow(QuoteOption option)
+    {
+        EnsureLinkCollections(option);
+        var status = option.Id > 0 && _quote.AcceptedOptionId == option.Id
+            ? "Accepted"
+            : option.IsRecommended ? "Recommended" : "Draft";
+        return new OptionComparisonRow(
+            option,
+            option.OptionName,
+            option.TotalPrice.ToString("C"),
+            (option.TotalPrice * _quote.DepositPercent / 100m).ToString("C"),
+            BuildLinkSummary(option),
+            status);
+    }
+
+    private string BuildSelectedOptionSummary(QuoteOption option)
+    {
+        EnsureLinkCollections(option);
+        var direct = option.LabourHours * option.LabourRate + option.MetalCost + option.StoneCost + option.SettingCost + option.FindingsCost + option.OtherCost;
+        return $"{option.OptionName}: {option.TotalPrice:C} total, {(option.TotalPrice * _quote.DepositPercent / 100m):C} deposit, {direct:C} direct cost. {BuildLinkSummary(option)}";
+    }
+
+    private string BuildLinkSummary(QuoteOption option)
+    {
+        EnsureLinkCollections(option);
+        var owned = _stoneLinks[option].Count;
+        var materials = _materialLinks[option].Count;
+        var external = _externalDiamondLinks[option].Count;
+        return $"{owned} stone(s), {external} supplier diamond(s), {materials} material line(s)";
     }
 
     private void SynchroniseLinkedCosts(QuoteOption option)
@@ -303,6 +416,7 @@ public partial class CustomQuoteBuilderWindow : Window
         CustomerCombo.SelectedItem = CustomerCombo.Items.Cast<Customer>().FirstOrDefault(x => _quote.CustomerId.HasValue && x.Id == _quote.CustomerId.Value)
             ?? CustomerCombo.Items.Cast<Customer>().FirstOrDefault(x => x.Id == 0);
         WorkflowStatusText.Text = $"Saved {_quote.QuoteCode}";
+        RefreshQuoteOverview();
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -321,6 +435,7 @@ public partial class CustomQuoteBuilderWindow : Window
         EnsureLinkCollections(option);
         OptionsList.Items.Refresh();
         OptionsList.SelectedItem = option;
+        RefreshQuoteOverview();
     }
 
     private void DuplicateOption_Click(object sender, RoutedEventArgs e)
@@ -354,6 +469,7 @@ public partial class CustomQuoteBuilderWindow : Window
             _externalDiamondLinks[option].Add(new QuoteOptionExternalDiamondLink { ExternalDiamondId = link.ExternalDiamondId, SourceSystemSnapshot = link.SourceSystemSnapshot, SupplierDiamondIdSnapshot = link.SupplierDiamondIdSnapshot, DiamondSummarySnapshot = link.DiamondSummarySnapshot, LabSnapshot = link.LabSnapshot, CertificateNumberSnapshot = link.CertificateNumberSnapshot, SupplierPrice = link.SupplierPrice, Currency = link.Currency, RetailPriceSnapshot = link.RetailPriceSnapshot, VideoUrlSnapshot = link.VideoUrlSnapshot, CertificateUrlSnapshot = link.CertificateUrlSnapshot, LinkStatus = "Proposed" });
         OptionsList.Items.Refresh();
         OptionsList.SelectedItem = option;
+        RefreshQuoteOverview();
     }
 
     private void RemoveOption_Click(object sender, RoutedEventArgs e)
@@ -371,12 +487,89 @@ public partial class CustomQuoteBuilderWindow : Window
             _externalDiamondLinks.Remove(option);
             OptionsList.Items.Refresh();
             OptionsList.SelectedIndex = 0;
+            RefreshQuoteOverview();
         }
     }
 
     private void OptionsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) => ShowOption(OptionsList.SelectedItem as QuoteOption);
     private void OptionText_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) { if (!_loading && IsLoaded) { PullOptionFields(); OptionsList.Items.Refresh(); } }
     private void CostField_TextChanged(object sender, RoutedEventArgs e) { if (!_loading && IsLoaded) { _quote.DepositPercent = D(DepositPercentBox.Text); PullOptionFields(); } }
+
+    private void RecommendOption_Click(object sender, RoutedEventArgs e)
+    {
+        if (OptionsList.SelectedItem is not QuoteOption selectedOption)
+            return;
+
+        PullOptionFields();
+        foreach (var option in _options)
+            option.IsRecommended = ReferenceEquals(option, selectedOption);
+
+        RecommendedCheck.IsChecked = true;
+        OptionsList.Items.Refresh();
+        WorkflowStatusText.Text = $"Recommended: {selectedOption.OptionName}";
+        RefreshQuoteOverview();
+    }
+
+    private void OptionComparisonGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (_refreshingComparison || _loading || OptionComparisonGrid.SelectedItem is not OptionComparisonRow row)
+            return;
+
+        OptionsList.SelectedItem = row.Option;
+    }
+
+    private void CreateQuoteFollowUp_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            SaveQuote();
+            using var db = new AppDbContext();
+            var title = $"Follow up quote {_quote.QuoteCode}";
+            var duplicate = db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t =>
+                t.IsOpen &&
+                string.Equals(t.Title, title, StringComparison.OrdinalIgnoreCase) &&
+                t.CustomerId == _quote.CustomerId);
+            if (duplicate)
+            {
+                MessageBox.Show("An open follow-up already exists for this quote.", "Quote follow-up", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dueDate = GetSuggestedFollowUpDate();
+            var task = new BusinessTask
+            {
+                TaskCode = TaskWorkflowService.GenerateTaskCode(),
+                Title = title,
+                Category = BusinessTaskCategory.CustomerFollowUp,
+                Priority = dueDate.Date <= DateTime.Today ? BusinessTaskPriority.High : BusinessTaskPriority.Normal,
+                Status = BusinessTaskStatus.ToDo,
+                DueDate = dueDate,
+                ReminderDate = dueDate,
+                CustomerId = _quote.CustomerId,
+                Description = $"{BuildNextActionText()}\n\nQuote: {_quote.QuoteCode} {_quote.Title}".Trim(),
+                ShowOnDashboard = true
+            };
+            db.BusinessTasks.Add(task);
+            db.SaveChanges();
+            WorkflowStatusText.Text = $"Created follow-up {task.TaskCode}";
+            MessageBox.Show($"Created follow-up task {task.TaskCode} due {task.DueDate:dd MMM yyyy}.", "Quote follow-up", MessageBoxButton.OK, MessageBoxImage.Information);
+            RefreshQuoteOverview();
+        }
+        catch (Exception ex) { MessageBox.Show(ex.Message, "Quote follow-up", MessageBoxButton.OK, MessageBoxImage.Warning); }
+    }
+
+    private DateTime GetSuggestedFollowUpDate()
+    {
+        if (!_quote.ValidUntil.HasValue)
+            return DateTime.Today.AddDays(2);
+
+        var days = (_quote.ValidUntil.Value.Date - DateTime.Today).Days;
+        if (days <= 0)
+            return DateTime.Today;
+        if (days <= 3)
+            return _quote.ValidUntil.Value.Date;
+        return DateTime.Today.AddDays(2);
+    }
 
     private void QuoteCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
@@ -398,6 +591,7 @@ public partial class CustomQuoteBuilderWindow : Window
         BindQuote();
         _loading = false;
         OptionsList.SelectedIndex = _options.Count > 0 ? 0 : -1;
+        RefreshQuoteOverview();
     }
 
     private void StoneCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -514,8 +708,8 @@ public partial class CustomQuoteBuilderWindow : Window
     {
         var type = diamond.IsLabGrown ? "Lab-grown" : "Natural";
         var summary = $"{type} {diamond.Shape} {diamond.Carat:0.###}ct {diamond.Color} {diamond.Clarity} {diamond.Cut}".Replace("  ", " ").Trim();
-        var cert = string.IsNullOrWhiteSpace(diamond.CertificateNumber) ? "" : $" · {diamond.Lab} cert {diamond.CertificateNumber}";
-        var supplier = string.IsNullOrWhiteSpace(diamond.SupplierDiamondId) ? "" : $" · ID {diamond.SupplierDiamondId}";
+        var cert = string.IsNullOrWhiteSpace(diamond.CertificateNumber) ? "" : $" | {diamond.Lab} cert {diamond.CertificateNumber}";
+        var supplier = string.IsNullOrWhiteSpace(diamond.SupplierDiamondId) ? "" : $" | ID {diamond.SupplierDiamondId}";
         return summary + cert + supplier;
     }
 
@@ -563,6 +757,7 @@ public partial class CustomQuoteBuilderWindow : Window
         if (OptionsList.SelectedItem is not QuoteOption option || LinkedExternalDiamondsList.SelectedItem is not QuoteOptionExternalDiamondLink link) return;
         link.LinkStatus = ExternalDiamondStatusCombo.SelectedItem?.ToString() ?? "Proposed";
         RefreshLinkedInventory(option);
+        RefreshQuoteOverview();
     }
 
     private void Preview_Click(object sender, RoutedEventArgs e)
@@ -629,6 +824,7 @@ public partial class CustomQuoteBuilderWindow : Window
             transaction.Commit();
             ReloadCurrentQuoteLinks(db);
             WorkflowStatusText.Text = $"Accepted and reserved: {selectedOption.OptionName}";
+            RefreshQuoteOverview();
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "Accept option", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
@@ -652,6 +848,7 @@ public partial class CustomQuoteBuilderWindow : Window
             db.SaveChanges();
             ReloadCurrentQuoteLinks(db);
             WorkflowStatusText.Text = "Reservations released";
+            RefreshQuoteOverview();
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "Release reservations", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
@@ -690,8 +887,8 @@ public partial class CustomQuoteBuilderWindow : Window
             var materialLines = db.QuoteOptionMaterialLinks.AsNoTracking().Where(x => x.QuoteOptionId == selectedOption.Id).ToList();
             var externalDiamondLines = db.QuoteOptionExternalDiamondLinks.AsNoTracking().Where(x => x.QuoteOptionId == selectedOption.Id).ToList();
             var allocationText = string.Join("\n", stoneLines.Select(x => $"Reserved stone: {x.StoneCodeSnapshot} {x.DescriptionSnapshot}")
-                .Concat(externalDiamondLines.Select(x => $"External diamond: {x.DiamondSummarySnapshot} · {x.SourceSystemSnapshot} ID {x.SupplierDiamondIdSnapshot} · cert {x.CertificateNumberSnapshot} · {x.LinkStatus}"))
-                .Concat(materialLines.Select(x => $"Reserved material: {x.MaterialCodeSnapshot} {x.MaterialNameSnapshot} — {x.Quantity:0.###} {x.UnitTypeSnapshot}")));
+                .Concat(externalDiamondLines.Select(x => $"External diamond: {x.DiamondSummarySnapshot} | {x.SourceSystemSnapshot} ID {x.SupplierDiamondIdSnapshot} | cert {x.CertificateNumberSnapshot} | {x.LinkStatus}"))
+                .Concat(materialLines.Select(x => $"Reserved material: {x.MaterialCodeSnapshot} {x.MaterialNameSnapshot} - {x.Quantity:0.###} {x.UnitTypeSnapshot}")));
 
             job.JobCode = string.IsNullOrWhiteSpace(job.JobCode) ? $"JOB-{DateTime.Now:yyyyMMdd-HHmm}" : job.JobCode;
             job.CustomerId = _quote.CustomerId;
@@ -717,8 +914,11 @@ public partial class CustomQuoteBuilderWindow : Window
             db.CustomQuotes.Update(_quote);
             db.SaveChanges();
             WorkflowStatusText.Text = $"Created {job.JobCode}";
+            RefreshQuoteOverview();
             MessageBox.Show($"Production job {job.JobCode} is ready in Jobs. Linked inventory remains reserved.", "Workflow complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "Create job", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
+
+    private sealed record OptionComparisonRow(QuoteOption Option, string Name, string Total, string Deposit, string LinkSummary, string Status);
 }

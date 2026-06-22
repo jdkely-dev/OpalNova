@@ -2,9 +2,9 @@
 
 ## Current Baseline
 
-Current workspace baseline: V1.48.3.
+Current workspace baseline: V1.49.0.
 
-V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removes the unsafe Nivoda development credential helper and keeps the roadmap aligned to the actual app state.
+V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 starts the quote workspace polish pass with clearer quote status, option comparison, and next-action controls.
 
 The next work should stay focused on improving daily workflow quality before adding broad new feature areas.
 

@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.48.3 Roadmap and Credential Safety Polish
+- Current workspace version: V1.49.0 Quote Workspace Polish
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,16 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.49.0 State
+
+V1.49.0 begins the quote workspace polish build:
+
+- Added quote status and expiry guidance inside the quote workspace.
+- Added a right-side next-action rail for save, preview, recommend, follow-up, accept, and job creation.
+- Added an option comparison grid driven by existing `QuoteOption` data.
+- Added quote follow-up task creation using the existing `BusinessTask` workflow.
+- Kept quote persistence additive-free; no schema changes were introduced.
 
 ## V1.48.3 State
 
