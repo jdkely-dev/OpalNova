@@ -80,6 +80,7 @@
                                 <DataGridTextColumn Header="Hold Expires" Binding="{Binding HoldExpiresAt, StringFormat=g}" Width="140" />
                                 <DataGridTextColumn Header="Expected" Binding="{Binding ExpectedArrivalDate, StringFormat=d}" Width="100" />
                                 <DataGridTextColumn Header="Supplier Ref" Binding="{Binding SupplierReference}" Width="120" />
+                                <DataGridTextColumn Header="Owned Stone" Binding="{Binding OwnedStoneCode}" Width="120" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </DockPanel>
@@ -103,6 +104,7 @@
                         <Button Content="Confirm Hold" Click="ConfirmHold_Click" Style="{StaticResource ToolbarButtonStyle}" />
                         <Button Content="Request / Mark Ordered" Click="OrderDiamond_Click" Style="{StaticResource AccentButtonStyle}" />
                         <Button Content="Mark Received" Click="MarkReceived_Click" Style="{StaticResource ToolbarButtonStyle}" />
+                        <Button Content="Convert To Owned Stone" Click="ConvertToInventory_Click" Style="{StaticResource AccentButtonStyle}" />
                         <Button Content="Decline / Release" Click="ReleaseDiamond_Click" Style="{StaticResource ToolbarButtonStyle}" />
                         <Button Content="Create Reminder Task" Click="CreateReminderTask_Click" Style="{StaticResource ToolbarButtonStyle}" />
 

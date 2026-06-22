@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.52.0 Job Completion And Inventory Consumption
+Current baseline: V1.53.0 External Diamond Inventory Conversion
 
 ## Purpose
 
@@ -85,7 +85,7 @@ Ease:
 | Production stage checklist, waiting flags, and job files | P2 | M-L | The transcript shows these as central after proposal acceptance. Do this around the safe job-completion work. | V1.52 |
 | Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
-| Supplier diamond intake and conversion to owned inventory | P3 | L | Existing receipt fields exist; conversion needs stock creation, audit, and status rules. | V1.53 |
+| Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
 | Visual reports and Excel export | P3 | M-L | Existing report services and CSV exports help, but charts/export need stable datasets. | V1.54 |
 | Customer profile dashboard and timeline | P3 | M | Customer relationship service exists. Best after quote/payment/job event flows are stronger. | V1.54-V1.55 |
 | Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |

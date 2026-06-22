@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.52.0 Job Completion And Inventory Consumption
+- Current workspace version: V1.53.0 External Diamond Inventory Conversion
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,25 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.53.0 State
+
+V1.53.0 begins the external diamond production readiness build:
+
+- Bumped visible/project version metadata to 1.53.0.
+- Added `ExternalDiamondInventoryService` to convert received supplier diamonds into owned loose-stone inventory.
+- Added duplicate-safe conversion using a persistent external-diamond marker in the created stone notes.
+- Supplier Diamond Holds & Orders now shows linked owned stone codes where a received supplier diamond has been converted.
+- Added a Convert To Owned Stone action in the supplier diamond workflow.
+- Conversion creates a normal `Stone` record with diamond details, certificate/source notes, estimated value, and `Loose` status.
+- Converted supplier diamonds and linked quote-option diamond links move to `Converted To Owned Inventory`.
+- Preserved database schema and kept Nivoda credentials user-entered only.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.52.0 State
 

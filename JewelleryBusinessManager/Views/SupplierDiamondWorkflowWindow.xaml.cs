@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using Microsoft.EntityFrameworkCore;
 using JewelleryBusinessManager.Data;
 using JewelleryBusinessManager.Models;
+using JewelleryBusinessManager.Services;
 
 namespace JewelleryBusinessManager.Views;
 
@@ -26,6 +27,7 @@ public partial class SupplierDiamondWorkflowWindow : Window
         DateTime? HoldExpiresAt,
         DateTime? ExpectedArrivalDate,
         DateTime? ReceivedAt,
+        string OwnedStoneCode,
         string Notes);
 
     private List<DiamondWorkflowRow> _rows = new();
@@ -52,6 +54,7 @@ public partial class SupplierDiamondWorkflowWindow : Window
 
         var now = DateTime.Now;
         var diamonds = db.ExternalDiamonds.AsNoTracking().AsEnumerable().ToList();
+        var ownedStoneCodes = diamonds.ToDictionary(x => x.Id, x => ExternalDiamondInventoryService.FindOwnedStoneCode(db, x));
         _rows = diamonds.Select(d =>
         {
             linksByDiamond.TryGetValue(d.Id, out var links);
@@ -80,13 +83,14 @@ public partial class SupplierDiamondWorkflowWindow : Window
                 d.HoldExpiresAt,
                 d.ExpectedArrivalDate,
                 d.ReceivedAt,
+                ownedStoneCodes.TryGetValue(d.Id, out var stoneCode) ? stoneCode : string.Empty,
                 d.Notes ?? string.Empty);
         }).OrderBy(x => SortRank(x.Status)).ThenBy(x => x.HoldExpiresAt ?? DateTime.MaxValue).ThenBy(x => x.DiamondSummary).ToList();
 
         ExpiringCountText.Text = _rows.Count(x => x.Status is "Hold Expiring" or "Expired").ToString();
         NotOrderedCountText.Text = _rows.Count(x => IsApprovedButNotOrdered(x.Status)).ToString();
         OrderedCountText.Text = _rows.Count(x => (x.Status == "Order Requested" || x.Status == "Ordered") && !x.ReceivedAt.HasValue).ToString();
-        ReceivedCountText.Text = _rows.Count(x => x.Status == "Received").ToString();
+        ReceivedCountText.Text = _rows.Count(x => x.Status is "Received" or "Converted To Owned Inventory").ToString();
         ApplyFilter();
     }
 
@@ -112,12 +116,13 @@ public partial class SupplierDiamondWorkflowWindow : Window
         "Customer Interested" => 2,
         "Hold Requested" => 3,
         "Hold Confirmed" => 4,
-        "Order Requested" => 5,
-        "Ordered" => 6,
-        "Received" => 7,
-        "Declined" or "Released" => 8,
-        _ => 9
-    };
+            "Order Requested" => 5,
+            "Ordered" => 6,
+            "Received" => 7,
+            "Converted To Owned Inventory" => 8,
+            "Declined" or "Released" => 9,
+            _ => 9
+        };
 
     private void ApplyFilter()
     {
@@ -129,7 +134,7 @@ public partial class SupplierDiamondWorkflowWindow : Window
             "Holds expiring" => query.Where(x => x.Status is "Hold Expiring" or "Expired"),
             "Ordered not received" => query.Where(x => (x.Status == "Order Requested" || x.Status == "Ordered") && !x.ReceivedAt.HasValue),
             "Customer approved not ordered" => query.Where(x => IsApprovedButNotOrdered(x.Status)),
-            "Received" => query.Where(x => x.Status == "Received"),
+            "Received" => query.Where(x => x.Status is "Received" or "Converted To Owned Inventory"),
             "All saved external diamonds" => query,
             _ => query.Where(x => x.Status is "Customer Interested" or "Hold Requested" or "Hold Confirmed" or "Hold Expiring" or "Expired" or "Order Requested" or "Ordered")
         };
@@ -137,7 +142,7 @@ public partial class SupplierDiamondWorkflowWindow : Window
         var search = SearchBox.Text.Trim();
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(x => $"{x.Status} {x.DiamondSummary} {x.CertificateNumber} {x.QuoteCode} {x.Customer} {x.SupplierReference}".Contains(search, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(x => $"{x.Status} {x.DiamondSummary} {x.CertificateNumber} {x.QuoteCode} {x.Customer} {x.SupplierReference} {x.OwnedStoneCode}".Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
         var list = query.ToList();
@@ -158,7 +163,8 @@ public partial class SupplierDiamondWorkflowWindow : Window
             return;
         }
 
-        SelectedDiamondText.Text = $"{row.DiamondSummary}\nCert: {row.CertificateNumber}\nQuote: {row.QuoteCode} {row.OptionName}\nCustomer: {row.Customer}\nStatus: {row.Status}";
+        var ownedLine = string.IsNullOrWhiteSpace(row.OwnedStoneCode) ? string.Empty : $"\nOwned stone: {row.OwnedStoneCode}";
+        SelectedDiamondText.Text = $"{row.DiamondSummary}\nCert: {row.CertificateNumber}\nQuote: {row.QuoteCode} {row.OptionName}\nCustomer: {row.Customer}\nStatus: {row.Status}{ownedLine}";
         SupplierReferenceBox.Text = row.SupplierReference;
         HoldExpiryPicker.SelectedDate = row.HoldExpiresAt?.Date;
         ExpectedArrivalPicker.SelectedDate = row.ExpectedArrivalDate?.Date;
@@ -193,6 +199,40 @@ public partial class SupplierDiamondWorkflowWindow : Window
         d.ExpectedArrivalDate ??= DateTime.Today;
         AppendNote(d, "Diamond received");
     });
+
+    private void ConvertToInventory_Click(object sender, RoutedEventArgs e)
+    {
+        var row = SelectedRow();
+        if (row == null)
+        {
+            MessageBox.Show("Select an external diamond first.", "Supplier Diamond Workflow", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (row.Status != "Received" && row.Status != "Converted To Owned Inventory" && !row.ReceivedAt.HasValue)
+        {
+            MessageBox.Show("Mark the supplier diamond as received before converting it into owned inventory.", "Convert To Inventory", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var prompt = string.IsNullOrWhiteSpace(row.OwnedStoneCode)
+            ? $"Create an owned loose-stone record from {row.DiamondSummary}?"
+            : $"This supplier diamond already appears linked to owned stone {row.OwnedStoneCode}. Re-link status now?";
+        if (MessageBox.Show(prompt, "Convert Supplier Diamond", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            var result = ExternalDiamondInventoryService.ConvertReceivedDiamondToOwnedStone(row.ExternalDiamondId);
+            LoadRows();
+            StatusText.Text = result.Message;
+            MessageBox.Show(result.Message, "Convert To Inventory", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Convert To Inventory", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
 
     private void ReleaseDiamond_Click(object sender, RoutedEventArgs e) => UpdateSelected("Released", d =>
     {
