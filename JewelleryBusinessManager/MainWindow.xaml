@@ -22,7 +22,7 @@
                                 <TextBlock Text="Command Centre" Style="{StaticResource PillTextStyle}" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Version 1.54.0 - business intelligence Excel export" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
+                        <TextBlock Text="Version 1.55.0 - backup health and release readiness" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -101,6 +101,7 @@
                 <MenuItem Header="Restore Backup" Click="RestoreBackup_Click" />
                 <MenuItem Header="Health Check" Click="HealthCheck_Click" />
                 <MenuItem Header="User Guide" Click="UserGuide_Click" />
+                <MenuItem Header="Release Notes" Click="ReleaseNotes_Click" />
             </MenuItem>
         </Menu>
 
@@ -255,6 +256,29 @@
                                                 <Button Content="Create Backup" Click="DashboardCreateBackup_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="0,6,0,0" />
                                             </StackPanel>
                                         </Border>
+                                    </Grid>
+                                </Border>
+
+                                <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="18" Margin="0,0,0,14" Effect="{StaticResource CardShadowEffect}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="260" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="Data Safety" FontSize="22" FontWeight="Bold" />
+                                            <TextBlock x:Name="BackupHealthStatusText" FontSize="16" FontWeight="SemiBold" Margin="0,6,0,0" />
+                                            <TextBlock x:Name="BackupHealthDetailText" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                            <TextBlock x:Name="BackupFolderText" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                                            <TextBlock x:Name="DatabaseHealthText" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                            <TextBlock x:Name="PendingRestoreText" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="14,0,0,0">
+                                            <Button Content="Create Backup" Click="DashboardCreateBackup_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Create a fresh SQLite backup now." />
+                                            <Button Content="Restore Preview" Click="RestoreBackup_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="0,6,0,0" ToolTip="Choose a backup and preview it before staging a restore." />
+                                            <Button Content="Health Check" Click="HealthCheck_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="0,6,0,0" ToolTip="Run database and record-count checks." />
+                                            <Button Content="Release Notes" Click="ReleaseNotes_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="0,6,0,0" ToolTip="Open current OPALNOVA release notes." />
+                                        </StackPanel>
                                     </Grid>
                                 </Border>
 

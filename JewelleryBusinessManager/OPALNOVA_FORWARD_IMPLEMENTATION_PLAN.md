@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.54.0 Business Intelligence Excel Export
+Current baseline: V1.55.0 Backup Health and Release Readiness
 
 ## Purpose
 
@@ -62,7 +62,7 @@ Ease:
 | Area | Priority | Ease | Why | Recommended Build |
 | --- | --- | --- | --- | --- |
 | Keep build clean, release notes, git hygiene | P0 | S | Prevents future regressions and makes every build auditable. | Every build |
-| Backup health indicator before heavier data changes | P0 | S-M | Backup services exist; useful before inventory consumption and schema additions. | V1.49.x |
+| Backup health indicator before heavier data changes | P0 | S-M | Implemented in V1.55.0 as a dashboard data-safety card using existing backup services. | V1.55 |
 | Quote workspace two-panel polish | P1 | M | Quote workflow drives proposals, approvals, deposits, stock reservations, and jobs. Existing quote model supports most needs. | V1.49 |
 | Quote option comparison inside app | P1 | S-M | `QuoteOption` already has pricing fields and recommendation flag. Mostly UI and calculation presentation. | V1.49 |
 | Strong quote next-action buttons | P1 | M | Existing accepted option, linked job, task, and reservation features can be made easier to use. | V1.49 |
@@ -91,7 +91,7 @@ Ease:
 | Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |
 | Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
 | Automated backup schedule | P3 | L | Health indicator is easy; true scheduling is OS/app lifecycle work. | V1.55 |
-| Installer, shortcut, version check, user guide | P3 | L-XL | Release-readiness work after app workflows stabilize. | V1.55+ |
+| Installer, shortcut, version check, user guide | P3 | L-XL | Release notes viewer implemented in V1.55.0; installer/shortcut/version check remain later release work. | V1.55+ |
 | Built-in help/searchable guide | P3 | M-L | Reference app has searchable help articles; useful after core workflow surfaces stabilize. | V1.55+ |
 | Command palette/global command bar | P4 | M-L | Useful, but not as important as fixing workflow surfaces first. | Later |
 | Complex capacity/calendar view | P4 | L-XL | Needs better production stage/checklist data first. | Later |
@@ -330,18 +330,18 @@ Goal: prepare for smoother real-world use and updates.
 
 Scope:
 
-- Backup health indicator on dashboard.
-- Restore preview improvements.
+- Backup health indicator on dashboard. Done in V1.55.0.
+- Restore preview improvements. Done in V1.55.0.
 - Full business archive export.
-- Release notes viewer inside app.
+- Release notes viewer inside app. Done in V1.55.0.
 - User guide/help manual.
 - Installer and desktop shortcut creation.
 - Version/update check.
 
 Definition of done:
 
-- User can verify backup status without opening settings.
-- Restore remains preview-first and non-destructive until confirmed.
+- User can verify backup status without opening settings. Done in V1.55.0.
+- Restore remains preview-first and non-destructive until confirmed. Done in V1.55.0.
 - Installer/update work does not change database location or schema behavior.
 
 ## Quick Wins Worth Taking When Nearby
@@ -369,26 +369,26 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start V1.55 with this ticket:
+Start V1.56 with this ticket:
 
-Title: V1.55 Backup Health And Release Readiness - dashboard indicator and restore preview polish
+Title: V1.56 Customer Timeline And Profile Polish - relationship context at a glance
 
 Tasks:
 
-- Add a dashboard backup-health indicator using existing backup folder and database timestamp information.
-- Add a quick action to create a backup from the dashboard/admin workflow.
-- Improve restore preview wording before any restore is applied.
-- Add a release notes viewer entry for the latest major versions.
-- Keep database location and restore behavior unchanged.
+- Add a richer customer profile summary using existing customer, quote, job, sale, payment and task data.
+- Add a customer timeline report/surface ordered by activity date.
+- Show open follow-ups, active jobs, unpaid balances and recent purchases together.
+- Add an action to create a customer follow-up from the profile context.
+- Avoid new schema unless a small additive preference field is clearly needed.
 
 Validation:
 
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual release-readiness smoke:
-  - confirm dashboard backup health text is understandable.
-  - create a backup.
-  - open restore preview and cancel before applying.
-  - open release notes.
-  - confirm no schema changes are required.
+- manual customer workflow smoke:
+  - select a customer with quote/job/payment history.
+  - open the customer summary.
+  - open the customer timeline.
+  - create a follow-up.
+  - confirm no unrelated records are changed.

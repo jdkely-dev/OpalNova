@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.54.0 Business Intelligence Excel Export
+- Current workspace version: V1.55.0 Backup Health and Release Readiness
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,24 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.55.0 State
+
+V1.55.0 begins the release readiness and data safety pass:
+
+- Bumped visible/project version metadata to 1.55.0.
+- Added a dashboard Data Safety card showing backup freshness, backup folder, active database path, database size, and pending restore state.
+- Added dashboard actions for Create Backup, Restore Preview, Health Check, and Release Notes.
+- Added restore preview before staging a backup restore, including file details, SQLite integrity validation, active/staging paths, and key table counts.
+- Added release notes output and menu/workspace actions for viewing current major build notes.
+- Updated About text to the current V1.55.0 version and paths.
+- Preserved database schema, database location, and existing restore staging behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.54.0 State
 

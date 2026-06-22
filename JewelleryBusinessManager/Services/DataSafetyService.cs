@@ -147,6 +147,61 @@ public static class DataSafetyService
         }
     }
 
+    public static string PreviewRestoreSource(string backupPath)
+    {
+        if (string.IsNullOrWhiteSpace(backupPath))
+            throw new ArgumentException("No backup file was selected.", nameof(backupPath));
+
+        var sourcePath = Path.GetFullPath(backupPath);
+        if (!File.Exists(sourcePath))
+            throw new FileNotFoundException($"The selected backup file could not be found:\n{sourcePath}", sourcePath);
+
+        var restoreSource = sourcePath;
+        var tempExtractedDatabase = string.Empty;
+        var selectedFile = new FileInfo(sourcePath);
+
+        try
+        {
+            if (Path.GetExtension(sourcePath).Equals(".zip", StringComparison.OrdinalIgnoreCase))
+            {
+                tempExtractedDatabase = ExtractDatabaseFromBundle(sourcePath);
+                restoreSource = tempExtractedDatabase;
+            }
+
+            if (Path.GetFullPath(restoreSource).Equals(Path.GetFullPath(DatabaseBootstrapper.DatabasePath), StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("That file is already the active database. Choose a separate backup file instead.");
+
+            ValidateSQLiteDatabaseFile(restoreSource);
+            var databaseFile = new FileInfo(restoreSource);
+
+            var sb = new StringBuilder();
+            sb.AppendLine("OPALNOVA Restore Preview");
+            sb.AppendLine($"Previewed: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            sb.AppendLine();
+            sb.AppendLine($"Selected file: {sourcePath}");
+            sb.AppendLine($"Selected type: {(Path.GetExtension(sourcePath).Equals(".zip", StringComparison.OrdinalIgnoreCase) ? "Export Bundle ZIP" : "SQLite database backup")}");
+            sb.AppendLine($"Selected size: {selectedFile.Length:N0} bytes");
+            sb.AppendLine($"Selected modified: {selectedFile.LastWriteTime:g}");
+            if (!string.IsNullOrWhiteSpace(tempExtractedDatabase))
+                sb.AppendLine("Bundle database: extracted and validated from ZIP.");
+            sb.AppendLine();
+            sb.AppendLine($"Active database: {DatabaseBootstrapper.DatabasePath}");
+            sb.AppendLine($"Restore staging path: {DatabaseBootstrapper.PendingRestorePath}");
+            sb.AppendLine("SQLite integrity check: OK");
+            sb.AppendLine($"Database size: {databaseFile.Length:N0} bytes");
+            sb.AppendLine();
+            AppendRestorePreviewCounts(sb, restoreSource);
+            sb.AppendLine();
+            sb.AppendLine("Continuing will only stage the selected restore file. The active database is replaced on the next OPALNOVA startup, after a safety backup is created.");
+            return sb.ToString();
+        }
+        finally
+        {
+            if (!string.IsNullOrWhiteSpace(tempExtractedDatabase))
+                TryDeleteFile(tempExtractedDatabase);
+        }
+    }
+
     private static void ValidateSQLiteDatabaseFile(string databasePath)
     {
         if (!File.Exists(databasePath))
@@ -184,6 +239,53 @@ public static class DataSafetyService
         {
             throw new InvalidOperationException("The selected file could not be opened as a valid SQLite database backup.", ex);
         }
+    }
+
+    private static void AppendRestorePreviewCounts(StringBuilder sb, string databasePath)
+    {
+        var keyTables = new[]
+        {
+            "Customers",
+            "CustomQuotes",
+            "Jobs",
+            "Sales",
+            "Payments",
+            "JewelleryItems",
+            "Stones",
+            "Materials",
+            "BusinessTasks",
+            "ExternalDiamonds"
+        };
+
+        sb.AppendLine("Key record counts in selected backup:");
+        using var connection = new SqliteConnection($"Data Source={databasePath};Mode=ReadOnly");
+        connection.Open();
+        foreach (var table in keyTables)
+        {
+            if (!TableExists(connection, table))
+            {
+                sb.AppendLine($"{table}: not present");
+                continue;
+            }
+
+            using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT COUNT(*) FROM {QuoteIdentifier(table)};";
+            var count = Convert.ToInt32(command.ExecuteScalar(), CultureInfo.InvariantCulture);
+            sb.AppendLine($"{table}: {count:N0}");
+        }
+    }
+
+    private static bool TableExists(SqliteConnection connection, string tableName)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = $name;";
+        command.Parameters.AddWithValue("$name", tableName);
+        return Convert.ToInt32(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
+    }
+
+    private static string QuoteIdentifier(string identifier)
+    {
+        return "\"" + identifier.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
     }
 
     private static string ExtractDatabaseFromBundle(string bundlePath)
@@ -363,10 +465,35 @@ public static class DataSafetyService
         return path;
     }
 
+    public static string CreateReleaseNotes()
+    {
+        var folder = BusinessSettingsService.GetPrintoutFolder();
+        Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, $"OPALNOVA-Release-Notes-{DateTime.Now:yyyyMMdd-HHmmss}.html");
+        var html = """
+<!doctype html>
+<html><head><meta charset="utf-8"><title>OPALNOVA Release Notes</title>
+<style>body{font-family:Segoe UI,Arial,sans-serif;margin:32px;line-height:1.5;color:#1f2937;background:#f8fafc}h1,h2{color:#111827}.card{background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:16px;margin:14px 0}.meta{color:#6b7280}.tag{display:inline-block;background:#111827;color:#f9fafb;border-radius:999px;padding:3px 9px;font-size:12px;margin-left:6px}</style></head>
+<body>
+<h1>OPALNOVA Release Notes</h1>
+<p class="meta">Generated from the installed app. These notes summarize the current major workflow builds.</p>
+<div class="card"><h2>V1.55.0 <span class="tag">Release Readiness</span></h2><ul><li>Added dashboard data-safety status for backup freshness, database path and pending restore state.</li><li>Added restore preview before staging a selected backup.</li><li>Added in-app release notes access from admin workflows.</li></ul></div>
+<div class="card"><h2>V1.54.0 <span class="tag">BI Excel Export</span></h2><ul><li>Added an Excel-compatible business intelligence workbook export.</li><li>Workbook sheets cover summary, sales, balances, quotes, inventory, reservations, tasks and external diamonds.</li></ul></div>
+<div class="card"><h2>V1.53.0 <span class="tag">External Diamond Conversion</span></h2><ul><li>Converted received supplier diamonds into owned loose-stone inventory through an explicit workflow.</li><li>Added duplicate-safe conversion markers and owned stone codes in supplier diamond workflow.</li></ul></div>
+<div class="card"><h2>V1.52.0 <span class="tag">Job Completion</span></h2><ul><li>Added explicit job completion checklist.</li><li>Consumed reserved materials and updated reserved stones through a reviewable completion step.</li></ul></div>
+<div class="card"><h2>V1.51.0 <span class="tag">Alert Centre</span></h2><ul><li>Added shared next-action engine and Alert Centre.</li><li>Added dashboard setup-readiness guidance.</li></ul></div>
+<div class="card"><h2>V1.50.0 <span class="tag">Proposal Send Workflow</span></h2><ul><li>Added proposal prepared/sent tracking, email draft workflow and sent-proposal follow-ups.</li><li>Improved customer-facing proposal output.</li></ul></div>
+<p class="meta">Database path is unchanged. OPALNOVA stores business data locally in SQLite unless you intentionally back up, export, or restore data.</p>
+</body></html>
+""";
+        File.WriteAllText(path, html);
+        return path;
+    }
+
     public static string CreateAboutText()
     {
         var settings = BusinessSettingsService.Load();
-        return $"OPALNOVA\nVersion 1.18 — Tasks, Reminders & Work Queue\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
+        return $"OPALNOVA\nVersion 1.55.0 - Backup Health and Release Readiness\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
     }
 
     public static void OpenTextReport(string title, string text)

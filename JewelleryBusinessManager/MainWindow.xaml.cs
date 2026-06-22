@@ -980,6 +980,7 @@ public partial class MainWindow : Window
             new("Health Check", "Check database connection, record counts, photos, low stock and overdue jobs.", HealthCheck_Click),
             new("Export Bundle", "Create a private ZIP with database snapshot, settings, photos and CSV exports.", ExportBundle_Click),
             new("User Guide", "Preview the built-in user guide.", UserGuide_Click),
+            new("Release Notes", "Open the current OPALNOVA release notes.", ReleaseNotes_Click),
             new("Data Cleanup", "Open data quality and bulk-cleanup tools.", (_, _) => SelectNavigationSection("Data Cleanup Studio")),
         },
         "Custom Workflow Studio" => new ToolAction[]
@@ -1112,6 +1113,7 @@ public partial class MainWindow : Window
             new("Import CSV", "Import rows into the active record section from matching CSV headers.", ImportCsv_Click),
             new("Error Log", "Open a copy of the application error log.", ErrorLog_Click),
             new("User Guide", "Preview the built-in user guide.", UserGuide_Click),
+            new("Release Notes", "Open the current OPALNOVA release notes.", ReleaseNotes_Click),
             new("About", "Show version, paths and app information.", About_Click),
         },
         "Hardware & POS Studio" => new ToolAction[]
@@ -1513,6 +1515,7 @@ public partial class MainWindow : Window
         ["Reports Studio|Export BI Excel"] = new("Export BI Excel", "Export one workbook.", "Creates an Excel-compatible workbook with summary, sales, balances, quotes, inventory value, reservations, tasks and external diamond sheets.", "Run it when you want one spreadsheet file for business review or bookkeeping discussion.", "Keep exported files private because they contain business and customer-linked data.", "Excel exports are snapshots. Re-export after major data changes."),
         ["Safety & Data Studio|Create Backup"] = new("Create Backup", "Protect your business data.", "Creates a safe copy of the local SQLite database.", "Click Create Backup and save it in your backup location. Use Ctrl+B as a shortcut where available.", "Back up before imports, restores, bulk changes and every important work session.", "A backup on the same computer does not protect you from device loss or drive failure."),
         ["Safety & Data Studio|Restore Backup"] = new("Restore Backup", "Recover from a backup.", "Stages and validates a restore file before replacing active data.", "Choose the backup or export bundle, read prompts carefully, and restart the app if instructed.", "Only restore when you know the backup is the correct version.", "Restore can overwrite current work. Create a backup of the current state first."),
+        ["Safety & Data Studio|Release Notes"] = new("Release Notes", "Review current changes.", "Creates a local HTML release-notes page covering the current workflow builds.", "Open it after upgrades or before handoff testing so the current build scope is clear.", "Use it with the version-specific testing checklists.", "Release notes summarize the app build; they are not a backup or data export."),
     };
 
     private void RefreshCurrentSection()
@@ -1647,6 +1650,7 @@ public partial class MainWindow : Window
         OverdueTasksText.Text = openTasks.Count(t => t.IsOverdue).ToString();
         HighPriorityTasksText.Text = openTasks.Count(t => t.Priority == BusinessTaskPriority.High || t.Priority == BusinessTaskPriority.Urgent).ToString();
         RefreshSetupReadiness(db, settings, today);
+        RefreshDashboardDataSafety(settings, today);
         StatusText.Text = $"Database: {DatabaseBootstrapper.DatabasePath}";
     }
 
@@ -1767,6 +1771,49 @@ public partial class MainWindow : Window
     private static SetupReadinessRow CreateSetupRow(bool complete, string title, string detail, string targetKey)
     {
         return new SetupReadinessRow(complete ? "Complete" : "Open", title, detail, targetKey, complete);
+    }
+
+    private void RefreshDashboardDataSafety(BusinessSettings settings, DateTime today)
+    {
+        var latestBackup = GetLatestBackup(settings);
+        var backupFolder = string.IsNullOrWhiteSpace(settings.BackupFolder)
+            ? BusinessSettingsService.GetBackupFolder()
+            : settings.BackupFolder;
+        var backupIsFresh = latestBackup != null && latestBackup.LastWriteTime.Date >= today.AddDays(-7);
+
+        BackupHealthStatusText.Text = latestBackup == null
+            ? "Backup needed"
+            : backupIsFresh ? "Backup current" : "Backup older than 7 days";
+        BackupHealthStatusText.Foreground = (System.Windows.Media.Brush)FindResource(backupIsFresh ? "AccentBrush" : "WarningBrush");
+        BackupHealthDetailText.Text = latestBackup == null
+            ? "No OPALNOVA backup was found in the configured backup folder."
+            : $"Latest backup: {latestBackup.LastWriteTime:g} ({FormatFileSize(latestBackup.Length)}).";
+        BackupFolderText.Text = $"Backup folder: {backupFolder}";
+
+        if (File.Exists(DatabaseBootstrapper.DatabasePath))
+        {
+            var databaseFile = new FileInfo(DatabaseBootstrapper.DatabasePath);
+            DatabaseHealthText.Text = $"Active database: {FormatFileSize(databaseFile.Length)} at {DatabaseBootstrapper.DatabasePath}";
+        }
+        else
+        {
+            DatabaseHealthText.Text = $"Active database file not found yet: {DatabaseBootstrapper.DatabasePath}";
+        }
+
+        PendingRestoreText.Text = File.Exists(DatabaseBootstrapper.PendingRestorePath)
+            ? $"Restore staged for next startup: {DatabaseBootstrapper.PendingRestorePath}"
+            : "No restore is currently staged.";
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        if (bytes >= 1024L * 1024L * 1024L)
+            return $"{bytes / (1024d * 1024d * 1024d):0.##} GB";
+        if (bytes >= 1024L * 1024L)
+            return $"{bytes / (1024d * 1024d):0.##} MB";
+        if (bytes >= 1024L)
+            return $"{bytes / 1024d:0.##} KB";
+        return $"{bytes:N0} bytes";
     }
 
     private static FileInfo? GetLatestBackup(BusinessSettings settings)
@@ -4100,13 +4147,16 @@ public partial class MainWindow : Window
         };
         if (dialog.ShowDialog(this) != true) return;
 
-        if (MessageBox.Show("Restoring a backup will stage the selected database and apply it next time the app starts. A safety copy of the current database will be created during startup before replacement. Continue?", "Restore Backup", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
-            return;
-
         try
         {
+            var preview = DataSafetyService.PreviewRestoreSource(dialog.FileName);
+            if (MessageBox.Show($"{preview}\n\nStage this restore for the next OPALNOVA startup?", "Restore Backup Preview", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                return;
+
             var restoreMessage = DataSafetyService.RestoreDatabaseFromBackup(dialog.FileName);
             MessageBox.Show(restoreMessage, "Restore Backup Staged", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (CurrentSection == "Dashboard")
+                LoadDashboard();
         }
         catch (Exception ex)
         {
@@ -4200,6 +4250,20 @@ public partial class MainWindow : Window
         {
             ErrorLogService.Log(ex, "Open user guide");
             MessageBox.Show($"Could not open the user guide.\n\n{ex.Message}", "User Guide error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void ReleaseNotes_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DataSafetyService.CreateReleaseNotes();
+            OpenReportInApp(path, "OPALNOVA Release Notes");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open release notes");
+            MessageBox.Show($"Could not open the release notes.\n\n{ex.Message}", "Release Notes error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -5203,6 +5267,8 @@ public partial class MainWindow : Window
         {
             var path = BackupService.CreateBackup();
             MessageBox.Show($"Backup created:\n{path}", "Backup", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (CurrentSection == "Dashboard")
+                LoadDashboard();
         }
         catch (Exception ex)
         {

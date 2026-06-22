@@ -2,9 +2,9 @@
 
 ## Current Baseline
 
-Current workspace baseline: V1.54.0.
+Current workspace baseline: V1.55.0.
 
-V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout. V1.51.0 adds a shared runtime next-action service, a workspace-hosted Alert Centre, dashboard alert count, and setup-readiness guidance. V1.52.0 adds an explicit job completion checklist that consumes reserved materials, marks reserved stones as set, records material movement audit entries, and releases unconsumed reservations through a reviewable workflow. V1.53.0 adds received external diamond conversion into owned loose-stone inventory without schema changes. V1.54.0 adds a single Excel-compatible BI workbook export for stable reporting datasets.
+V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout. V1.51.0 adds a shared runtime next-action service, a workspace-hosted Alert Centre, dashboard alert count, and setup-readiness guidance. V1.52.0 adds an explicit job completion checklist that consumes reserved materials, marks reserved stones as set, records material movement audit entries, and releases unconsumed reservations through a reviewable workflow. V1.53.0 adds received external diamond conversion into owned loose-stone inventory without schema changes. V1.54.0 adds a single Excel-compatible BI workbook export for stable reporting datasets. V1.55.0 adds dashboard backup health, restore preview, and release notes access.
 
 The next work should stay focused on improving daily workflow quality before adding broad new feature areas.
 
@@ -82,10 +82,12 @@ Goal: improve decision-making and bookkeeping output.
 Goal: prepare OPALNOVA for regular real-world use.
 
 - Add automated backup schedule and dashboard backup health indicator.
-- Add restore preview before applying a restore.
+- Add dashboard backup health indicator. Done in V1.55.0.
+- Add restore preview before applying a restore. Done in V1.55.0.
 - Add full business archive export.
 - Add production/staging configuration separation.
-- Add installer, desktop shortcut creation, release notes viewer, and user guide.
+- Add release notes viewer inside the app. Done in V1.55.0.
+- Add installer, desktop shortcut creation, and user guide.
 
 ## Deferred Until Core Workflow Is Stable
 
