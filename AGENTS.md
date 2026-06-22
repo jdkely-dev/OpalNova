@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.51.0 Universal Next Action And Alert Centre
+- Current workspace version: V1.52.0 Job Completion And Inventory Consumption
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,25 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.52.0 State
+
+V1.52.0 begins the inventory consumption and job completion build:
+
+- Bumped visible/project version metadata to 1.52.0.
+- Added a transactional `JobCompletionService` for explicit job completion, material consumption, stone status updates, reservation release, and completion notes.
+- Added `JobCompletionWindow`, a dark themed completion checklist showing linked accepted quote reservations before completion.
+- Routed Production Board completion and move-to-completed actions through the new completion checklist.
+- Routed Payment & Collection collected/shipped completion actions through the same checklist.
+- Consumed material quantities create `MaterialTransaction` audit entries linked to the job.
+- Reserved stone links can be marked consumed while the source stone status moves to `SetInJewellery`.
+- Preserved database schema; reservation state changes use existing reservation-status fields.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.51.0 State
 

@@ -167,6 +167,7 @@ public partial class ProductionBoardWindow : Window
 
     private void MoveForward_Click(object sender, RoutedEventArgs e) => MoveSelected(1);
     private void MoveBack_Click(object sender, RoutedEventArgs e) => MoveSelected(-1);
+    private void CompleteSelected_Click(object sender, RoutedEventArgs e) => CompleteSelectedJob("Completed from Production Board.");
 
     private void MoveSelected(int direction)
     {
@@ -182,15 +183,38 @@ public partial class ProductionBoardWindow : Window
             return;
         }
         if (MessageBox.Show($"Move '{_selected.Job.JobTitle}' from {StageTitle(_selected.Job.Status)} to {StageTitle(next)}?", "Move Job", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+        if (next == JobStatus.Completed)
+        {
+            CompleteSelectedJob($"Moved from {StageTitle(_selected.Job.Status)} to completed from Production Board.");
+            return;
+        }
         using var db = new AppDbContext();
         var job = db.Jobs.Find(_selected.Job.Id);
         if (job == null) return;
         job.Status = next;
-        if (next == JobStatus.Completed) job.BalanceOwing = Math.Max(0, job.BalanceOwing);
         db.SaveChanges();
         LoadBoard();
         _selected = _jobs.FirstOrDefault(x => x.Job.Id == job.Id);
         RenderBoard();
+    }
+
+    private void CompleteSelectedJob(string note)
+    {
+        if (_selected == null)
+        {
+            MessageBox.Show("Select a job card first.", "Production Board", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var jobId = _selected.Job.Id;
+        var dialog = new JobCompletionWindow(jobId, note) { Owner = this };
+        if (dialog.ShowDialog() == true)
+        {
+            LoadBoard();
+            _selected = _jobs.FirstOrDefault(x => x.Job.Id == jobId);
+            RenderBoard();
+            SelectionText.Text = dialog.CompletionResult?.Summary ?? "Job completed.";
+        }
     }
 
     private static JobStatus GetAdjacentStatus(JobStatus status, int direction)

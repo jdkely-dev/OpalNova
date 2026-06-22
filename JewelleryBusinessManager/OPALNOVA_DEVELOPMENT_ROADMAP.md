@@ -2,9 +2,9 @@
 
 ## Current Baseline
 
-Current workspace baseline: V1.51.0.
+Current workspace baseline: V1.52.0.
 
-V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout. V1.51.0 adds a shared runtime next-action service, a workspace-hosted Alert Centre, dashboard alert count, and setup-readiness guidance.
+V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout. V1.51.0 adds a shared runtime next-action service, a workspace-hosted Alert Centre, dashboard alert count, and setup-readiness guidance. V1.52.0 adds an explicit job completion checklist that consumes reserved materials, marks reserved stones as set, records material movement audit entries, and releases unconsumed reservations through a reviewable workflow.
 
 The next work should stay focused on improving daily workflow quality before adding broad new feature areas.
 
@@ -50,11 +50,11 @@ Goal: turn OPALNOVA into a guided daily work system rather than only a record sy
 
 Goal: close the loop from quote reservation to finished job without losing stock traceability.
 
-- Add a job-completion checklist.
-- Add a reservation release/consume wizard.
-- Consume reserved materials/stones only through explicit completion actions.
-- Keep owned stock, reserved stock, supplier stock, sold stock, and consumed stock visually distinct.
-- Add audit entries for stock adjustments, reservation release, and material consumption.
+- Add a job-completion checklist. Done in V1.52.0 as a first pass.
+- Add a reservation release/consume wizard. Done in V1.52.0 for accepted quote reservations linked to jobs.
+- Consume reserved materials/stones only through explicit completion actions. Done in V1.52.0.
+- Keep owned stock, reserved stock, supplier stock, sold stock, and consumed stock visually distinct. Started in V1.52.0 through consumed/released reservation states.
+- Add audit entries for stock adjustments, reservation release, and material consumption. Started in V1.52.0 with material transaction entries for consumed materials.
 
 ### V1.53 - External Diamond Production Readiness
 

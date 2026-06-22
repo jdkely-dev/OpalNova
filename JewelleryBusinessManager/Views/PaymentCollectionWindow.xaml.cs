@@ -231,14 +231,16 @@ public partial class PaymentCollectionWindow : Window
 
     private void MarkCollected_Click(object sender, RoutedEventArgs e)
     {
-        if (ConfirmBalanceBeforeComplete() != true) return;
-        UpdateJobStatus(JobStatus.Completed, "Collected by customer and marked complete.");
+        var allowBalance = ConfirmBalanceBeforeComplete();
+        if (allowBalance != true) return;
+        CompleteSelectedJob("Collected by customer and marked complete." + FormatHandoverNote(), allowOutstandingBalanceDefault: true);
     }
 
     private void MarkShipped_Click(object sender, RoutedEventArgs e)
     {
-        if (ConfirmBalanceBeforeComplete() != true) return;
-        UpdateJobStatus(JobStatus.Completed, "Shipped to customer and marked complete.");
+        var allowBalance = ConfirmBalanceBeforeComplete();
+        if (allowBalance != true) return;
+        CompleteSelectedJob("Shipped to customer and marked complete." + FormatHandoverNote(), allowOutstandingBalanceDefault: true);
     }
 
     private bool? ConfirmBalanceBeforeComplete()
@@ -266,6 +268,24 @@ public partial class PaymentCollectionWindow : Window
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Update job", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void CompleteSelectedJob(string note, bool allowOutstandingBalanceDefault)
+    {
+        if (_selectedRow == null)
+        {
+            MessageBox.Show("Select a job first.", "Payment & Collection", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var jobId = _selectedRow.JobId;
+        var dialog = new JobCompletionWindow(jobId, note, allowOutstandingBalanceDefault) { Owner = this };
+        if (dialog.ShowDialog() == true)
+        {
+            StatusMessageText.Text = dialog.CompletionResult?.Summary ?? "Job completed.";
+            LoadJobs();
+            SelectJob(jobId);
         }
     }
 

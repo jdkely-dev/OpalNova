@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.51.0 Universal Next Action And Alert Centre
+Current baseline: V1.52.0 Job Completion And Inventory Consumption
 
 ## Purpose
 
@@ -81,9 +81,9 @@ Ease:
 | Unsaved-change warnings for tab close | P2 | M-L | Important, but must be designed across hosted editors to avoid false prompts. | V1.51 |
 | Payment schedule tracking | P2 | M | Supports quote approvals and handover. Should follow proposal/action changes. | V1.50-V1.51 |
 | Polished invoice/receipt templates | P2 | M | `PaymentCollectionWindow` already has invoice generation entry point. | V1.50-V1.51 |
-| Job completion checklist and stock consume/release wizard | P2 | L | High value but touches inventory, jobs, traceability, and irreversible stock movement. | V1.52 |
+| Job completion checklist and stock consume/release wizard | P2 | L | Implemented in V1.52.0 as an explicit completion checklist that consumes reserved materials, marks reserved stones set, releases unconsumed reservations, and writes material movement audit entries. | V1.52 |
 | Production stage checklist, waiting flags, and job files | P2 | M-L | The transcript shows these as central after proposal acceptance. Do this around the safe job-completion work. | V1.52 |
-| Stock lifecycle clarity | P2 | M-L | Current statuses exist, but owned/reserved/supplier/sold/consumed need cleaner UI and audit rules. | V1.52 |
+| Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Existing receipt fields exist; conversion needs stock creation, audit, and status rules. | V1.53 |
 | Visual reports and Excel export | P3 | M-L | Existing report services and CSV exports help, but charts/export need stable datasets. | V1.54 |
