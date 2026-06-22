@@ -969,6 +969,7 @@ public partial class MainWindow : Window
             new("Quote Conversion", "Preview quote status, acceptance and conversion performance.", QuoteConversionReport_Click),
             new("Inventory Value", "Preview stock, stone and material value tied up in inventory.", InventoryValueReport_Click),
             new("Export BI CSV", "Export spreadsheet-ready reporting data.", ExportBusinessIntelligenceCsv_Click),
+            new("Export BI Excel", "Export one Excel-compatible workbook for business review.", ExportBusinessIntelligenceExcel_Click),
             new("Classic Reports Studio", "Open the full specialist reports list.", (_, _) => SelectNavigationSection("Reports Studio")),
         },
         "Settings & Backup" => new ToolAction[]
@@ -1092,6 +1093,7 @@ public partial class MainWindow : Window
             new("Customer Follow-Ups", "Preview open follow-ups and tasks by priority and due date.", CustomerFollowUpInsightReport_Click),
             new("Opal / Stone Stock", "Preview stone inventory, opal values, weights and statuses.", OpalStoneStockReport_Click),
             new("Export BI CSV", "Export sales, balances, quotes, inventory and reservation data to spreadsheet-ready CSV files.", ExportBusinessIntelligenceCsv_Click),
+            new("Export BI Excel", "Export sales, balances, quotes, inventory, tasks and supplier diamonds to one Excel-compatible workbook.", ExportBusinessIntelligenceExcel_Click),
             new("Business Report", "Preview the existing high-level business report.", BusinessReport_Click),
             new("Costing Report", "Preview pricing, profit and margin reports.", CostingReport_Click),
             new("Low Stock", "Preview materials below reorder level.", LowStockReport_Click),
@@ -1508,6 +1510,7 @@ public partial class MainWindow : Window
         ["Reports Studio|Customer Follow-Ups"] = new("Customer Follow-Ups", "Keep customer actions visible.", "Lists open tasks and reminders by due date, priority, customer and job link.", "Use it daily to decide who needs a message, pickup reminder, approval request or after-sale follow-up.", "Good follow-ups turn quotes into jobs and customers into repeat customers.", "Sensitive notes should be kept professional and necessary."),
         ["Reports Studio|Opal / Stone Stock"] = new("Opal / Stone Stock", "Audit loose stones and opals.", "Shows stone codes, types, statuses, weights, dimensions, brightness, colour notes, values and parcel links.", "Use it when selecting stones for new designs or checking what can be listed or set.", "Keep weights, values and statuses up to date as stones are cut, reserved, set or sold.", "The report cannot judge stone quality; it reflects recorded information."),
         ["Reports Studio|Export BI CSV"] = new("Export BI CSV", "Export report data to spreadsheets.", "Creates spreadsheet-ready CSV files for sales, balances, quotes, inventory value and reserved inventory.", "Run it when you want deeper spreadsheet analysis or a copy for bookkeeping review.", "Keep exported files private because they contain business and customer-linked data.", "CSV exports are snapshots. Re-export after major data changes."),
+        ["Reports Studio|Export BI Excel"] = new("Export BI Excel", "Export one workbook.", "Creates an Excel-compatible workbook with summary, sales, balances, quotes, inventory value, reservations, tasks and external diamond sheets.", "Run it when you want one spreadsheet file for business review or bookkeeping discussion.", "Keep exported files private because they contain business and customer-linked data.", "Excel exports are snapshots. Re-export after major data changes."),
         ["Safety & Data Studio|Create Backup"] = new("Create Backup", "Protect your business data.", "Creates a safe copy of the local SQLite database.", "Click Create Backup and save it in your backup location. Use Ctrl+B as a shortcut where available.", "Back up before imports, restores, bulk changes and every important work session.", "A backup on the same computer does not protect you from device loss or drive failure."),
         ["Safety & Data Studio|Restore Backup"] = new("Restore Backup", "Recover from a backup.", "Stages and validates a restore file before replacing active data.", "Choose the backup or export bundle, read prompts carefully, and restart the app if instructed.", "Only restore when you know the backup is the correct version.", "Restore can overwrite current work. Create a backup of the current state first."),
     };
@@ -3987,6 +3990,20 @@ public partial class MainWindow : Window
         {
             ErrorLogService.Log(ex, "Export business intelligence CSV");
             MessageBox.Show($"Could not export the business intelligence CSV files.\n\n{ex.Message}", "BI CSV Export error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void ExportBusinessIntelligenceExcel_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DocumentExportService.ExportBusinessIntelligenceExcelWorkbook();
+            OpenReportInApp(path, "Business Intelligence Excel Export");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Export business intelligence Excel workbook");
+            MessageBox.Show($"Could not export the business intelligence Excel workbook.\n\n{ex.Message}", "BI Excel Export error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

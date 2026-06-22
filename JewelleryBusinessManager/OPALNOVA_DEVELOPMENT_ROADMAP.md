@@ -2,9 +2,9 @@
 
 ## Current Baseline
 
-Current workspace baseline: V1.53.0.
+Current workspace baseline: V1.54.0.
 
-V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout. V1.51.0 adds a shared runtime next-action service, a workspace-hosted Alert Centre, dashboard alert count, and setup-readiness guidance. V1.52.0 adds an explicit job completion checklist that consumes reserved materials, marks reserved stones as set, records material movement audit entries, and releases unconsumed reservations through a reviewable workflow. V1.53.0 adds received external diamond conversion into owned loose-stone inventory without schema changes.
+V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout. V1.51.0 adds a shared runtime next-action service, a workspace-hosted Alert Centre, dashboard alert count, and setup-readiness guidance. V1.52.0 adds an explicit job completion checklist that consumes reserved materials, marks reserved stones as set, records material movement audit entries, and releases unconsumed reservations through a reviewable workflow. V1.53.0 adds received external diamond conversion into owned loose-stone inventory without schema changes. V1.54.0 adds a single Excel-compatible BI workbook export for stable reporting datasets.
 
 The next work should stay focused on improving daily workflow quality before adding broad new feature areas.
 
@@ -75,7 +75,7 @@ Goal: improve decision-making and bookkeeping output.
 - Add stock ageing and slow-moving inventory reports.
 - Add profit by job type and product category.
 - Add tax/GST summary.
-- Add Excel export after report datasets are stable.
+- Add Excel export after report datasets are stable. Done in V1.54.0 as an Excel-compatible workbook export.
 
 ### V1.55 - Release Readiness and Data Safety
 

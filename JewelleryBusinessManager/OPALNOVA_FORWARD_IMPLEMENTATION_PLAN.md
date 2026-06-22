@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.53.0 External Diamond Inventory Conversion
+Current baseline: V1.54.0 Business Intelligence Excel Export
 
 ## Purpose
 
@@ -86,7 +86,7 @@ Ease:
 | Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
-| Visual reports and Excel export | P3 | M-L | Existing report services and CSV exports help, but charts/export need stable datasets. | V1.54 |
+| Visual reports and Excel export | P3 | M-L | Existing report services and CSV exports help. Excel-compatible workbook export is implemented in V1.54.0; charts remain later work. | V1.54 |
 | Customer profile dashboard and timeline | P3 | M | Customer relationship service exists. Best after quote/payment/job event flows are stronger. | V1.54-V1.55 |
 | Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |
 | Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
@@ -316,13 +316,13 @@ Scope:
 - Slow-moving stock report.
 - Profit by job type/category.
 - Tax/GST summary.
-- Excel export after datasets are stable.
+- Excel export after datasets are stable. Done in V1.54.0 as a workbook with summary, sales, balances, quotes, inventory, reservation, task and supplier diamond sheets.
 
 Definition of done:
 
 - Reports use the same calculations as dashboard/workflows.
 - CSV/HTML exports still work.
-- Excel export is added only for stable datasets.
+- Excel export is added only for stable datasets and opens through the in-app report preview flow.
 
 ### V1.55 - Release Readiness And Help
 
@@ -369,28 +369,26 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start V1.49 with this ticket:
+Start V1.55 with this ticket:
 
-Title: V1.49 Quote Workspace Polish - layout, comparison, and next actions
+Title: V1.55 Backup Health And Release Readiness - dashboard indicator and restore preview polish
 
 Tasks:
 
-- Rework `CustomQuoteBuilderWindow` layout into setup/options/action zones.
-- Add an option comparison summary that updates from current quote options.
-- Add action rail buttons for preview, recommend, accept, follow-up, convert to job, and release reservations.
-- Add quote expiry status text and create-follow-up action.
-- Keep existing save/load/link/reservation behavior intact.
+- Add a dashboard backup-health indicator using existing backup folder and database timestamp information.
+- Add a quick action to create a backup from the dashboard/admin workflow.
+- Improve restore preview wording before any restore is applied.
+- Add a release notes viewer entry for the latest major versions.
+- Keep database location and restore behavior unchanged.
 
 Validation:
 
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual quote smoke:
-  - create quote.
-  - add two options.
-  - link material/stone/external diamond.
-  - preview proposal.
-  - accept one option.
-  - create job.
-  - close/reopen quote workspace.
+- manual release-readiness smoke:
+  - confirm dashboard backup health text is understandable.
+  - create a backup.
+  - open restore preview and cancel before applying.
+  - open release notes.
+  - confirm no schema changes are required.

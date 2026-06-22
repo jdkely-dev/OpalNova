@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.53.0 External Diamond Inventory Conversion
+- Current workspace version: V1.54.0 Business Intelligence Excel Export
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,23 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.54.0 State
+
+V1.54.0 begins the reports and export upgrade:
+
+- Bumped visible/project version metadata to 1.54.0.
+- Added an Excel-compatible business intelligence workbook export using SpreadsheetML `.xls`.
+- Added the workbook export beside the existing BI CSV export in Reports and Reports Studio.
+- Exported workbook sheets cover Summary, Sales, Outstanding Balances, Quotes, Inventory Value, Reserved Inventory, Tasks, and External Diamonds.
+- Added an HTML launcher for the workbook so the generated output can be opened from the in-app report preview flow.
+- Preserved database schema and existing CSV/HTML report behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.53.0 State
 

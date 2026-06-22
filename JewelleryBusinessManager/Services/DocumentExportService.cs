@@ -954,6 +954,169 @@ public static class DocumentExportService
         return index;
     }
 
+    public static string ExportBusinessIntelligenceExcelWorkbook()
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+        var folder = Path.Combine(PrintoutFolder, $"OPALNOVA_BI_EXCEL_{DateTime.Now:yyyyMMdd_HHmmss}");
+        Directory.CreateDirectory(folder);
+        var workbookPath = Path.Combine(folder, "OPALNOVA_Business_Intelligence.xls");
+
+        var sales = db.Sales.AsEnumerable().OrderByDescending(s => s.SaleDate).ToList();
+        var jobs = db.Jobs.AsEnumerable().OrderByDescending(j => j.UpdatedAt).ToList();
+        var quotes = db.CustomQuotes.AsEnumerable().OrderByDescending(q => q.QuoteDate).ToList();
+        var jewellery = db.JewelleryItems.AsEnumerable().OrderBy(i => i.Status).ThenBy(i => i.StockCode).ToList();
+        var stones = db.Stones.AsEnumerable().OrderBy(s => s.Status).ThenBy(s => s.StoneCode).ToList();
+        var materials = db.Materials.AsEnumerable().OrderBy(m => m.Category).ThenBy(m => m.Name).ToList();
+        var stoneLinks = db.QuoteOptionStoneLinks.AsEnumerable().OrderBy(l => l.ReservationStatus).ThenBy(l => l.StoneCodeSnapshot).ToList();
+        var materialLinks = db.QuoteOptionMaterialLinks.AsEnumerable().OrderBy(l => l.ReservationStatus).ThenBy(l => l.MaterialNameSnapshot).ToList();
+        var tasks = db.BusinessTasks.AsEnumerable().OrderBy(t => t.Status).ThenBy(t => t.DueDate ?? DateTime.MaxValue).ToList();
+        var externalDiamonds = db.ExternalDiamonds.AsEnumerable().OrderBy(d => d.Status).ThenBy(d => d.CertificateNumber).ToList();
+
+        var activeJobs = jobs.Where(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled).ToList();
+        var balances = jobs.Where(j => j.BalanceOwing > 0m && j.Status != JobStatus.Cancelled).ToList();
+        var acceptedQuotes = quotes.Count(q => q.AcceptedOptionId.HasValue || q.Status.Contains("Accepted", StringComparison.OrdinalIgnoreCase) || q.LinkedJobId.HasValue);
+        var reservedStoneValue = stoneLinks.Where(l => l.ReservationStatus.Equals("Reserved", StringComparison.OrdinalIgnoreCase)).Sum(l => l.UnitCost);
+        var reservedMaterialValue = materialLinks.Where(l => l.ReservationStatus.Equals("Reserved", StringComparison.OrdinalIgnoreCase)).Sum(l => l.LineCost);
+        var openTasks = tasks.Where(t => t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled).ToList();
+
+        var sheets = new List<ExcelWorksheet>
+        {
+            new("Summary", new[] { "Metric", "Value" }, new[]
+            {
+                Row("Generated", DateTime.Now),
+                Row("Sales total", sales.Sum(s => s.SaleAmount)),
+                Row("Profit total", sales.Sum(s => s.Profit)),
+                Row("Outstanding balances", balances.Sum(j => j.BalanceOwing)),
+                Row("Quote count", quotes.Count),
+                Row("Accepted / converted quotes", acceptedQuotes),
+                Row("Quote conversion rate", quotes.Count == 0 ? 0m : acceptedQuotes / (decimal)quotes.Count),
+                Row("Active jobs", activeJobs.Count),
+                Row("Reserved inventory value", reservedStoneValue + reservedMaterialValue),
+                Row("Open tasks", openTasks.Count),
+                Row("External diamonds", externalDiamonds.Count)
+            }),
+            new("Sales", new[] { "Date", "Amount", "CostOfGoods", "Profit", "Location", "Method", "JobId", "CustomerId", "Notes" },
+                sales.Select(s => Row(s.SaleDate, s.SaleAmount, s.CostOfGoods, s.Profit, s.SaleLocation, s.PaymentMethod, s.JobId, s.CustomerId, s.Notes))),
+            new("Outstanding Balances", new[] { "JobCode", "JobTitle", "Status", "DueDate", "QuoteAmount", "FinalPrice", "DepositPaid", "BalanceOwing", "CustomerId" },
+                balances.OrderByDescending(j => j.BalanceOwing).Select(j => Row(j.JobCode, j.JobTitle, j.Status, j.DueDate, j.QuoteAmount, j.FinalPrice, j.DepositPaid, j.BalanceOwing, j.CustomerId))),
+            new("Quotes", new[] { "QuoteCode", "Title", "Status", "ProposalStatus", "QuoteDate", "ValidUntil", "ProposalSentAt", "AcceptedOptionId", "LinkedJobId", "CustomerId" },
+                quotes.Select(q => Row(q.QuoteCode, q.Title, q.Status, q.ProposalStatus, q.QuoteDate, q.ValidUntil, q.ProposalSentAt, q.AcceptedOptionId, q.LinkedJobId, q.CustomerId))),
+            new("Inventory Value", new[] { "Type", "Code", "Name", "Status", "Quantity", "Unit", "CostOrValue", "Retail" },
+                jewellery.Select(i => Row("Jewellery", i.StockCode, i.Name, i.Status, 1, "Piece", PricingService.CalculateJewelleryCost(i), i.RetailPrice))
+                    .Concat(stones.Select(s => Row("Stone", s.StoneCode, s.StoneType, s.Status, s.WeightCarats, "Carats", s.EstimatedValue, s.EstimatedValue)))
+                    .Concat(materials.Select(m => Row("Material", m.MaterialCode, m.Name, m.Category, m.CurrentQuantity, m.UnitType, m.CurrentQuantity * m.PurchaseCost, string.Empty)))),
+            new("Reserved Inventory", new[] { "Type", "Code", "Name", "Quantity", "Unit", "Value", "ReservationStatus", "QuoteOptionId" },
+                stoneLinks.Select(l => Row("Stone", l.StoneCodeSnapshot, l.DescriptionSnapshot, 1, "Stone", l.UnitCost, l.ReservationStatus, l.QuoteOptionId))
+                    .Concat(materialLinks.Select(l => Row("Material", l.MaterialCodeSnapshot, l.MaterialNameSnapshot, l.Quantity, l.UnitTypeSnapshot, l.LineCost, l.ReservationStatus, l.QuoteOptionId)))),
+            new("Tasks", new[] { "TaskCode", "Title", "Category", "Priority", "Status", "DueDate", "CustomerId", "JobId", "Description" },
+                tasks.Select(t => Row(t.TaskCode, t.Title, t.Category, t.Priority, t.Status, t.DueDate, t.CustomerId, t.JobId, t.Description))),
+            new("External Diamonds", new[] { "Source", "SupplierDiamondId", "Status", "Shape", "Carat", "Color", "Clarity", "Lab", "Certificate", "SupplierPrice", "Currency", "EstimatedRetail", "HoldExpiresAt", "ExpectedArrival", "ReceivedAt" },
+                externalDiamonds.Select(d => Row(d.SourceSystem, d.SupplierDiamondId, d.Status, d.Shape, d.Carat, d.Color, d.Clarity, d.Lab, d.CertificateNumber, d.SupplierPrice, d.Currency, d.EstimatedRetailPrice, d.HoldExpiresAt, d.ExpectedArrivalDate, d.ReceivedAt)))
+        };
+
+        WriteExcelWorkbook(workbookPath, sheets);
+
+        var index = Path.Combine(folder, "OPEN_ME_BUSINESS_INTELLIGENCE_EXCEL_EXPORT.html");
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Business Intelligence Excel Export"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Business Intelligence Excel Export</h1>");
+        html.AppendLine("<p>An Excel-compatible workbook has been exported for spreadsheet review.</p>");
+        html.AppendLine($"<p><a href='{Html(Path.GetFileName(workbookPath))}'>Open OPALNOVA_Business_Intelligence.xls</a></p>");
+        html.AppendLine("<p class='small'>Workbook sheets: Summary, Sales, Outstanding Balances, Quotes, Inventory Value, Reserved Inventory, Tasks, External Diamonds.</p>");
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(index, html.ToString());
+        return index;
+    }
+
+    private sealed record ExcelWorksheet(string Name, string[] Headers, IEnumerable<object?[]> Rows);
+
+    private static object?[] Row(params object?[] values) => values;
+
+    private static void WriteExcelWorkbook(string path, IEnumerable<ExcelWorksheet> worksheets)
+    {
+        var xml = new StringBuilder();
+        xml.AppendLine("<?xml version=\"1.0\"?>");
+        xml.AppendLine("<?mso-application progid=\"Excel.Sheet\"?>");
+        xml.AppendLine("<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\">");
+        xml.AppendLine("<Styles><Style ss:ID=\"Header\"><Font ss:Bold=\"1\"/><Interior ss:Color=\"#D9EAF7\" ss:Pattern=\"Solid\"/></Style></Styles>");
+        foreach (var sheet in worksheets)
+            AppendWorksheet(xml, sheet);
+        xml.AppendLine("</Workbook>");
+        File.WriteAllText(path, xml.ToString(), Encoding.UTF8);
+    }
+
+    private static void AppendWorksheet(StringBuilder xml, ExcelWorksheet sheet)
+    {
+        xml.AppendLine($"<Worksheet ss:Name=\"{Html(SanitizeWorksheetName(sheet.Name))}\"><Table>");
+        xml.Append("<Row>");
+        foreach (var header in sheet.Headers)
+            xml.Append($"<Cell ss:StyleID=\"Header\"><Data ss:Type=\"String\">{Html(header)}</Data></Cell>");
+        xml.AppendLine("</Row>");
+
+        foreach (var row in sheet.Rows)
+        {
+            xml.Append("<Row>");
+            foreach (var value in row)
+                AppendExcelCell(xml, value);
+            xml.AppendLine("</Row>");
+        }
+
+        xml.AppendLine("</Table></Worksheet>");
+    }
+
+    private static void AppendExcelCell(StringBuilder xml, object? value)
+    {
+        if (value == null)
+        {
+            xml.Append("<Cell><Data ss:Type=\"String\"></Data></Cell>");
+            return;
+        }
+
+        var type = Nullable.GetUnderlyingType(value.GetType()) ?? value.GetType();
+        if (type.IsEnum)
+        {
+            xml.Append($"<Cell><Data ss:Type=\"String\">{Html(value.ToString() ?? string.Empty)}</Data></Cell>");
+            return;
+        }
+
+        switch (value)
+        {
+            case decimal decimalValue:
+                xml.Append($"<Cell><Data ss:Type=\"Number\">{decimalValue.ToString(CultureInfo.InvariantCulture)}</Data></Cell>");
+                break;
+            case double doubleValue:
+                xml.Append($"<Cell><Data ss:Type=\"Number\">{doubleValue.ToString(CultureInfo.InvariantCulture)}</Data></Cell>");
+                break;
+            case float floatValue:
+                xml.Append($"<Cell><Data ss:Type=\"Number\">{floatValue.ToString(CultureInfo.InvariantCulture)}</Data></Cell>");
+                break;
+            case int or long or short or byte:
+                xml.Append($"<Cell><Data ss:Type=\"Number\">{Convert.ToString(value, CultureInfo.InvariantCulture)}</Data></Cell>");
+                break;
+            case DateTime dateValue:
+                var dateText = dateValue.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                xml.Append($"<Cell><Data ss:Type=\"String\">{Html(dateText)}</Data></Cell>");
+                break;
+            case bool boolValue:
+                xml.Append($"<Cell><Data ss:Type=\"String\">{(boolValue ? "TRUE" : "FALSE")}</Data></Cell>");
+                break;
+            default:
+                xml.Append($"<Cell><Data ss:Type=\"String\">{Html(Convert.ToString(value, CultureInfo.CurrentCulture) ?? string.Empty)}</Data></Cell>");
+                break;
+        }
+    }
+
+    private static string SanitizeWorksheetName(string name)
+    {
+        var cleaned = new string(name.Select(ch => ch is ':' or '\\' or '/' or '?' or '*' or '[' or ']' ? ' ' : ch).ToArray()).Trim();
+        if (string.IsNullOrWhiteSpace(cleaned))
+            cleaned = "Sheet";
+        return cleaned.Length > 31 ? cleaned[..31] : cleaned;
+    }
+
     private static void AppendSalesSummaryTable(StringBuilder html, string title, List<Sale> sales)
     {
         html.AppendLine($"<h2>{Html(title)}</h2>");
