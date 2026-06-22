@@ -1,0 +1,119 @@
+<Window x:Class="JewelleryBusinessManager.Views.SupplierDiamondWorkflowWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Supplier Diamond Holds &amp; Orders" Height="780" Width="1220" WindowStartupLocation="CenterOwner">
+    <DockPanel Background="{StaticResource AppBackgroundBrush}">
+        <Border DockPanel.Dock="Top" Padding="16" Background="#0B1220" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+            <StackPanel>
+                <TextBlock Text="Supplier Diamond Holds &amp; Orders" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Text="Track Nivoda / external diamonds from customer interest through hold, order, receipt or release. These remain separate from owned inventory until you choose to receive them physically." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom" Padding="12" Background="#0B1220" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,1,0,0">
+            <DockPanel>
+                <TextBlock x:Name="StatusText" DockPanel.Dock="Left" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Refresh" Click="Refresh_Click" Style="{StaticResource ToolbarButtonStyle}" />
+                    <Button Content="Saved Records" Click="SavedRecords_Click" Style="{StaticResource ToolbarButtonStyle}" />
+                    <Button Content="Close" Click="Close_Click" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Filters" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" />
+                        <WrapPanel Margin="0,8,0,0">
+                            <TextBlock Text="View" VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <ComboBox x:Name="FilterCombo" Width="210" SelectionChanged="FilterCombo_SelectionChanged">
+                                <ComboBoxItem Content="Action needed" />
+                                <ComboBoxItem Content="Holds expiring" />
+                                <ComboBoxItem Content="Ordered not received" />
+                                <ComboBoxItem Content="Customer approved not ordered" />
+                                <ComboBoxItem Content="Received" />
+                                <ComboBoxItem Content="All saved external diamonds" />
+                            </ComboBox>
+                            <TextBlock Text="Search" VerticalAlignment="Center" Margin="16,0,6,0" />
+                            <TextBox x:Name="SearchBox" Width="260" TextChanged="SearchBox_TextChanged" />
+                        </WrapPanel>
+                    </StackPanel>
+                    <UniformGrid Grid.Column="2" Columns="4" Rows="1" MinWidth="520">
+                        <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="4"><StackPanel><TextBlock Text="Expiring" Foreground="{StaticResource MutedTextBrush}" FontSize="11"/><TextBlock x:Name="ExpiringCountText" FontSize="22" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="4"><StackPanel><TextBlock Text="Not Ordered" Foreground="{StaticResource MutedTextBrush}" FontSize="11"/><TextBlock x:Name="NotOrderedCountText" FontSize="22" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="4"><StackPanel><TextBlock Text="Ordered" Foreground="{StaticResource MutedTextBrush}" FontSize="11"/><TextBlock x:Name="OrderedCountText" FontSize="22" FontWeight="Bold"/></StackPanel></Border>
+                        <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="4"><StackPanel><TextBlock Text="Received" Foreground="{StaticResource MutedTextBrush}" FontSize="11"/><TextBlock x:Name="ReceivedCountText" FontSize="22" FontWeight="Bold"/></StackPanel></Border>
+                    </UniformGrid>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" Padding="10">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Supplier diamonds linked to quotes or saved for action" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,8" />
+                        <DataGrid x:Name="DiamondsGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionChanged="DiamondsGrid_SelectionChanged">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="135" />
+                                <DataGridTextColumn Header="Diamond" Binding="{Binding DiamondSummary}" Width="260" />
+                                <DataGridTextColumn Header="Cert" Binding="{Binding CertificateNumber}" Width="110" />
+                                <DataGridTextColumn Header="Price" Binding="{Binding SupplierPrice, StringFormat=C}" Width="90" />
+                                <DataGridTextColumn Header="Quote" Binding="{Binding QuoteCode}" Width="105" />
+                                <DataGridTextColumn Header="Customer" Binding="{Binding Customer}" Width="150" />
+                                <DataGridTextColumn Header="Hold Expires" Binding="{Binding HoldExpiresAt, StringFormat=g}" Width="140" />
+                                <DataGridTextColumn Header="Expected" Binding="{Binding ExpectedArrivalDate, StringFormat=d}" Width="100" />
+                                <DataGridTextColumn Header="Supplier Ref" Binding="{Binding SupplierReference}" Width="120" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Border>
+
+                <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" Padding="14">
+                    <StackPanel>
+                        <TextBlock Text="Selected diamond" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" />
+                        <TextBlock x:Name="SelectedDiamondText" Text="Select a diamond row to manage supplier actions." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,5,0,12" />
+
+                        <TextBlock Text="Supplier reference" />
+                        <TextBox x:Name="SupplierReferenceBox" Margin="0,4,0,8" />
+                        <TextBlock Text="Hold expiry" />
+                        <DatePicker x:Name="HoldExpiryPicker" Margin="0,4,0,8" />
+                        <TextBlock Text="Expected arrival" />
+                        <DatePicker x:Name="ExpectedArrivalPicker" Margin="0,4,0,8" />
+                        <TextBlock Text="Action notes" />
+                        <TextBox x:Name="ActionNotesBox" MinHeight="85" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,4,0,12" />
+
+                        <Button Content="Request Hold" Click="RequestHold_Click" Style="{StaticResource AccentButtonStyle}" />
+                        <Button Content="Confirm Hold" Click="ConfirmHold_Click" Style="{StaticResource ToolbarButtonStyle}" />
+                        <Button Content="Request / Mark Ordered" Click="OrderDiamond_Click" Style="{StaticResource AccentButtonStyle}" />
+                        <Button Content="Mark Received" Click="MarkReceived_Click" Style="{StaticResource ToolbarButtonStyle}" />
+                        <Button Content="Decline / Release" Click="ReleaseDiamond_Click" Style="{StaticResource ToolbarButtonStyle}" />
+                        <Button Content="Create Reminder Task" Click="CreateReminderTask_Click" Style="{StaticResource ToolbarButtonStyle}" />
+
+                        <Border Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,14,0,0">
+                            <TextBlock Text="Tip: when a customer accepts a quote using an external diamond, move it to Hold Requested immediately, then Ordered once the supplier confirms availability or invoice details." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock Grid.Row="2" Text="Workflow statuses: Customer Interested → Hold Requested → Hold Confirmed → Ordered → Received, or Declined/Released if the customer or supplier moves away from the stone." Foreground="{StaticResource MutedTextBrush}" Margin="4,10,0,0" TextWrapping="Wrap" />
+        </Grid>
+    </DockPanel>
+</Window>

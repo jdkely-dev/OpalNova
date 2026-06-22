@@ -1,0 +1,106 @@
+<Window x:Class="JewelleryBusinessManager.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Business Settings" Height="760" Width="760" WindowStartupLocation="CenterOwner">
+    <DockPanel Background="{StaticResource AppBackgroundBrush}">
+        <Border DockPanel.Dock="Top" Padding="18" Background="{StaticResource TopHeaderBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+            <StackPanel>
+                <TextBlock Text="Business Settings" FontSize="24" FontWeight="Bold" />
+                <TextBlock Text="Branding, pricing defaults, tax labels, printout folders and backup folders." Foreground="{StaticResource MutedTextBrush}" />
+            </StackPanel>
+        </Border>
+        <Border DockPanel.Dock="Bottom" Padding="14" Background="#080D17" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancel" Click="Cancel_Click" />
+                <Button Content="Save" Click="Save_Click" Style="{StaticResource AccentButtonStyle}" />
+            </StackPanel>
+        </Border>
+        <Border Margin="16" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="16" Effect="{StaticResource CardShadowEffect}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="190" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Business Branding" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="4,4,4,12" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Business Name" Margin="4" VerticalAlignment="Center" />
+                <TextBox x:Name="BusinessNameBox" Grid.Row="1" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Owner Name" Margin="4" VerticalAlignment="Center" />
+                <TextBox x:Name="OwnerNameBox" Grid.Row="2" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="ABN" Margin="4" VerticalAlignment="Center" />
+                <TextBox x:Name="AbnBox" Grid.Row="3" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Phone" Margin="4" VerticalAlignment="Center" />
+                <TextBox x:Name="PhoneBox" Grid.Row="4" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="Email" Margin="4" VerticalAlignment="Center" />
+                <TextBox x:Name="EmailBox" Grid.Row="5" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="6" Grid.Column="0" Text="Website" Margin="4" VerticalAlignment="Center" />
+                <TextBox x:Name="WebsiteBox" Grid.Row="6" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="7" Grid.Column="0" Text="Address" Margin="4" VerticalAlignment="Top" />
+                <TextBox x:Name="AddressBox" Grid.Row="7" Grid.Column="1" Margin="4" Height="70" AcceptsReturn="True" TextWrapping="Wrap" />
+                <TextBlock Grid.Row="8" Grid.Column="0" Text="Logo File" Margin="4" VerticalAlignment="Center" />
+                <DockPanel Grid.Row="8" Grid.Column="1" Margin="4">
+                    <Button Content="Browse..." DockPanel.Dock="Right" Click="BrowseLogo_Click" />
+                    <TextBox x:Name="LogoPathBox" />
+                </DockPanel>
+                <TextBlock Grid.Row="9" Grid.ColumnSpan="2" Text="Pricing, Tax and Defaults" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="4,18,4,12" />
+                <TextBlock Grid.Row="10" Grid.Column="0" Text="Default Labour Rate" Margin="4" VerticalAlignment="Center" />
+                <TextBox x:Name="DefaultLabourRateBox" Grid.Row="10" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="11" Grid.Column="0" Text="Default Profit Margin %" Margin="4" VerticalAlignment="Center" />
+                <TextBox x:Name="DefaultProfitMarginBox" Grid.Row="11" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="12" Grid.Column="0" Text="GST Registered" Margin="4" VerticalAlignment="Center" />
+                <CheckBox x:Name="GstRegisteredBox" Grid.Row="12" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="13" Grid.Column="0" Text="GST Rate %" Margin="4" VerticalAlignment="Center" />
+                <TextBox x:Name="GstRateBox" Grid.Row="13" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="14" Grid.Column="0" Text="Tax Label" Margin="4" VerticalAlignment="Center" />
+                <TextBox x:Name="TaxLabelBox" Grid.Row="14" Grid.Column="1" Margin="4" />
+                <TextBlock Grid.Row="15" Grid.ColumnSpan="2" Text="Documents and Folders" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="4,18,4,12" />
+                <Grid Grid.Row="16" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="190" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Document Footer" Margin="4" VerticalAlignment="Top" />
+                    <TextBox x:Name="FooterTextBox" Grid.Row="0" Grid.Column="1" Margin="4" Height="60" AcceptsReturn="True" TextWrapping="Wrap" />
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Terms &amp; Conditions" Margin="4" VerticalAlignment="Top" />
+                    <TextBox x:Name="TermsBox" Grid.Row="1" Grid.Column="1" Margin="4" Height="90" AcceptsReturn="True" TextWrapping="Wrap" />
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Printout Folder" Margin="4" VerticalAlignment="Center" />
+                    <DockPanel Grid.Row="2" Grid.Column="1" Margin="4">
+                        <Button Content="Browse..." DockPanel.Dock="Right" Click="BrowsePrintoutFolder_Click" />
+                        <TextBox x:Name="PrintoutFolderBox" />
+                    </DockPanel>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Backup Folder" Margin="4" VerticalAlignment="Center" />
+                    <DockPanel Grid.Row="3" Grid.Column="1" Margin="4">
+                        <Button Content="Browse..." DockPanel.Dock="Right" Click="BrowseBackupFolder_Click" />
+                        <TextBox x:Name="BackupFolderBox" />
+                    </DockPanel>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+        </Border>
+    </DockPanel>
+</Window>

@@ -1,0 +1,192 @@
+<Window x:Class="JewelleryBusinessManager.Views.ProjectWorkbenchWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OPALNOVA Project Workbench" Height="780" Width="1280" WindowStartupLocation="CenterOwner"
+        Background="#040813">
+    <Grid x:Name="WorkbenchRoot" Margin="0">
+        <Grid.Resources>
+            <SolidColorBrush x:Key="WorkbenchPanelBrush" Color="#0D1422" />
+            <SolidColorBrush x:Key="WorkbenchSoftBrush" Color="#162033" />
+            <SolidColorBrush x:Key="WorkbenchBorderBrush" Color="#29384F" />
+            <SolidColorBrush x:Key="WorkbenchTextBrush" Color="#EFEAE0" />
+            <SolidColorBrush x:Key="WorkbenchMutedBrush" Color="#B8AD9E" />
+            <SolidColorBrush x:Key="WorkbenchGoldBrush" Color="#CDA24A" />
+            <SolidColorBrush x:Key="WorkbenchGoldHoverBrush" Color="#B8892E" />
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource WorkbenchTextBrush}" />
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="Margin" Value="4" />
+                <Setter Property="Padding" Value="11,7" />
+                <Setter Property="MinHeight" Value="34" />
+                <Setter Property="Background" Value="#1B2942" />
+                <Setter Property="Foreground" Value="{StaticResource WorkbenchTextBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource WorkbenchBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Cursor" Value="Hand" />
+            </Style>
+            <Style x:Key="PrimaryWorkbenchButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="Background" Value="{StaticResource WorkbenchGoldBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource WorkbenchGoldHoverBrush}" />
+                <Setter Property="Foreground" Value="#040813" />
+                <Setter Property="FontWeight" Value="Bold" />
+            </Style>
+            <Style TargetType="TextBox">
+                <Setter Property="Margin" Value="4" />
+                <Setter Property="Padding" Value="8,5" />
+                <Setter Property="MinHeight" Value="32" />
+                <Setter Property="Background" Value="#040813" />
+                <Setter Property="Foreground" Value="{StaticResource WorkbenchTextBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource WorkbenchBorderBrush}" />
+            </Style>
+            <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                <Setter Property="Margin" Value="4" />
+                <Setter Property="Padding" Value="7,5" />
+                <Setter Property="MinHeight" Value="32" />
+                <Setter Property="Background" Value="#040813" />
+                <Setter Property="Foreground" Value="{StaticResource WorkbenchTextBrush}" />
+            </Style>
+            <Style TargetType="DataGrid">
+                <Setter Property="Background" Value="#040813" />
+                <Setter Property="Foreground" Value="{StaticResource WorkbenchTextBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource WorkbenchBorderBrush}" />
+                <Setter Property="GridLinesVisibility" Value="Horizontal" />
+                <Setter Property="HorizontalGridLinesBrush" Value="#29384F" />
+                <Setter Property="RowBackground" Value="#08101D" />
+                <Setter Property="AlternatingRowBackground" Value="#0D1422" />
+                <Setter Property="HeadersVisibility" Value="Column" />
+                <Setter Property="AutoGenerateColumns" Value="False" />
+                <Setter Property="IsReadOnly" Value="True" />
+                <Setter Property="CanUserAddRows" Value="False" />
+                <Setter Property="SelectionMode" Value="Single" />
+                <Setter Property="SelectionUnit" Value="FullRow" />
+            </Style>
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="#162033" />
+                <Setter Property="Foreground" Value="{StaticResource WorkbenchTextBrush}" />
+                <Setter Property="Padding" Value="8,6" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+        </Grid.Resources>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="{StaticResource WorkbenchPanelBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
+            <DockPanel LastChildFill="True">
+                <TextBlock DockPanel.Dock="Left" Text="Project Workbench" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,12,0" />
+                <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBox x:Name="SearchBox" Width="260" TextChanged="SearchBox_TextChanged" ToolTip="Search customer, quote, job, diamond, certificate or next action" />
+                    <ComboBox x:Name="FilterCombo" Width="190" SelectionChanged="FilterCombo_SelectionChanged" SelectedIndex="0">
+                        <ComboBoxItem Content="Action needed" />
+                        <ComboBoxItem Content="Quotes" />
+                        <ComboBoxItem Content="Production" />
+                        <ComboBoxItem Content="Payments" />
+                        <ComboBoxItem Content="Diamonds" />
+                        <ComboBoxItem Content="Follow-ups" />
+                        <ComboBoxItem Content="All projects" />
+                    </ComboBox>
+                    <Button Content="Refresh" Click="Refresh_Click" />
+                </WrapPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="0,6,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <UniformGrid Grid.Row="0" Columns="6" Margin="0,0,0,8">
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Needs Action" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="NeedsActionCountText" FontSize="22" FontWeight="Bold" Foreground="{StaticResource WorkbenchGoldBrush}" /></StackPanel>
+                </Border>
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Quotes" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="QuoteCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                </Border>
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Production" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="ProductionCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                </Border>
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Balances" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="PaymentCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                </Border>
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Diamonds" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="DiamondCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                </Border>
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Follow-ups" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="FollowUpCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2.25*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="1.1*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{StaticResource WorkbenchPanelBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="8">
+                    <DataGrid x:Name="ProjectsGrid" SelectionChanged="ProjectsGrid_SelectionChanged" MouseDoubleClick="ProjectsGrid_MouseDoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Priority" Binding="{Binding PriorityLabel}" Width="105" />
+                            <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="110" />
+                            <DataGridTextColumn Header="Customer / Project" Binding="{Binding Subject}" Width="2*" />
+                            <DataGridTextColumn Header="Next Action" Binding="{Binding NextAction}" Width="2.2*" />
+                            <DataGridTextColumn Header="Due / Alert" Binding="{Binding DueLine}" Width="130" />
+                            <DataGridTextColumn Header="Value" Binding="{Binding ValueLine}" Width="105" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <Border Grid.Column="2" Background="{StaticResource WorkbenchPanelBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="14">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock x:Name="SelectedTitleText" Text="Select a project" FontSize="22" FontWeight="Bold" TextWrapping="Wrap" />
+                            <TextBlock x:Name="SelectedSubtitleText" Text="Choose a row to see context, risk warnings and the next recommended action." Foreground="{StaticResource WorkbenchMutedBrush}" Margin="0,4,0,12" TextWrapping="Wrap" />
+
+                            <Border Background="#040813" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="Next recommended action" Foreground="{StaticResource WorkbenchGoldBrush}" FontWeight="Bold" />
+                                    <TextBlock x:Name="NextActionText" Text="No project selected." FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                    <TextBlock x:Name="RiskText" Foreground="#FB7185" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Text="Linked context" Foreground="{StaticResource WorkbenchGoldBrush}" FontWeight="Bold" Margin="0,2,0,4" />
+                            <TextBlock x:Name="ContextText" Foreground="{StaticResource WorkbenchMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+                            <TextBlock Text="Suggested customer message" Foreground="{StaticResource WorkbenchGoldBrush}" FontWeight="Bold" Margin="0,2,0,4" />
+                            <TextBox x:Name="SuggestedMessageBox" MinHeight="118" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" />
+
+                            <WrapPanel Margin="0,8,0,0">
+                                <Button x:Name="PrimaryActionButton" Content="Open Next Step" Click="PrimaryAction_Click" Style="{StaticResource PrimaryWorkbenchButtonStyle}" />
+                                <Button Content="Create Follow-Up Task" Click="CreateFollowUp_Click" />
+                                <Button Content="Copy Message" Click="CopyMessage_Click" />
+                            </WrapPanel>
+
+                            <TextBlock Text="Open workflow" Foreground="{StaticResource WorkbenchGoldBrush}" FontWeight="Bold" Margin="0,14,0,4" />
+                            <WrapPanel>
+                                <Button Content="Quotes" Click="OpenQuotes_Click" />
+                                <Button Content="Production" Click="OpenProduction_Click" />
+                                <Button Content="Payments" Click="OpenPayments_Click" />
+                                <Button Content="Diamond Holds" Click="OpenDiamonds_Click" />
+                                <Button Content="Diamond Search" Click="OpenDiamondSearch_Click" />
+                                <Button Content="Customers" Click="OpenCustomers_Click" />
+                                <Button Content="Jobs" Click="OpenJobs_Click" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <DockPanel Grid.Row="2" LastChildFill="True" Margin="0,4,0,0">
+            <Button DockPanel.Dock="Right" Content="Close" Click="Close_Click" />
+            <TextBlock x:Name="StatusText" Foreground="{StaticResource WorkbenchMutedBrush}" VerticalAlignment="Center" Text="Project Workbench ready." />
+        </DockPanel>
+    </Grid>
+</Window>

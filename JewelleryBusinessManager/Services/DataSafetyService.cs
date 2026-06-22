@@ -1,0 +1,478 @@
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.IO.Compression;
+using System.Reflection;
+using System.Text;
+using System.Threading;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
+using JewelleryBusinessManager.Data;
+using JewelleryBusinessManager.Models;
+
+namespace JewelleryBusinessManager.Services;
+
+public static class DataSafetyService
+{
+    public static string CreateFullDataBundle()
+    {
+        var settings = BusinessSettingsService.Load();
+        var exportRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "JewelleryBusinessManager", "DataBundles");
+        Directory.CreateDirectory(exportRoot);
+        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        var bundlePath = Path.Combine(exportRoot, $"jbm-full-data-bundle-{timestamp}.zip");
+        var databaseSnapshotPath = string.Empty;
+
+        try
+        {
+            databaseSnapshotPath = CreateDatabaseSnapshotForBundle();
+
+            using var archive = ZipFile.Open(bundlePath, ZipArchiveMode.Create);
+            AddFileIfExists(archive, databaseSnapshotPath, "database/jewellery_business_manager.db");
+            AddFileIfExists(archive, BusinessSettingsService.SettingsPath, "settings/business-settings.json");
+            AddFileIfExists(archive, SavedViewService.FilePath, "settings/saved-search-views.json");
+
+            if (Directory.Exists(DatabaseBootstrapper.PhotoDirectory))
+                AddDirectory(archive, DatabaseBootstrapper.PhotoDirectory, "photos");
+
+            var readme = $"OPALNOVA full data bundle\nCreated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\nBusiness: {settings.BusinessName}\n\nThis bundle contains a safe SQLite database snapshot, business settings and stored photos. Keep it private and backed up securely.\n";
+            var readmeEntry = archive.CreateEntry("README.txt");
+            using (var writer = new StreamWriter(readmeEntry.Open()))
+                writer.Write(readme);
+
+            AddCsvExport<Customer>(archive, "exports/customers.csv");
+            AddCsvExport<Supplier>(archive, "exports/suppliers.csv");
+            AddCsvExport<Material>(archive, "exports/materials.csv");
+            AddCsvExport<MaterialTransaction>(archive, "exports/material-transactions.csv");
+            AddCsvExport<OpalParcel>(archive, "exports/opal-parcels.csv");
+            AddCsvExport<Stone>(archive, "exports/stones.csv");
+            AddCsvExport<JewelleryItem>(archive, "exports/jewellery-stock.csv");
+            AddCsvExport<Job>(archive, "exports/jobs.csv");
+            AddCsvExport<Sale>(archive, "exports/sales.csv");
+            AddCsvExport<Payment>(archive, "exports/payments.csv");
+            AddCsvExport<MarketEvent>(archive, "exports/market-events.csv");
+            AddCsvExport<MarketStock>(archive, "exports/market-stock.csv");
+            AddCsvExport<ProductionBatch>(archive, "exports/production-batches.csv");
+            AddCsvExport<ProductionBatchItem>(archive, "exports/production-batch-items.csv");
+            AddCsvExport<OnlineListing>(archive, "exports/online-listings.csv");
+            AddCsvExport<PurchaseOrder>(archive, "exports/purchase-orders.csv");
+            AddCsvExport<PurchaseOrderItem>(archive, "exports/purchase-order-items.csv");
+            AddCsvExport<BusinessTask>(archive, "exports/business-tasks.csv");
+            AddCsvExport<PhotoRecord>(archive, "exports/photos.csv");
+
+            return bundlePath;
+        }
+        catch
+        {
+            TryDeleteFile(bundlePath);
+            throw;
+        }
+        finally
+        {
+            if (!string.IsNullOrWhiteSpace(databaseSnapshotPath))
+                TryDeleteFile(databaseSnapshotPath);
+        }
+    }
+
+    private static string CreateDatabaseSnapshotForBundle()
+    {
+        DatabaseBootstrapper.Initialize();
+        Directory.CreateDirectory(DatabaseBootstrapper.AppDataDirectory);
+
+        var snapshotFolder = Path.Combine(Path.GetTempPath(), "JewelleryBusinessManagerSnapshots");
+        Directory.CreateDirectory(snapshotFolder);
+        var tempPath = Path.Combine(snapshotFolder, $"jbm-bundle-snapshot-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.db");
+
+        try
+        {
+            BackupService.CreateSQLiteSnapshot(DatabaseBootstrapper.DatabasePath, tempPath);
+        }
+        catch (Exception ex)
+        {
+            TryDeleteFile(tempPath);
+            throw new InvalidOperationException(
+                "Export Bundle could not create a safe snapshot of the active database. " +
+                "Close any other running copies of OPALNOVA, then try again.", ex);
+        }
+
+        ValidateSQLiteDatabaseFile(tempPath);
+        return tempPath;
+    }
+
+    public static string RestoreDatabaseFromBackup(string backupPath)
+    {
+        if (string.IsNullOrWhiteSpace(backupPath))
+            throw new ArgumentException("No backup file was selected.", nameof(backupPath));
+
+        var sourcePath = Path.GetFullPath(backupPath);
+        if (!File.Exists(sourcePath))
+            throw new FileNotFoundException($"The selected backup file could not be found:\n{sourcePath}", sourcePath);
+
+        Directory.CreateDirectory(DatabaseBootstrapper.AppDataDirectory);
+
+        var restoreSource = sourcePath;
+        var tempExtractedDatabase = string.Empty;
+
+        if (Path.GetExtension(sourcePath).Equals(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            tempExtractedDatabase = ExtractDatabaseFromBundle(sourcePath);
+            restoreSource = tempExtractedDatabase;
+        }
+
+        if (Path.GetFullPath(restoreSource).Equals(Path.GetFullPath(DatabaseBootstrapper.DatabasePath), StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("That file is already the active database. Choose a separate backup file instead.");
+
+        ValidateSQLiteDatabaseFile(restoreSource);
+
+        try
+        {
+            // Replacing a live SQLite database while WPF/EF is running is unreliable on Windows.
+            // Instead, stage the validated restore file and apply it before SQLite opens on next startup.
+            SqliteConnection.ClearAllPools();
+            TryDeleteFile(DatabaseBootstrapper.PendingRestorePath);
+            CopyFileWithRetries(restoreSource, DatabaseBootstrapper.PendingRestorePath);
+            File.WriteAllText(DatabaseBootstrapper.PendingRestoreNotePath,
+                "A database restore has been staged and will be applied the next time the app starts.\n" +
+                $"Staged: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n" +
+                $"Restore source: {sourcePath}\n" +
+                $"Pending restore file: {DatabaseBootstrapper.PendingRestorePath}\n" +
+                "Close the app completely, then run it again to apply the restore.\n");
+
+            return "Restore has been staged. Close the app completely and run it again to apply the restored database. A safety copy of the current database will be created during startup before replacement.";
+        }
+        finally
+        {
+            if (!string.IsNullOrWhiteSpace(tempExtractedDatabase))
+                TryDeleteFile(tempExtractedDatabase);
+        }
+    }
+
+    private static void ValidateSQLiteDatabaseFile(string databasePath)
+    {
+        if (!File.Exists(databasePath))
+            throw new FileNotFoundException("The database file selected for restore could not be found.", databasePath);
+
+        var header = new byte[16];
+        using (var stream = new FileStream(databasePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+        {
+            if (stream.Length < header.Length)
+                throw new InvalidOperationException("The selected file is too small to be a valid SQLite database backup.");
+
+            _ = stream.Read(header, 0, header.Length);
+        }
+
+        var headerText = Encoding.ASCII.GetString(header);
+        if (!headerText.Equals("SQLite format 3\0", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "The selected restore file is not a valid SQLite database. " +
+                "Choose a .db backup created by Create Backup, or choose an Export Bundle .zip file. " +
+                "Do not choose a CSV, HTML, text report, or renamed ZIP file.");
+        }
+
+        try
+        {
+            using var connection = new SqliteConnection($"Data Source={databasePath};Mode=ReadOnly");
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA integrity_check;";
+            var result = Convert.ToString(command.ExecuteScalar());
+            if (!string.Equals(result, "ok", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"SQLite integrity check failed: {result}");
+        }
+        catch (SqliteException ex)
+        {
+            throw new InvalidOperationException("The selected file could not be opened as a valid SQLite database backup.", ex);
+        }
+    }
+
+    private static string ExtractDatabaseFromBundle(string bundlePath)
+    {
+        using var archive = ZipFile.OpenRead(bundlePath);
+        var entry = archive.GetEntry("database/jewellery_business_manager.db")
+            ?? archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".db", StringComparison.OrdinalIgnoreCase));
+
+        if (entry is null)
+            throw new InvalidOperationException("The selected ZIP did not contain a database backup file.");
+
+        var tempPath = Path.Combine(Path.GetTempPath(), $"jbm-restore-{DateTime.Now:yyyyMMdd-HHmmss}.db");
+        using (var input = entry.Open())
+        using (var output = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+        {
+            input.CopyTo(output);
+        }
+        return tempPath;
+    }
+
+
+    private static void CopyFileWithRetries(string sourcePath, string destinationPath)
+    {
+        Exception? lastError = null;
+        for (var attempt = 1; attempt <= 5; attempt++)
+        {
+            try
+            {
+                BackupService.CopyFileSharedRead(sourcePath, destinationPath);
+                return;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                lastError = ex;
+                Thread.Sleep(200 * attempt);
+            }
+        }
+
+        throw new IOException($"The restore file could not be staged because Windows still has a file locked. Source: {sourcePath}. Destination: {destinationPath}", lastError);
+    }
+
+    private static string CreateSafetyBackupIfPossible()
+    {
+        var activeDatabase = DatabaseBootstrapper.DatabasePath;
+        var backupDirectory = BusinessSettingsService.GetBackupFolder();
+        Directory.CreateDirectory(backupDirectory);
+
+        if (!File.Exists(activeDatabase))
+            return "No previous active database file existed, so no safety backup was needed.";
+
+        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        var destination = Path.Combine(backupDirectory, $"jbm-before-restore-{timestamp}.db");
+        BackupService.CreateSQLiteSnapshot(activeDatabase, destination);
+        return destination;
+    }
+
+    private static void ClearSQLiteSidecarFiles(string databasePath)
+    {
+        foreach (var path in new[] { databasePath + "-wal", databasePath + "-shm" })
+            TryDeleteFile(path);
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+    }
+
+    public static string RunDatabaseHealthCheck()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("OPALNOVA — Database Health Check");
+        sb.AppendLine($"Checked: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        sb.AppendLine($"Database path: {DatabaseBootstrapper.DatabasePath}");
+        sb.AppendLine();
+
+        if (!File.Exists(DatabaseBootstrapper.DatabasePath))
+        {
+            sb.AppendLine("WARNING: Database file was missing. The app will create a new database on startup.");
+            DatabaseBootstrapper.Initialize();
+        }
+
+        using var db = new AppDbContext();
+        var canConnect = db.Database.CanConnect();
+        sb.AppendLine(canConnect ? "Connection: OK" : "Connection: FAILED");
+        sb.AppendLine();
+        sb.AppendLine("Record counts:");
+        sb.AppendLine($"Customers: {db.Customers.Count()}");
+        sb.AppendLine($"Suppliers: {db.Suppliers.Count()}");
+        sb.AppendLine($"Materials: {db.Materials.Count()}");
+        sb.AppendLine($"Stones: {db.Stones.Count()}");
+        sb.AppendLine($"Jewellery stock: {db.JewelleryItems.Count()}");
+        sb.AppendLine($"Jobs: {db.Jobs.Count()}");
+        sb.AppendLine($"Sales: {db.Sales.Count()}");
+        sb.AppendLine($"Payments: {db.Payments.Count()}");
+        sb.AppendLine($"Markets: {db.MarketEvents.Count()}");
+        sb.AppendLine($"Production batches: {db.ProductionBatches.Count()}");
+        sb.AppendLine($"Batch items: {db.ProductionBatchItems.Count()}");
+        sb.AppendLine($"Online listings: {db.OnlineListings.Count()}");
+        sb.AppendLine($"Tasks: {db.BusinessTasks.Count()}");
+        sb.AppendLine($"Photos: {db.PhotoRecords.Count()}");
+        sb.AppendLine();
+
+        var missingPhotos = db.PhotoRecords.AsEnumerable().Where(p => !File.Exists(p.FilePath)).ToList();
+        sb.AppendLine(missingPhotos.Count == 0
+            ? "Photo file links: OK"
+            : $"Photo file links: {missingPhotos.Count} missing file(s). Check the Photos section.");
+
+        var lowMaterials = db.Materials.Count(m => m.CurrentQuantity <= m.ReorderLevel);
+        var overdueJobs = db.Jobs.AsEnumerable().Count(j => j.DueDate.HasValue && j.DueDate.Value.Date < DateTime.Today && j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled);
+        sb.AppendLine($"Low stock materials: {lowMaterials}");
+        sb.AppendLine($"Overdue active jobs: {overdueJobs}");
+        sb.AppendLine();
+        sb.AppendLine("Health check complete. If connection is OK and counts look sensible, the database is usable.");
+        return sb.ToString();
+    }
+
+    public static int ImportCsvIntoSection(string csvPath, Type entityType)
+    {
+        if (!File.Exists(csvPath))
+            throw new FileNotFoundException("CSV file not found.", csvPath);
+
+        var lines = File.ReadAllLines(csvPath);
+        if (lines.Length < 2)
+            return 0;
+
+        var headers = ParseCsvLine(lines[0]);
+        var props = entityType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.CanWrite && p.Name != "Id")
+            .ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
+
+        using var db = new AppDbContext();
+        var count = 0;
+        for (var i = 1; i < lines.Length; i++)
+        {
+            if (string.IsNullOrWhiteSpace(lines[i])) continue;
+            var values = ParseCsvLine(lines[i]);
+            var entity = Activator.CreateInstance(entityType)!;
+            for (var c = 0; c < headers.Count && c < values.Count; c++)
+            {
+                if (!props.TryGetValue(headers[c], out var prop)) continue;
+                var converted = ConvertTextValue(values[c], prop.PropertyType);
+                prop.SetValue(entity, converted);
+            }
+            db.Add(entity);
+            count++;
+        }
+
+        db.SaveChanges();
+        return count;
+    }
+
+    public static string CreateUserGuide()
+    {
+        var folder = BusinessSettingsService.GetPrintoutFolder();
+        Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, "JewelleryBusinessManager-UserGuide.html");
+        var html = """
+<!doctype html>
+<html><head><meta charset="utf-8"><title>OPALNOVA User Guide</title>
+<style>body{font-family:Segoe UI,Arial,sans-serif;margin:32px;line-height:1.5;color:#222}h1,h2{color:#111827}code{background:#eee;padding:2px 4px;border-radius:3px}.box{border:1px solid #ccc;padding:14px;margin:12px 0;border-radius:8px}</style></head>
+<body>
+<h1>OPALNOVA — User Guide</h1>
+<p>This guide covers the main workflows for the desktop app.</p>
+<div class="box"><h2>Daily workflow</h2><ol><li>Add suppliers, materials, stones and customers first.</li><li>Create jewellery stock and link stones where relevant.</li><li>Create jobs for custom work, repairs and commissions.</li><li>Use <b>Advance Job</b> to move a job through its workflow.</li><li>Use <b>Create Sale</b> when a jewellery item or job is sold.</li><li>Run backups regularly.</li></ol></div>
+<div class="box"><h2>Data safety</h2><ul><li><b>Create Backup</b> saves a copy of your SQLite database.</li><li><b>Health Check</b> checks database access, counts, missing photo links, low materials and overdue jobs.</li><li><b>Export Bundle</b> creates a ZIP with the database, settings, photos and CSV exports.</li><li><b>Restore Backup</b> replaces the active database with a selected backup. The app creates a safety backup first.</li></ul></div>
+<div class="box"><h2>Documents</h2><p>Select the relevant customer, job, sale or jewellery item, then use the printout buttons for quotes, invoices, receipts, job cards, stock labels and reports.</p></div>
+<div class="box"><h2>Recommended routine</h2><ul><li>Before a market: create a backup and export a market stock CSV.</li><li>After a market: record sales, mark unsold stock, then back up again.</li><li>Weekly: run Health Check and Export Bundle.</li></ul></div>
+</body></html>
+""";
+        File.WriteAllText(path, html);
+        return path;
+    }
+
+    public static string CreateAboutText()
+    {
+        var settings = BusinessSettingsService.Load();
+        return $"OPALNOVA\nVersion 1.18 — Tasks, Reminders & Work Queue\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
+    }
+
+    public static void OpenTextReport(string title, string text)
+    {
+        var folder = BusinessSettingsService.GetPrintoutFolder();
+        Directory.CreateDirectory(folder);
+        var safeTitle = string.Join("-", title.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
+        var path = Path.Combine(folder, safeTitle + "-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".txt");
+        File.WriteAllText(path, text);
+        OpenInDefaultApp(path);
+    }
+
+    public static void OpenInDefaultApp(string path)
+    {
+        Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+    }
+
+    private static void AddFileIfExists(ZipArchive archive, string filePath, string entryName)
+    {
+        if (!File.Exists(filePath))
+            return;
+
+        var entry = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+        using var input = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var output = entry.Open();
+        input.CopyTo(output);
+    }
+
+    private static void AddDirectory(ZipArchive archive, string directory, string entryRoot)
+    {
+        foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+        {
+            var relative = Path.GetRelativePath(directory, file).Replace('\\', '/');
+            AddFileIfExists(archive, file, $"{entryRoot}/{relative}");
+        }
+    }
+
+    private static void AddCsvExport<T>(ZipArchive archive, string entryName) where T : class
+    {
+        using var db = new AppDbContext();
+        var rows = db.Set<T>().AsNoTracking().Cast<object>().ToList();
+        var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        var entry = archive.CreateEntry(entryName);
+        using var writer = new StreamWriter(entry.Open(), Encoding.UTF8);
+        writer.WriteLine(string.Join(",", props.Select(p => EscapeCsv(p.Name))));
+        foreach (var row in rows)
+        {
+            writer.WriteLine(string.Join(",", props.Select(p => EscapeCsv(p.GetValue(row)?.ToString() ?? string.Empty))));
+        }
+    }
+
+    private static string EscapeCsv(string value)
+    {
+        if (value.Contains('"') || value.Contains(',') || value.Contains('\n') || value.Contains('\r'))
+            return "\"" + value.Replace("\"", "\"\"") + "\"";
+        return value;
+    }
+
+    private static List<string> ParseCsvLine(string line)
+    {
+        var values = new List<string>();
+        var current = new StringBuilder();
+        var inQuotes = false;
+
+        for (var i = 0; i < line.Length; i++)
+        {
+            var ch = line[i];
+            if (ch == '"')
+            {
+                if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                {
+                    current.Append('"');
+                    i++;
+                }
+                else
+                {
+                    inQuotes = !inQuotes;
+                }
+            }
+            else if (ch == ',' && !inQuotes)
+            {
+                values.Add(current.ToString());
+                current.Clear();
+            }
+            else
+            {
+                current.Append(ch);
+            }
+        }
+        values.Add(current.ToString());
+        return values;
+    }
+
+    private static object? ConvertTextValue(string text, Type propertyType)
+    {
+        var nullableType = Nullable.GetUnderlyingType(propertyType);
+        var targetType = nullableType ?? propertyType;
+        var isNullable = nullableType != null || !targetType.IsValueType;
+        if (string.IsNullOrWhiteSpace(text))
+            return isNullable ? null : Activator.CreateInstance(targetType);
+        if (targetType == typeof(string)) return text;
+        if (targetType == typeof(int)) return int.Parse(text, CultureInfo.InvariantCulture);
+        if (targetType == typeof(decimal)) return decimal.Parse(text, CultureInfo.InvariantCulture);
+        if (targetType == typeof(bool)) return bool.Parse(text);
+        if (targetType == typeof(DateTime)) return DateTime.Parse(text, CultureInfo.InvariantCulture);
+        if (targetType.IsEnum) return Enum.Parse(targetType, text);
+        return Convert.ChangeType(text, targetType, CultureInfo.InvariantCulture);
+    }
+}

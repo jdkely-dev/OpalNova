@@ -1,0 +1,29 @@
+<Window x:Class="JewelleryBusinessManager.Views.ScanLookupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Scan / Lookup Code" Height="460" Width="680" WindowStartupLocation="CenterOwner">
+    <DockPanel Background="{StaticResource AppBackgroundBrush}" Margin="18">
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,14">
+            <TextBlock Text="Scan / Lookup Code" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" />
+            <TextBlock Text="Scan a Code 39 barcode or type a stock, stone, job, material, purchase order, batch or task code." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Content="Close" IsCancel="True" Style="{StaticResource ToolbarButtonStyle}" />
+        </StackPanel>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="CodeBox" Grid.Row="0" Grid.Column="0" MinHeight="34" FontSize="16" VerticalContentAlignment="Center" KeyDown="CodeBox_KeyDown" ToolTip="Scan or type the code, then press Enter" />
+            <Button Grid.Row="0" Grid.Column="1" Content="Lookup" Click="Lookup_Click" Style="{StaticResource AccentButtonStyle}" />
+            <TextBox x:Name="ResultsBox" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,14,0,0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" />
+        </Grid>
+    </DockPanel>
+</Window>

@@ -1,0 +1,500 @@
+<Window x:Class="JewelleryBusinessManager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OPALNOVA - Workspace Usability Command Centre" Icon="pack://application:,,,/Assets/AppIcon.ico" Height="900" Width="1460" MinHeight="820" MinWidth="1180" WindowStartupLocation="CenterScreen" UseLayoutRounding="True" SnapsToDevicePixels="True" TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" KeyDown="MainWindow_KeyDown">
+    <DockPanel Background="{StaticResource AppBackgroundBrush}">
+        <Border DockPanel.Dock="Top" Padding="16,12" Background="{StaticResource TopHeaderBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="44" Height="44" CornerRadius="14" Background="{StaticResource AccentGradientBrush}" Margin="0,0,14,0" Effect="{StaticResource CardShadowEffect}">
+                        <Grid>
+                            <TextBlock Text="O" Foreground="#111827" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="OPALNOVA" Foreground="{StaticResource PrimaryTextBrush}" FontSize="23" FontWeight="Bold" />
+                            <Border Background="#1F2937" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="12" Padding="9,3" Margin="12,2,0,0">
+                                <TextBlock Text="Command Centre" Style="{StaticResource PillTextStyle}" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="Version 1.48.3 - roadmap and credential safety polish" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#0B1220" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="14" Padding="8,4" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="⌕" Foreground="{StaticResource AccentBrush}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,8,0" />
+                            <TextBox x:Name="SearchBox" Width="250" TextChanged="SearchBox_TextChanged" KeyDown="SearchBox_KeyDown" ToolTip="Search the current page as you type. Press Enter or click Search All to search every section. Shortcut: Ctrl+F" />
+                        </StackPanel>
+                    </Border>
+                    <ComboBox x:Name="TopFilterCombo" Width="165" SelectionChanged="TopFilterCombo_SelectionChanged" ToolTip="Apply a quick filter from the main search bar." Margin="0,0,8,0" />
+                    <Button Content="Search All" Click="SearchAll_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Open global search using the current search text and filter." />
+                    <Button Content="Clear" Click="ClearSearch_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Clear search text and filters." />
+                    <Button Content="↻" Click="Refresh_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Reload the current page. Shortcut: F5" />
+                    <Button Content="⚙" Click="Settings_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Edit business details, logo, default pricing and document folders" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Menu DockPanel.Dock="Top" Background="#0B1220" Foreground="{StaticResource SecondaryTextBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1" Padding="12,2">
+            <MenuItem Header="_Workflow">
+                <MenuItem Header="Dashboard" Tag="Dashboard" Click="MenuNavigate_Click" />
+                <MenuItem Header="Project Workbench" Tag="Project Workbench" Click="MenuNavigate_Click" />
+                <MenuItem Header="Customers" Tag="Customers" Click="MenuNavigate_Click" />
+                <MenuItem Header="Quotes &amp; Proposals" Tag="Quotes &amp; Proposals" Click="MenuNavigate_Click" />
+                <MenuItem Header="Production" Tag="Production" Click="MenuNavigate_Click" />
+                <MenuItem Header="Payments &amp; Sales" Tag="Payments &amp; Sales" Click="MenuNavigate_Click" />
+                <MenuItem Header="Inventory" Tag="Inventory" Click="MenuNavigate_Click" />
+                <MenuItem Header="Diamonds" Tag="Diamonds" Click="MenuNavigate_Click" />
+                <MenuItem Header="Reports" Tag="Reports" Click="MenuNavigate_Click" />
+            </MenuItem>
+            <MenuItem Header="_Records">
+                <MenuItem Header="Customers" Tag="Customers" Click="MenuNavigate_Click" />
+                <MenuItem Header="Jobs" Tag="Jobs" Click="MenuNavigate_Click" />
+                <MenuItem Header="Sales" Tag="Sales" Click="MenuNavigate_Click" />
+                <MenuItem Header="Payments" Tag="Payments" Click="MenuNavigate_Click" />
+                <Separator />
+                <MenuItem Header="Jewellery Stock" Tag="Jewellery Stock" Click="MenuNavigate_Click" />
+                <MenuItem Header="Materials" Tag="Materials" Click="MenuNavigate_Click" />
+                <MenuItem Header="Material Transactions" Tag="Material Transactions" Click="MenuNavigate_Click" />
+                <MenuItem Header="Stones" Tag="Stones" Click="MenuNavigate_Click" />
+                <MenuItem Header="Opal Parcels" Tag="Opal Parcels" Click="MenuNavigate_Click" />
+                <MenuItem Header="External Diamonds" Tag="External Diamonds" Click="MenuNavigate_Click" />
+                <Separator />
+                <MenuItem Header="Suppliers" Tag="Suppliers" Click="MenuNavigate_Click" />
+                <MenuItem Header="Purchase Orders" Tag="Purchase Orders" Click="MenuNavigate_Click" />
+                <MenuItem Header="Purchase Order Items" Tag="Purchase Order Items" Click="MenuNavigate_Click" />
+                <MenuItem Header="Production Batches" Tag="Production Batches" Click="MenuNavigate_Click" />
+                <MenuItem Header="Batch Items" Tag="Batch Items" Click="MenuNavigate_Click" />
+                <MenuItem Header="Market Events" Tag="Market Events" Click="MenuNavigate_Click" />
+                <MenuItem Header="Market Stock" Tag="Market Stock" Click="MenuNavigate_Click" />
+                <MenuItem Header="Online Listings" Tag="Online Listings" Click="MenuNavigate_Click" />
+                <MenuItem Header="Tasks" Tag="Tasks" Click="MenuNavigate_Click" />
+                <MenuItem Header="Photos" Tag="Photos" Click="MenuNavigate_Click" />
+                <MenuItem Header="Custom Quotes" Tag="Custom Quotes" Click="MenuNavigate_Click" />
+                <MenuItem Header="Quote Options" Tag="Quote Options" Click="MenuNavigate_Click" />
+            </MenuItem>
+            <MenuItem Header="_More Tools">
+                <MenuItem Header="Pricing Studio" Tag="Pricing Studio" Click="MenuNavigate_Click" />
+                <MenuItem Header="Purchasing Studio" Tag="Purchasing Studio" Click="MenuNavigate_Click" />
+                <MenuItem Header="Market Studio" Tag="Market Studio" Click="MenuNavigate_Click" />
+                <MenuItem Header="Online Selling Studio" Tag="Online Selling Studio" Click="MenuNavigate_Click" />
+                <MenuItem Header="Codes &amp; Labels Studio" Tag="Codes &amp; Labels Studio" Click="MenuNavigate_Click" />
+                <MenuItem Header="Documents Studio" Tag="Documents Studio" Click="MenuNavigate_Click" />
+                <MenuItem Header="Hardware &amp; POS Studio" Tag="Hardware &amp; POS Studio" Click="MenuNavigate_Click" />
+                <MenuItem Header="Customer Relationship Studio" Tag="Customer Relationship Studio" Click="MenuNavigate_Click" />
+                <MenuItem Header="Data Cleanup Studio" Tag="Data Cleanup Studio" Click="MenuNavigate_Click" />
+            </MenuItem>
+            <MenuItem Header="_Reports / Data">
+                <MenuItem Header="Reports Home" Tag="Reports" Click="MenuNavigate_Click" />
+                <MenuItem Header="Classic Reports Studio" Tag="Reports Studio" Click="MenuNavigate_Click" />
+                <Separator />
+                <MenuItem Header="Settings &amp; Backup" Tag="Settings &amp; Backup" Click="MenuNavigate_Click" />
+                <MenuItem Header="Open Settings" Click="Settings_Click" />
+                <MenuItem Header="Create Backup" Click="Backup_Click" />
+                <MenuItem Header="Restore Backup" Click="RestoreBackup_Click" />
+                <MenuItem Header="Health Check" Click="HealthCheck_Click" />
+                <MenuItem Header="User Guide" Click="UserGuide_Click" />
+            </MenuItem>
+        </Menu>
+
+        <Border DockPanel.Dock="Top" Background="#101827" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1" Padding="12,7">
+            <DockPanel LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left" Text="Quick toolbar" Foreground="{StaticResource MutedTextBrush}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0" />
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Project Hub" Click="ProjectWorkbench_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Open the guided project workbench with next actions across quotes, diamonds, production and payments." />
+                    <Button Content="New Quote" Click="ToolbarNewQuote_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Open the custom quote builder in a workspace tab." />
+                    <Button Content="＋ Add" Click="Add_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Add a record to the active record section. Shortcut: Ctrl+N" />
+                    <Button Content="✎ Edit" Click="Edit_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Edit the selected record. Shortcut: Ctrl+E" />
+                    <Button Content="🗑 Delete" Click="Delete_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Delete the selected record. Shortcut: Delete" />
+                    <Border Width="1" Height="26" Background="{StaticResource BorderBrushStrong}" Margin="8,0" />
+                    <Button Content="Production Board" Click="DashboardProductionBoard_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open production board in a workspace tab." />
+                    <Button Content="Payments" Click="DashboardPaymentCollection_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open payment and collection workflow in a workspace tab." />
+                    <Button Content="Diamond Search" Click="ToolbarDiamondSearch_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Search supplier diamonds in a workspace tab." />
+                    <Button Content="Diamond Holds" Click="DashboardDiamondWorkflow_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open supplier hold/order workflow in a workspace tab." />
+                    <Button Content="Reports" Click="ToolbarReports_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open reports home." />
+                    <Button Content="Backup" Click="Backup_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Create a database backup." />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom" Padding="14,9" Background="#080D17" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,1,0,0">
+            <TextBlock x:Name="StatusText" Foreground="{StaticResource MutedTextBrush}" Text="Streamlined tabbed workflow ready - quick toolbar, top menus, and workspace tabs are active" />
+        </Border>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="230" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource SidebarBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,1,0" Padding="14">
+                <TreeView x:Name="NavigationTree" SelectedItemChanged="NavigationTree_SelectedItemChanged" BorderThickness="0">
+                    <TreeViewItem Header="Dashboard" IsSelected="True" />
+                    <TreeViewItem Header="Project Workbench" />
+                    <TreeViewItem Header="Customers" />
+                    <TreeViewItem Header="Quotes &amp; Proposals" />
+                    <TreeViewItem Header="Production" />
+                    <TreeViewItem Header="Payments &amp; Sales" />
+                    <TreeViewItem Header="Inventory" />
+                    <TreeViewItem Header="Diamonds" />
+                    <TreeViewItem Header="Reports" />
+                    <TreeViewItem Header="Settings &amp; Backup" />
+                </TreeView>
+            </Border>
+
+            <Grid Grid.Column="1" Margin="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Visibility="Collapsed" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="14" Padding="0" Margin="0" Effect="{StaticResource CardShadowEffect}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Name="CurrentPageTitleText" Text="Dashboard" FontSize="18" FontWeight="Bold" />
+                            <TextBlock x:Name="CurrentPageHintText" Text="Use the left side for daily work. Use the top menu bar for lesser-used records, specialist tools and admin." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,3,0,0" />
+                            <WrapPanel Margin="0,5,0,0">
+                                <Border Style="{StaticResource StatusPillStyle}">
+                                    <TextBlock Text="Simplified navigation" Style="{StaticResource SmallMutedTextStyle}" />
+                                </Border>
+                                <Border Style="{StaticResource StatusPillStyle}">
+                                    <TextBlock Text="Menu bar for advanced tools" Style="{StaticResource SmallMutedTextStyle}" />
+                                </Border>
+                                <Border Style="{StaticResource StatusPillStyle}">
+                                    <TextBlock Text="Daily workflows up front" Style="{StaticResource SmallMutedTextStyle}" />
+                                </Border>
+                            </WrapPanel>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Content="＋ Add" Click="Add_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Add a record to the active record section. Shortcut: Ctrl+N" />
+                            <Button Content="✎ Edit" Click="Edit_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Edit the selected record. Shortcut: Ctrl+E" />
+                            <Button Content="🗑 Delete" Click="Delete_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Delete the selected record. Shortcut: Delete" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="4" Effect="{StaticResource SoftShadowEffect}">
+                    <Grid>
+                        <ScrollViewer x:Name="DashboardPanel" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="Dashboard" FontSize="32" FontWeight="Bold" Margin="0,0,0,4" />
+                                <TextBlock Text="A command-centre dashboard for today's quotes, jobs, payments, collections, stock alerts and fast actions." Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,14" />
+
+                                <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="18" Margin="0,0,0,14" Effect="{StaticResource CardShadowEffect}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="Business Command Centre" FontSize="22" FontWeight="Bold" />
+                                            <TextBlock Text="Start here each day: review attention cards, open the next workflow step, create a backup, or generate a weekly report." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,3,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10,7" Margin="4,0,0,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="Gold / g" Foreground="{StaticResource MutedTextBrush}" FontSize="11" FontWeight="SemiBold" />
+                                                    <TextBlock x:Name="GoldPerGramText" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" />
+                                                    <TextBlock x:Name="MetalPriceUpdatedText" Foreground="{StaticResource MutedTextBrush}" FontSize="10" TextWrapping="Wrap" MaxWidth="130" />
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+
+
+                                <Expander Header="Command Centre — Today&apos;s Priorities" IsExpanded="True" Margin="0,0,0,12">
+                                    <StackPanel Margin="0,8,0,0">
+                                        <UniformGrid Columns="4">
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Custom Quotes"><StackPanel><TextBlock Text="Quotes Awaiting Approval" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="QuotesAwaitingText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="draft or proposed custom quotes" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jobs"><StackPanel><TextBlock Text="Overdue Jobs" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="OverdueJobsText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="active jobs past due" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jobs"><StackPanel><TextBlock Text="Due This Week" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="JobsDueThisWeekText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="jobs due within 7 days" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jobs"><StackPanel><TextBlock Text="Ready For Collection" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ReadyCollectionText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="finished jobs awaiting pickup" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jobs"><StackPanel><TextBlock Text="Ready To Ship" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ReadyShipText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="handover jobs needing shipping" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jobs"><StackPanel><TextBlock Text="Balances Owing" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="UnpaidBalancesText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="active jobs with money due" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Custom Quotes"><StackPanel><TextBlock Text="Reserved Inventory" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ReservedInventoryText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="stones and material lines held" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Diamond Supplier Studio"><StackPanel><TextBlock Text="Diamond Holds Expiring" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ExternalHoldsExpiringText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="supplier holds due soon" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Diamond Supplier Studio"><StackPanel><TextBlock Text="Diamonds Ordered" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ExternalDiamondsOrderedText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="ordered but not received" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Diamond Supplier Studio"><StackPanel><TextBlock Text="Accepted Not Ordered" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ExternalApprovedNotOrderedText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="approved supplier stones to action" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="External Diamonds"><StackPanel><TextBlock Text="External Diamond Quotes" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ExternalDiamondQuoteLinksText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="quote options using supplier stones" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Materials"><StackPanel><TextBlock Text="Low Stock Alerts" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="LowStockCommandText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="materials at or below reorder" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Tasks"><StackPanel><TextBlock Text="Open Follow-Ups" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="FollowUpsText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="customer reminders still open" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Payments"><StackPanel><TextBlock Text="Recent Payments" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="RecentPaymentsText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="payments in the last 7 days" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Sales"><StackPanel><TextBlock Text="Sales This Week" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="SalesThisWeekText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="gross sales value" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                            <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Sales"><StackPanel><TextBlock Text="Sales This Month" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="SalesThisMonthText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="gross sales value" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        </UniformGrid>
+
+                                        <Border Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="16" Padding="12" Margin="0,8,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="One-click actions" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+                                                <WrapPanel>
+                                                    <Button Content="Production Board" Click="DashboardProductionBoard_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Open the workshop production board." />
+                                                    <Button Content="Payment &amp; Collection" Click="DashboardPaymentCollection_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open handover, receipts and balances." />
+                                                    <Button Content="Custom Quotes" Click="DashboardCustomQuotes_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open the custom quote builder." />
+                                                    <Button Content="Diamond Holds" Click="DashboardDiamondWorkflow_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open supplier diamond hold and order tracking." />
+                                                    <Button Content="Follow-Ups" Click="DashboardFollowUps_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open customer follow-up tasks." />
+                                                    <Button Content="Create Backup" Click="DashboardCreateBackup_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Create a safe backup before important work." />
+                                                    <Button Content="Weekly Report" Click="DashboardWeeklyReport_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Generate a high-level business report." />
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Expander>
+
+                                <Expander Header="Business Overview" IsExpanded="True" Margin="0,0,0,10">
+                                    <UniformGrid Columns="4" Margin="0,8,0,0">
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jobs"><StackPanel><TextBlock Text="Active Jobs" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ActiveJobsText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="custom, repairs and commissions" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jobs"><StackPanel><TextBlock Text="Unpaid Job Balance" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="BalanceText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="remaining customer balances" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Sales"><StackPanel><TextBlock Text="Profit This Month" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="MonthlyProfitText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="sales profit estimate" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jobs"><StackPanel><TextBlock Text="Jobs Due 7 Days" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="JobsDueSoonText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="upcoming deadlines" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                    </UniformGrid>
+                                </Expander>
+
+                                <Expander Header="Tasks &amp; Reminders" IsExpanded="True" Margin="0,0,0,10">
+                                    <UniformGrid Columns="4" Margin="0,8,0,0">
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Tasks"><StackPanel><TextBlock Text="Open Tasks" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="OpenTasksText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="active work queue items" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Tasks"><StackPanel><TextBlock Text="Due Today" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="TasksDueTodayText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="tasks requiring attention today" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Tasks"><StackPanel><TextBlock Text="Overdue Tasks" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="OverdueTasksText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="past due and still open" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Tasks"><StackPanel><TextBlock Text="High Priority" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="HighPriorityTasksText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="high or urgent open tasks" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                    </UniformGrid>
+                                </Expander>
+
+                                <Expander Header="Inventory &amp; Stock" IsExpanded="True" Margin="0,0,0,10">
+                                    <UniformGrid Columns="4" Margin="0,8,0,0">
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jewellery Stock"><StackPanel><TextBlock Text="Finished Stock" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="StockText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="completed jewellery records" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jewellery Stock"><StackPanel><TextBlock Text="Stock Retail Value" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="StockValueText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="listed retail total" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jewellery Stock"><StackPanel><TextBlock Text="Stock Cost Value" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="StockCostText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="cost-to-make total" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Materials"><StackPanel><TextBlock Text="Low Materials" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="LowMaterialsText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="below reorder level" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Jewellery Stock"><StackPanel><TextBlock Text="Reserved Stock" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ReservedStockText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="held for customers" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Market Stock"><StackPanel><TextBlock Text="At Market" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="AtMarketText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="currently assigned to market" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Material Transactions"><StackPanel><TextBlock Text="Recent Movements" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="RecentMovementsText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="last 30 days" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Stones"><StackPanel><TextBlock Text="Loose Stones" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="LooseStonesText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="ready for designs" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                    </UniformGrid>
+                                </Expander>
+
+                                <Expander Header="Production &amp; Opal Workflow" IsExpanded="True" Margin="0,0,0,10">
+                                    <UniformGrid Columns="4" Margin="0,8,0,0">
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Production Batches"><StackPanel><TextBlock Text="Active Batches" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ActiveBatchesText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="collections in progress" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Production Batches"><StackPanel><TextBlock Text="Batch Retail Value" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="BatchRetailValueText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="planned collection value" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Production Batches"><StackPanel><TextBlock Text="Batch Progress" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="BatchProgressText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="average active" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Opal Parcels"><StackPanel><TextBlock Text="Opal Yield" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="OpalYieldText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="finished ct / rough ct" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Opal Parcels"><StackPanel><TextBlock Text="Parcel Profit Est." Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ParcelProfitText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="estimated stone value - parcel cost" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                    </UniformGrid>
+                                </Expander>
+
+                                <Expander Header="Market Events" IsExpanded="False" Margin="0,0,0,10">
+                                    <UniformGrid Columns="4" Margin="0,8,0,0">
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Market Events"><StackPanel><TextBlock Text="Upcoming Markets" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="UpcomingMarketsText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="events from today forward" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Market Stock"><StackPanel><TextBlock Text="Market Stock" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="MarketStockCountText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="items assigned to markets" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Market Studio"><StackPanel><TextBlock Text="Packed" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="MarketPackedText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="market stock checked off" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Market Studio"><StackPanel><TextBlock Text="Market Net Est." Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="MarketNetText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="takings minus event costs" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                    </UniformGrid>
+                                </Expander>
+
+                                <Expander Header="Supplier Purchasing" IsExpanded="True" Margin="0,0,0,10">
+                                    <UniformGrid Columns="4" Margin="0,8,0,0">
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Purchase Orders"><StackPanel><TextBlock Text="Open Purchase Orders" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="OpenPurchaseOrdersText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="draft, ordered or partially received" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Purchase Orders"><StackPanel><TextBlock Text="Expected Soon" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="PurchaseOrdersDueText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="orders due in the next 14 days" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Purchasing Studio"><StackPanel><TextBlock Text="Reorder Suggestions" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ReorderSuggestionsText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="materials below reorder level" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Purchase Orders"><StackPanel><TextBlock Text="Open PO Value" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="SupplierOrderValueText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="estimated open supplier spend" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                    </UniformGrid>
+                                </Expander>
+
+                                <Expander Header="Online Selling" IsExpanded="False" Margin="0,0,0,10">
+                                    <UniformGrid Columns="3" Margin="0,8,0,0">
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Online Listings"><StackPanel><TextBlock Text="Needs Listing" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="NeedsListingText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="stock without listing" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Online Listings"><StackPanel><TextBlock Text="Ready To List" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ReadyToListText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="content/photos checked" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Online Listings"><StackPanel><TextBlock Text="Listed Online" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="ListedOnlineText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="active listing records" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
+                                    </UniformGrid>
+                                </Expander>
+
+                                <Border Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,0,0,6">
+                                    <TextBlock Text="Release tip: before publishing a standalone copy, create a fresh backup, test add/edit/delete on sample records, then publish with the included win-x64 self-contained profile." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextBrush}" />
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <Grid x:Name="RecordWorkspacePanel" Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="430" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="10" Effect="{StaticResource CardShadowEffect}">
+                                <Grid>
+                                    <DataGrid x:Name="RecordsGrid" SelectionChanged="RecordsGrid_SelectionChanged" SelectionMode="Extended" SelectionUnit="FullRow" />
+                                    <Border x:Name="RecordEmptyStatePanel" Visibility="Collapsed" Background="#0E1626" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="28" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="520">
+                                        <StackPanel>
+                                            <TextBlock Text="No records to show" FontSize="26" FontWeight="Bold" TextAlignment="Center" />
+                                            <TextBlock x:Name="RecordEmptyStateText" Text="Add your first record or clear the search box." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,10,0,0" />
+                                            <Button Content="＋ Add Record" Click="Add_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Center" Margin="0,16,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Column="2" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="20" Padding="18" Effect="{StaticResource CardShadowEffect}">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel>
+                                        <Border Background="{StaticResource AccentGradientBrush}" CornerRadius="18" Padding="16" Margin="0,0,0,14">
+                                            <StackPanel>
+                                                <TextBlock x:Name="DetailTypeText" Text="Record Preview" Foreground="#111827" FontSize="12" FontWeight="Bold" />
+                                                <TextBlock x:Name="DetailTitleText" Text="Select a record" Foreground="#111827" FontSize="25" FontWeight="Bold" TextWrapping="Wrap" Margin="0,3,0,0" />
+                                                <TextBlock x:Name="DetailStatusText" Text="Key details and linked records appear here." Foreground="#1F2937" FontSize="13" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <WrapPanel x:Name="DetailSummaryPanel" Margin="0,0,0,10" />
+
+                                        <Border Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="16" Padding="10" Margin="0,0,0,14">
+                                            <Grid>
+                                                <Image x:Name="DetailPhotoImage" Height="180" Stretch="UniformToFill" Visibility="Collapsed" ClipToBounds="True" />
+                                                <StackPanel x:Name="DetailPhotoEmptyPanel" Height="180" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock Text="No preview photo" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                                                    <TextBlock Text="Use Add Photo to attach images to this record." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+
+                                        <TextBlock Text="Quick Actions" FontSize="15" FontWeight="Bold" Margin="0,0,0,6" />
+                                        <WrapPanel Margin="0,0,0,14">
+                                            <Button Content="✎ Edit" Click="Edit_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Edit this selected record" />
+                                            <Button Content="＋ Photo" Click="AddPhoto_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Attach a photo to this record" />
+                                            <Button Content="Trace" Click="TraceSelected_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open traceability for the selected record" />
+                                            <Button Content="Label" Click="GenerateSelectedScanLabel_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Generate a barcode label for this record" />
+                                        </WrapPanel>
+
+                                        <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="14" Padding="12" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Key Details" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+                                                <StackPanel x:Name="DetailFieldsStack" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="14" Padding="12" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Linked Records" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+                                                <StackPanel x:Name="DetailLinksStack" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="14" Padding="12">
+                                            <StackPanel>
+                                                <TextBlock Text="Recent Activity" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+                                                <StackPanel x:Name="DetailActivityStack" />
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
+
+                        <Grid x:Name="ToolWorkspacePanel" Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="360" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="20" Padding="18" Effect="{StaticResource CardShadowEffect}">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                                        <TextBlock x:Name="ToolPageTitleText" Text="Tool Workspace" FontSize="24" FontWeight="Bold" />
+                                        <TextBlock x:Name="ToolPageSubtitleText" Text="Choose an action below." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel x:Name="ToolActionList" />
+                                    </ScrollViewer>
+                                </DockPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="20" Padding="18" Effect="{StaticResource CardShadowEffect}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock x:Name="ToolPreviewTitleText" Text="Preview" FontSize="22" FontWeight="Bold" />
+                                            <TextBlock x:Name="ToolPreviewHintText" Text="Generated reports and documents appear here first. Use Open HTML / Print for easy printing." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,3,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button x:Name="ToolSetupTabButton" Content="Setup / Inputs" Click="ToolSetupTab_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Show the setup page for choosing inputs, dropdowns and actions" />
+                                            <Button x:Name="ToolPreviewTabButton" Content="Preview / Result" Click="ToolPreviewTab_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Show the generated report, document, label or result preview" />
+                                            <Border Width="1" Height="26" Background="{StaticResource BorderBrushStrong}" Margin="8,0" />
+                                            <Button Content="🖨 Open HTML / Print" Click="OpenReportHtml_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open this output in your browser for printing" />
+                                            <Button Content="Folder" Click="OpenReportFolder_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open the saved output folder" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <Border Grid.Row="1" Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushStrong}" BorderThickness="1" CornerRadius="14">
+                                        <Grid x:Name="ToolPreviewHost">
+                                            <WebBrowser x:Name="ToolPreviewBrowser" Visibility="Collapsed" />
+                                            <ScrollViewer x:Name="ToolInputScrollViewer" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                                                <StackPanel x:Name="ToolInputPanel" Margin="18" />
+                                            </ScrollViewer>
+                                            <StackPanel x:Name="ToolPreviewEmptyPanel" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="520">
+                                                <TextBlock Text="No preview generated yet" Foreground="{StaticResource PrimaryTextBrush}" FontSize="24" FontWeight="SemiBold" TextAlignment="Center" />
+                                                <TextBlock Text="Use Setup / Inputs to choose dropdowns, selected records and action settings. Generated reports, labels and documents will appear here in Preview / Result." Foreground="{StaticResource MutedTextBrush}" FontSize="14" TextWrapping="Wrap" TextAlignment="Center" Margin="0,10,0,0" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <Grid x:Name="ReportPanel" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="16" Padding="14" Margin="0,0,0,12" Effect="{StaticResource CardShadowEffect}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock x:Name="ReportTitleText" Text="Report Viewer" FontSize="26" FontWeight="Bold" />
+                                        <TextBlock x:Name="ReportPathText" Text="Generated reports open here. Use Open HTML / Print for browser printing." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,3,0,0" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="← Back" Click="CloseReport_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Return to the active section" />
+                                        <Button Content="🖨 Open HTML / Print" Click="OpenReportHtml_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Open the generated HTML file in your default browser for printing. Shortcut: Ctrl+P" />
+                                        <Button Content="Folder" Click="OpenReportFolder_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open the folder containing this report" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            <Border Grid.Row="1" Background="{StaticResource AppBackgroundBrush}" BorderBrush="#000000" BorderThickness="3" CornerRadius="14" Padding="0">
+                                <WebBrowser x:Name="ReportBrowser" />
+                            </Border>
+                        </Grid>
+
+
+                        <TabControl x:Name="WorkspaceTabs" Visibility="Collapsed" Panel.ZIndex="40" Background="{StaticResource PanelBackgroundBrush}" BorderBrush="#000000" BorderThickness="3" Padding="0" SelectionChanged="WorkspaceTabs_SelectionChanged">
+                            <TabControl.Resources>
+                                <Style TargetType="TabItem" BasedOn="{StaticResource OpalnovaWorkspaceTabItemStyle}" />
+                            </TabControl.Resources>
+                        </TabControl>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>

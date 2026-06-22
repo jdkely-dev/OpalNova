@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>OPALNOVA</AssemblyName>
+    <RootNamespace>JewelleryBusinessManager</RootNamespace>
+    <Version>1.48.3</Version>
+    <AssemblyVersion>1.48.3.0</AssemblyVersion>
+    <FileVersion>1.48.3.0</FileVersion>
+    <InformationalVersion>1.48.3 OPALNOVA Roadmap and Credential Safety Polish</InformationalVersion>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <Authors>Jack The Jeweller</Authors>
+    <Company>Jack The Jeweller</Company>
+    <Product>OPALNOVA</Product>
+    <Description>Standalone jewellery business management app for customers, jobs, stock, stones, markets, documents and reports.</Description>
+    <Copyright>Copyright © Jack The Jeweller</Copyright>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.8" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.8" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Keep Windows Forms available for multi-monitor Screen support, but prevent implicit namespace imports from clashing with WPF controls. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\AppIcon.ico" />
+    <None Include="README_RELEASE_PREP.md" Pack="false" />
+  </ItemGroup>
+</Project>

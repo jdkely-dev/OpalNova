@@ -1,0 +1,28 @@
+<Window x:Class="JewelleryBusinessManager.Views.EditEntityWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Edit Record" Height="760" Width="1180" WindowStartupLocation="CenterOwner">
+    <DockPanel Background="{StaticResource AppBackgroundBrush}">
+        <Border DockPanel.Dock="Top" Height="42" Padding="12,4" Background="{StaticResource TopHeaderBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Record Details" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Complete the grouped fields below, then save." Foreground="{StaticResource MutedTextBrush}" FontSize="10" Margin="12,1,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </Grid>
+        </Border>
+        <Border DockPanel.Dock="Bottom" Height="58" Padding="8,9" Background="#080D17" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button Content="Cancel" MinHeight="36" Padding="12,6" Margin="5,0" VerticalAlignment="Center" Click="Cancel_Click" />
+                <Button Content="Save" MinHeight="36" Padding="12,6" Margin="5,0" VerticalAlignment="Center" Click="Save_Click" Style="{StaticResource AccentButtonStyle}" />
+            </StackPanel>
+        </Border>
+        <Border Margin="6" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="14" Padding="5" Effect="{StaticResource CardShadowEffect}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid x:Name="FormGrid" Margin="0" />
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
+</Window>

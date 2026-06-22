@@ -1,0 +1,32 @@
+# Build outputs
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio / .NET local state
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test and coverage output
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Local databases and runtime artifacts
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+# Local handoff/build artifacts
+*.zip
+projecthub_*_smoke.png
+
+# OS files
+Thumbs.db
+Desktop.ini

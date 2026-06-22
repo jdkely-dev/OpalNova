@@ -1,0 +1,101 @@
+# OPALNOVA Development Roadmap
+
+## Current Baseline
+
+Current workspace baseline: V1.48.3.
+
+V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removes the unsafe Nivoda development credential helper and keeps the roadmap aligned to the actual app state.
+
+The next work should stay focused on improving daily workflow quality before adding broad new feature areas.
+
+## Priority Order
+
+### V1.49 - Quote Workspace Polish
+
+Goal: make quoting faster, clearer, and more customer-ready without changing quote data contracts.
+
+- Redesign the Custom Quote workspace into a cleaner two-panel layout.
+- Keep customer/project setup on the left and live totals/actions on the right.
+- Add clearer option comparison inside the app.
+- Add stronger next-action buttons: send proposal, mark accepted, convert to job, link diamonds, reserve stock.
+- Add quote expiry and unanswered-quote follow-up prompts.
+- Improve design-image attachment handling before adding drag-and-drop.
+
+### V1.50 - Premium Proposal Output
+
+Goal: make proposals suitable to send directly to customers.
+
+- Create a premium proposal HTML layout first.
+- Add PDF export after the HTML layout is stable.
+- Add option comparison, payment schedule display, and accepted-option clarity.
+- Show linked external diamond certificate/video fields where available.
+- Add proposal revision/version metadata before adding full quote revision history.
+
+### V1.51 - Universal Next Action and Alert Centre
+
+Goal: turn OPALNOVA into a guided daily work system rather than only a record system.
+
+- Extract Project Workbench action rules into a reusable next-action service.
+- Add one alert centre for overdue jobs, unpaid balances, expiring diamond holds, low stock, quote expiry, and follow-ups.
+- Add dashboard and workspace entry points to the same alert data.
+- Add recently opened records/tabs after the alert centre is stable.
+- Add unsaved-change warnings for hosted editors after the tab lifecycle remains stable.
+
+### V1.52 - Inventory Consumption and Job Completion
+
+Goal: close the loop from quote reservation to finished job without losing stock traceability.
+
+- Add a job-completion checklist.
+- Add a reservation release/consume wizard.
+- Consume reserved materials/stones only through explicit completion actions.
+- Keep owned stock, reserved stock, supplier stock, sold stock, and consumed stock visually distinct.
+- Add audit entries for stock adjustments, reservation release, and material consumption.
+
+### V1.53 - External Diamond Production Readiness
+
+Goal: make supplier diamonds safer to quote, hold, order, receive, and convert to owned inventory.
+
+- Keep credentials user-entered only; do not hardcode test credentials.
+- Add refresh availability/price for saved external diamonds.
+- Add hold-expiry reminders and unavailable-diamond warnings.
+- Add received-diamond intake.
+- Add explicit conversion from received supplier diamond to owned inventory when physically purchased.
+- Add API hold/order actions only after the accessible Nivoda schema is confirmed.
+
+### V1.54 - Reports and Export Upgrade
+
+Goal: improve decision-making and bookkeeping output.
+
+- Add visual charts for sales, quote conversion, inventory value, and cashflow.
+- Add stock ageing and slow-moving inventory reports.
+- Add profit by job type and product category.
+- Add tax/GST summary.
+- Add Excel export after report datasets are stable.
+
+### V1.55 - Release Readiness and Data Safety
+
+Goal: prepare OPALNOVA for regular real-world use.
+
+- Add automated backup schedule and dashboard backup health indicator.
+- Add restore preview before applying a restore.
+- Add full business archive export.
+- Add production/staging configuration separation.
+- Add installer, desktop shortcut creation, release notes viewer, and user guide.
+
+## Deferred Until Core Workflow Is Stable
+
+- Full command palette.
+- Complex capacity/calendar planning.
+- Scheduled report generation.
+- Advanced hardware tools beyond the current camera, scale, barcode, and label foundations.
+- Customer segmentation and lifetime value scoring.
+- API-level Nivoda hold/order actions without confirmed schema support.
+
+## UX Rules For Future Builds
+
+- Fix workflow bottlenecks before adding new record types.
+- Prefer shared styles and shared services over one-screen patches.
+- Keep workflows in tabs where practical.
+- Avoid white controls, bright yellow highlights, and redundant explanation panels.
+- Keep external supplier diamonds separate from owned inventory until explicitly received or converted.
+- Do not automate material consumption without a reviewable job-completion step.
