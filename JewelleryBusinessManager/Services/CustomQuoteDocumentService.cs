@@ -17,7 +17,7 @@ public static class CustomQuoteDocumentService
         static string Money(decimal value) => value.ToString("C");
         var sb = new StringBuilder();
         sb.Append("<!doctype html><html><head><meta charset='utf-8'><title>Jewellery Proposal</title><style>");
-        sb.Append("body{font-family:Segoe UI,Arial;background:#f5f6f8;color:#172033;margin:0;padding:34px}.page{max-width:900px;margin:auto;background:white;padding:44px;border-radius:18px;box-shadow:0 12px 40px #0002}.top{display:flex;justify-content:space-between;border-bottom:3px solid #d9a441;padding-bottom:18px}.brand{font-size:28px;font-weight:750}.muted{color:#687387}.option{border:1px solid #dce1e8;border-radius:15px;padding:22px;margin:18px 0}.recommended{border:2px solid #d9a441}.price{font-size:28px;font-weight:750}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.costs{width:100%;border-collapse:collapse}.costs td{padding:7px;border-bottom:1px solid #edf0f4}.right{text-align:right}.footer{margin-top:34px;border-top:1px solid #ddd;padding-top:18px;font-size:13px;color:#687387}@media print{body{background:white;padding:0}.page{box-shadow:none}} </style></head><body><div class='page'>");
+        sb.Append("body{font-family:Segoe UI,Arial;background:#f5f6f8;color:#172033;margin:0;padding:34px}.page{max-width:900px;margin:auto;background:white;padding:44px;border-radius:18px;box-shadow:0 12px 40px #0002}.top{display:flex;justify-content:space-between;border-bottom:3px solid #d9a441;padding-bottom:18px}.brand{font-size:28px;font-weight:750}.muted{color:#687387}.option{border:1px solid #dce1e8;border-radius:15px;padding:22px;margin:18px 0}.recommended{border:2px solid #d9a441}.price{font-size:28px;font-weight:750}.option-img{width:100%;max-height:360px;object-fit:cover;border-radius:14px;margin:12px 0;border:1px solid #dce1e8}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.costs{width:100%;border-collapse:collapse}.costs td{padding:7px;border-bottom:1px solid #edf0f4}.right{text-align:right}.footer{margin-top:34px;border-top:1px solid #ddd;padding-top:18px;font-size:13px;color:#687387}@media print{body{background:white;padding:0}.page{box-shadow:none}} </style></head><body><div class='page'>");
         sb.Append($"<div class='top'><div><div class='brand'>{E(settings.BusinessName)}</div><div class='muted'>{E(settings.OwnerName)} · {E(settings.Email)} · {E(settings.Phone)}</div></div><div class='right'><b>PROPOSAL</b><br>{E(quote.QuoteCode)}<br>{quote.QuoteDate:dd MMM yyyy}</div></div>");
         sb.Append($"<h1>{E(quote.Title)}</h1><p>Prepared for <b>{E(customer?.FullName ?? "Customer")}</b></p>");
         if (!string.IsNullOrWhiteSpace(quote.Introduction)) sb.Append($"<p>{E(quote.Introduction).Replace("\n","<br>")}</p>");
@@ -25,6 +25,9 @@ public static class CustomQuoteDocumentService
         {
             var cls = option.IsRecommended ? "option recommended" : "option";
             sb.Append($"<section class='{cls}'><div class='grid'><div><h2>{E(option.OptionName)}</h2>{(option.IsRecommended ? "<b>Recommended option</b>" : "")}</div><div class='price right'>{Money(option.TotalPrice)}</div></div>");
+            var imageDataUri = TryCreateImageDataUri(option.ImagePath);
+            if (!string.IsNullOrWhiteSpace(imageDataUri))
+                sb.Append($"<img class='option-img' src='{imageDataUri}' alt='{E(option.OptionName)} design image'>");
             sb.Append($"<p>{E(option.Description).Replace("\n","<br>")}</p><div class='grid'><p><b>Metal</b><br>{E(option.MetalDetails)}</p><p><b>Stone</b><br>{E(option.StoneDetails)}</p></div>");
             if (externalDiamondLinks != null && externalDiamondLinks.TryGetValue(option.Id, out var linkedDiamonds) && linkedDiamonds.Count > 0)
             {
@@ -50,5 +53,30 @@ public static class CustomQuoteDocumentService
         sb.Append($"<h3>Terms</h3><p>{E(quote.Terms ?? settings.TermsAndConditions).Replace("\n","<br>")}</p><div class='footer'>{E(settings.DocumentFooterText)}</div></div></body></html>");
         File.WriteAllText(path, sb.ToString());
         return path;
+    }
+
+    private static string? TryCreateImageDataUri(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+            return null;
+
+        try
+        {
+            var extension = Path.GetExtension(path).ToLowerInvariant();
+            var mimeType = extension switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".bmp" => "image/bmp",
+                ".webp" => "image/webp",
+                _ => "application/octet-stream"
+            };
+            return $"data:{mimeType};base64,{Convert.ToBase64String(File.ReadAllBytes(path))}";
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

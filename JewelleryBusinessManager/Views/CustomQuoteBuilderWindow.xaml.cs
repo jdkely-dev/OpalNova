@@ -1,5 +1,8 @@
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
+using System.Windows.Media.Imaging;
+using Microsoft.Win32;
 using Microsoft.EntityFrameworkCore;
 using JewelleryBusinessManager.Data;
 using JewelleryBusinessManager.Models;
@@ -133,6 +136,7 @@ public partial class CustomQuoteBuilderWindow : Window
         option.Description = DescriptionBox.Text.Trim();
         option.MetalDetails = MetalDetailsBox.Text.Trim();
         option.StoneDetails = StoneDetailsBox.Text.Trim();
+        option.ImagePath = string.IsNullOrWhiteSpace(OptionImagePathBox.Text) ? null : OptionImagePathBox.Text.Trim();
         option.LabourHours = D(LabourHoursBox.Text);
         option.LabourRate = D(LabourRateBox.Text);
         option.MetalCost = D(MetalCostBox.Text);
@@ -282,6 +286,7 @@ public partial class CustomQuoteBuilderWindow : Window
             option.TotalPrice.ToString("C"),
             (option.TotalPrice * _quote.DepositPercent / 100m).ToString("C"),
             BuildLinkSummary(option),
+            string.IsNullOrWhiteSpace(option.ImagePath) ? "No" : "Yes",
             status);
     }
 
@@ -289,7 +294,8 @@ public partial class CustomQuoteBuilderWindow : Window
     {
         EnsureLinkCollections(option);
         var direct = option.LabourHours * option.LabourRate + option.MetalCost + option.StoneCost + option.SettingCost + option.FindingsCost + option.OtherCost;
-        return $"{option.OptionName}: {option.TotalPrice:C} total, {(option.TotalPrice * _quote.DepositPercent / 100m):C} deposit, {direct:C} direct cost. {BuildLinkSummary(option)}";
+        var image = string.IsNullOrWhiteSpace(option.ImagePath) ? "No design image attached." : "Design image attached.";
+        return $"{option.OptionName}: {option.TotalPrice:C} total, {(option.TotalPrice * _quote.DepositPercent / 100m):C} deposit, {direct:C} direct cost. {BuildLinkSummary(option)}. {image}";
     }
 
     private string BuildLinkSummary(QuoteOption option)
@@ -326,6 +332,7 @@ public partial class CustomQuoteBuilderWindow : Window
             DescriptionBox.Text = option.Description ?? string.Empty;
             MetalDetailsBox.Text = option.MetalDetails ?? string.Empty;
             StoneDetailsBox.Text = option.StoneDetails ?? string.Empty;
+            OptionImagePathBox.Text = option.ImagePath ?? string.Empty;
             LabourHoursBox.Text = option.LabourHours.ToString("0.##");
             LabourRateBox.Text = option.LabourRate.ToString("0.##");
             MetalCostBox.Text = option.MetalCost.ToString("0.##");
@@ -335,16 +342,48 @@ public partial class CustomQuoteBuilderWindow : Window
             OtherCostBox.Text = option.OtherCost.ToString("0.##");
             MarkupBox.Text = option.MarkupPercent.ToString("0.##");
             RecommendedCheck.IsChecked = option.IsRecommended;
+            RefreshOptionImage(option);
             RefreshTotals(option);
         }
         else
         {
             RefreshLinkedInventory(null);
+            RefreshOptionImage(null);
         }
 
-        foreach (var control in new System.Windows.Controls.Control[] { OptionNameBox, DescriptionBox, MetalDetailsBox, StoneDetailsBox, LabourHoursBox, LabourRateBox, MetalCostBox, StoneCostBox, SettingCostBox, FindingsCostBox, OtherCostBox, MarkupBox, RecommendedCheck, StoneCombo, MaterialCombo, LinkedStoneCostBox, MaterialQuantityBox, MaterialUnitCostBox, ExternalDiamondCombo, ExternalDiamondSupplierCostBox, ExternalDiamondStatusCombo })
+        foreach (var control in new System.Windows.Controls.Control[] { OptionNameBox, DescriptionBox, MetalDetailsBox, StoneDetailsBox, OptionImagePathBox, AttachImageButton, OpenImageButton, RemoveImageButton, LabourHoursBox, LabourRateBox, MetalCostBox, StoneCostBox, SettingCostBox, FindingsCostBox, OtherCostBox, MarkupBox, RecommendedCheck, StoneCombo, MaterialCombo, LinkedStoneCostBox, MaterialQuantityBox, MaterialUnitCostBox, ExternalDiamondCombo, ExternalDiamondSupplierCostBox, ExternalDiamondStatusCombo })
             control.IsEnabled = enabled;
         _loading = false;
+    }
+
+    private void RefreshOptionImage(QuoteOption? option)
+    {
+        var path = option?.ImagePath;
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            OptionImagePreview.Source = null;
+            OptionImageEmptyText.Text = "No image";
+            OptionImageEmptyText.Visibility = Visibility.Visible;
+            return;
+        }
+
+        try
+        {
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.UriSource = new Uri(path, UriKind.Absolute);
+            image.EndInit();
+            image.Freeze();
+            OptionImagePreview.Source = image;
+            OptionImageEmptyText.Visibility = Visibility.Collapsed;
+        }
+        catch
+        {
+            OptionImagePreview.Source = null;
+            OptionImageEmptyText.Text = "Image unavailable";
+            OptionImageEmptyText.Visibility = Visibility.Visible;
+        }
     }
 
     private void SaveQuote()
@@ -448,6 +487,7 @@ public partial class CustomQuoteBuilderWindow : Window
             Description = source.Description,
             MetalDetails = source.MetalDetails,
             StoneDetails = source.StoneDetails,
+            ImagePath = source.ImagePath,
             LabourHours = source.LabourHours,
             LabourRate = source.LabourRate,
             MetalCost = source.MetalCost,
@@ -516,6 +556,65 @@ public partial class CustomQuoteBuilderWindow : Window
             return;
 
         OptionsList.SelectedItem = row.Option;
+    }
+
+    private void AttachOptionImage_Click(object sender, RoutedEventArgs e)
+    {
+        if (OptionsList.SelectedItem is not QuoteOption option)
+            return;
+
+        var dialog = new OpenFileDialog
+        {
+            Title = "Choose design image",
+            Filter = "Image files|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.webp|All files|*.*",
+            Multiselect = false
+        };
+
+        if (dialog.ShowDialog(this) != true)
+            return;
+
+        if (!PhotoStorageService.LooksLikeImage(dialog.FileName))
+        {
+            MessageBox.Show("Choose a JPG, PNG, BMP, GIF or WebP image.", "Design image", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var ownerId = option.Id > 0 ? option.Id : Math.Max(_quote.Id, 0);
+            option.ImagePath = PhotoStorageService.CopyPhotoToAppFolder(dialog.FileName, "QuoteOption", ownerId);
+            OptionImagePathBox.Text = option.ImagePath;
+            RefreshOptionImage(option);
+            RefreshQuoteOverview();
+            WorkflowStatusText.Text = $"Attached image to {option.OptionName}";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Design image", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void RemoveOptionImage_Click(object sender, RoutedEventArgs e)
+    {
+        if (OptionsList.SelectedItem is not QuoteOption option)
+            return;
+
+        option.ImagePath = null;
+        OptionImagePathBox.Text = string.Empty;
+        RefreshOptionImage(option);
+        RefreshQuoteOverview();
+        WorkflowStatusText.Text = $"Removed image from {option.OptionName}";
+    }
+
+    private void OpenOptionImage_Click(object sender, RoutedEventArgs e)
+    {
+        if (OptionsList.SelectedItem is not QuoteOption option || string.IsNullOrWhiteSpace(option.ImagePath) || !File.Exists(option.ImagePath))
+        {
+            MessageBox.Show("No design image is attached to this option.", "Design image", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo(option.ImagePath) { UseShellExecute = true });
     }
 
     private void CreateQuoteFollowUp_Click(object sender, RoutedEventArgs e)
@@ -920,5 +1019,5 @@ public partial class CustomQuoteBuilderWindow : Window
         catch (Exception ex) { MessageBox.Show(ex.Message, "Create job", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
 
-    private sealed record OptionComparisonRow(QuoteOption Option, string Name, string Total, string Deposit, string LinkSummary, string Status);
+    private sealed record OptionComparisonRow(QuoteOption Option, string Name, string Total, string Deposit, string LinkSummary, string Image, string Status);
 }

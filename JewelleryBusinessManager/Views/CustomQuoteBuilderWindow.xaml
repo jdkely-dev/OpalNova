@@ -52,6 +52,27 @@
                         <StackPanel><TextBlock Text="Option name"/><TextBox x:Name="OptionNameBox" Margin="0,4,0,8" TextChanged="OptionText_TextChanged"/><TextBlock Text="Metal details"/><TextBox x:Name="MetalDetailsBox" Height="58" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,4,0,8" TextChanged="OptionText_TextChanged"/></StackPanel>
                         <StackPanel Grid.Column="2"><TextBlock Text="Description"/><TextBox x:Name="DescriptionBox" Height="58" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,4,0,8" TextChanged="OptionText_TextChanged"/><TextBlock Text="Stone details"/><TextBox x:Name="StoneDetailsBox" Height="58" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,4,0,8" TextChanged="OptionText_TextChanged"/></StackPanel>
                     </Grid>
+                    <Border Background="#0B1220" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,8,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Border Background="{StaticResource InputBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Height="126">
+                                <Grid>
+                                    <Image x:Name="OptionImagePreview" Stretch="UniformToFill"/>
+                                    <TextBlock x:Name="OptionImageEmptyText" Text="No image" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}"/>
+                                </Grid>
+                            </Border>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Design image" FontWeight="SemiBold"/>
+                                <TextBox x:Name="OptionImagePathBox" IsReadOnly="True" Margin="0,4,0,6"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button x:Name="AttachImageButton" Content="Attach Image" Click="AttachOptionImage_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Copy a design image into OPALNOVA and link it to this option."/>
+                                    <Button x:Name="OpenImageButton" Content="Open" Click="OpenOptionImage_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open the selected design image."/>
+                                    <Button x:Name="RemoveImageButton" Content="Remove" Click="RemoveOptionImage_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Remove the image link from this option."/>
+                                </StackPanel>
+                                <TextBlock Text="Images are copied into OPALNOVA's app photo folder and included in proposal previews." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </StackPanel></Border>
 
                 <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="16" Padding="16" Margin="0,0,0,10"><StackPanel>
@@ -150,6 +171,9 @@
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Option" Binding="{Binding Name}" Width="*" />
                                     <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="90" />
+                                    <DataGridTextColumn Header="Deposit" Binding="{Binding Deposit}" Width="90" />
+                                    <DataGridTextColumn Header="Linked" Binding="{Binding LinkSummary}" Width="120" />
+                                    <DataGridTextColumn Header="Image" Binding="{Binding Image}" Width="70" />
                                     <DataGridTextColumn Header="State" Binding="{Binding Status}" Width="100" />
                                 </DataGrid.Columns>
                             </DataGrid>

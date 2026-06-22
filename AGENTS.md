@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.49.0 Quote Workspace Polish
+- Current workspace version: V1.49.1 Quote Image Attachment Polish
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,16 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.49.1 State
+
+V1.49.1 continues the quote workspace polish build:
+
+- Added attach/open/remove design image controls for selected quote options.
+- Uses existing `QuoteOption.ImagePath`; no schema changes were introduced.
+- Copies selected design images into OPALNOVA's app photo folder through `PhotoStorageService`.
+- Shows design-image status in the option comparison grid and selected-option summary.
+- Embeds attached option images into generated proposal HTML as data URIs.
 
 ## V1.49.0 State
 

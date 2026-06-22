@@ -22,7 +22,7 @@
                                 <TextBlock Text="Command Centre" Style="{StaticResource PillTextStyle}" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Version 1.49.0 - quote workspace polish" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
+                        <TextBlock Text="Version 1.49.1 - quote image attachment polish" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
