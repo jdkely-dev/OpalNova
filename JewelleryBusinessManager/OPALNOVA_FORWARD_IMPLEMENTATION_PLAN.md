@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.48.3 Roadmap and Credential Safety Polish
+Current baseline: V1.50.0 Premium Proposal Send Workflow
 
 ## Purpose
 
@@ -13,6 +13,18 @@ This plan turns the broad future-feature list into a practical build sequence ba
 - risk to existing data.
 
 The main direction is to improve the quality of existing workflows before adding large new systems.
+
+## Reference Walkthrough Refinements
+
+The `reaserch vid.mp4` reference walkthrough reinforces three product priorities:
+
+- Add guided dashboard/setup progress earlier than originally planned.
+- Treat proposal sending as part of the proposal workflow, not as a later admin feature.
+- Keep setup/pricing/supplier readiness visible as actionable checklist items.
+- Surface proposal sent/viewed/accepted states before building a larger Proposal Centre.
+- Use proposal acceptance as the bridge into deposits, invoicing, and production next actions.
+
+See `OPALNOVA_REFERENCE_WALKTHROUGH_ANALYSIS.md` and `OPALNOVA_REFERENCE_VIDEO_TRANSCRIPT.md` for the detailed observations.
 
 ## Current Foundations
 
@@ -56,7 +68,13 @@ Ease:
 | Strong quote next-action buttons | P1 | M | Existing accepted option, linked job, task, and reservation features can be made easier to use. | V1.49 |
 | Quote expiry and unanswered quote follow-ups | P1 | S-M | `CustomQuote.ValidUntil` and `BusinessTask` already exist. | V1.49 |
 | Proposal output redesign | P1 | M | Existing HTML service means high customer-facing value without first adding PDF complexity. | V1.50 |
+| Proposal send/record workflow | P1 | M | Reference app shows proposal sending as a simple modal. OPALNOVA can draft/copy/open email first, record sent status, and create follow-ups without direct SMTP. | V1.50 |
+| Proposal sent/accepted status surface | P1 | M | The transcript shows sent/viewed/signed/accepted states driving production and invoicing. OPALNOVA needs clearer state before a Proposal Centre. | V1.50 |
+| Proposal email templates and payment schedule display | P1 | S-M | Template-driven message text and deposit/final-balance clarity are high-value and fit the existing quote/proposal flow. | V1.50 |
+| Guided first-run/setup checklist | P1 | S-M | Dashboard, settings, tasks, and backup services already exist. This improves new-user workflow without heavy schema work. | V1.50.x-V1.51 |
 | Proposal PDF export | P2 | M-L | Best done after the HTML proposal is stable. Needs render/export verification. | V1.50 |
+| Proposal centre / sent proposal queue | P2 | M | Useful once proposals can be sent/recorded. Keep this as a focused list rather than another broad dashboard. | V1.50-V1.51 |
+| Quote measurements, occasion, and internal note polish | P2 | S-M | The transcript highlights measurements, gift/occasion deadlines, and non-client-visible notes as useful quote context. | V1.50-V1.51 |
 | Universal next-action service | P2 | M-L | Project Hub rules exist, but should move into a shared service before broader alerts. | V1.51 |
 | Alert centre | P2 | M | Dashboard already has alert tiles and task data; consolidate into one alert model/view. | V1.51 |
 | Recently opened tabs/items | P2 | S-M | Useful once tab lifecycle is stable. Can be local settings-backed first. | V1.51 |
@@ -64,14 +82,17 @@ Ease:
 | Payment schedule tracking | P2 | M | Supports quote approvals and handover. Should follow proposal/action changes. | V1.50-V1.51 |
 | Polished invoice/receipt templates | P2 | M | `PaymentCollectionWindow` already has invoice generation entry point. | V1.50-V1.51 |
 | Job completion checklist and stock consume/release wizard | P2 | L | High value but touches inventory, jobs, traceability, and irreversible stock movement. | V1.52 |
+| Production stage checklist, waiting flags, and job files | P2 | M-L | The transcript shows these as central after proposal acceptance. Do this around the safe job-completion work. | V1.52 |
 | Stock lifecycle clarity | P2 | M-L | Current statuses exist, but owned/reserved/supplier/sold/consumed need cleaner UI and audit rules. | V1.52 |
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Existing receipt fields exist; conversion needs stock creation, audit, and status rules. | V1.53 |
 | Visual reports and Excel export | P3 | M-L | Existing report services and CSV exports help, but charts/export need stable datasets. | V1.54 |
 | Customer profile dashboard and timeline | P3 | M | Customer relationship service exists. Best after quote/payment/job event flows are stronger. | V1.54-V1.55 |
+| Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |
 | Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
 | Automated backup schedule | P3 | L | Health indicator is easy; true scheduling is OS/app lifecycle work. | V1.55 |
 | Installer, shortcut, version check, user guide | P3 | L-XL | Release-readiness work after app workflows stabilize. | V1.55+ |
+| Built-in help/searchable guide | P3 | M-L | Reference app has searchable help articles; useful after core workflow surfaces stabilize. | V1.55+ |
 | Command palette/global command bar | P4 | M-L | Useful, but not as important as fixing workflow surfaces first. | Later |
 | Complex capacity/calendar view | P4 | L-XL | Needs better production stage/checklist data first. | Later |
 | Scheduled reports | P4 | XL | Requires background scheduling and report stability. | Later |
@@ -125,15 +146,16 @@ Definition of done:
 - Build and publish report zero warnings and zero errors.
 - Launch smoke passes.
 
-### V1.50 - Premium Proposal Output
+### V1.50 - Premium Proposal Output And Send Workflow
 
-Goal: make customer-facing proposals strong enough to send directly.
+Goal: make customer-facing proposals strong enough to send directly and make the send/record step simple.
 
 Primary files:
 
 - `Services/CustomQuoteDocumentService.cs`
 - `Services/DocumentExportService.cs`
 - `Views/CustomQuoteBuilderWindow.xaml.cs`
+- possible new `Views/SendProposalWindow.xaml`
 - optional new proposal preview/export helpers.
 
 Scope:
@@ -146,6 +168,14 @@ Scope:
   - linked diamond certificate/video fields.
   - payment schedule/deposit display.
   - terms and expiry.
+- Add a proposal send/record modal:
+  - recipient.
+  - subject.
+  - message body.
+  - include proposal attachment/output option.
+  - copy/open email draft action.
+  - record sent status.
+- Automatically offer a follow-up task after recording a proposal as sent.
 - Add proposal revision metadata after the layout is stable.
 - Add PDF export only after HTML output is visually stable.
 
@@ -153,12 +183,15 @@ Definition of done:
 
 - HTML proposal opens cleanly and reads as customer-facing, not internal.
 - Proposal includes all quote options and linked supplier diamond details where available.
+- User can prepare proposal email text from OPALNOVA without hunting through files.
+- Quote status can be recorded as sent without direct email integration.
+- Follow-up task creation is offered after sending/recording.
 - PDF output matches the HTML enough for practical sending/printing.
 - No unrelated quote workflow behavior changes.
 
 ### V1.51 - Universal Next Action And Alert Centre
 
-Goal: move from scattered reminders to one shared action engine.
+Goal: move from scattered reminders to one shared action engine, while adding a clearer first-run setup path.
 
 Primary files:
 
@@ -169,6 +202,7 @@ Primary files:
 - `MainWindow.xaml`
 - `MainWindow.xaml.cs`
 - possible new `Views/AlertCentreWindow.xaml`
+- possible new `Views/SetupChecklistWindow.xaml`
 
 Scope:
 
@@ -185,6 +219,14 @@ Scope:
   - low stock.
   - open follow-ups.
 - Add one Alert Centre surface fed by the same service.
+- Add a guided setup checklist using existing settings/data:
+  - business profile complete.
+  - labour rates configured.
+  - GST/settings reviewed.
+  - supplier/Nivoda credentials entered where needed.
+  - pricing/material defaults reviewed.
+  - backup health checked.
+  - first quote/proposal/job created.
 - Add dashboard entry points to the same alert data.
 - Add recently opened items after alert navigation is stable.
 - Add unsaved-change warnings after tab/editor lifecycle is consistent.
@@ -192,6 +234,7 @@ Scope:
 Definition of done:
 
 - Project Hub and Alert Centre agree on counts and priorities.
+- Dashboard can show a setup progress card without crowding daily work tiles.
 - Alerts do not create duplicate tasks unless the user explicitly creates one.
 - Alert actions open the right workflow tab.
 - Existing dashboard tiles remain accurate.

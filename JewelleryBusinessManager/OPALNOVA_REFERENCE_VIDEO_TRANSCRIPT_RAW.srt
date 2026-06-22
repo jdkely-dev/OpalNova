@@ -1,0 +1,3092 @@
+0
+00:00:00,000 --> 00:00:03,000
+Okay, so...
+
+1
+00:00:02,996 --> 00:00:05,996
+Just first of all, I just wanted to sort of introduce
+
+2
+00:00:05,968 --> 00:00:08,848
+myself for those who don't know me. So I'm Ewan Riley.
+
+3
+00:00:08,940 --> 00:00:11,940
+and I am numerous.
+
+4
+00:00:11,912 --> 00:00:14,912
+but I'm the co-founder of Jules Co.
+
+5
+00:00:14,884 --> 00:00:17,764
+I'm also a manufacturing jeweler.
+
+6
+00:00:17,857 --> 00:00:21,057
+of 22 years and I've had my own business for
+
+7
+00:00:20,829 --> 00:00:23,109
+for 13 years.
+
+8
+00:00:23,801 --> 00:00:26,801
+So this demonstration itself will run for about 30 minutes.
+
+9
+00:00:26,773 --> 00:00:29,773
+minutes. I'm understanding that the south origin is on to
+
+10
+00:00:29,745 --> 00:00:32,785
+tonight so aware of those times for the Queen's
+
+11
+00:00:32,717 --> 00:00:35,317
+as a NSW in the house tonight.
+
+12
+00:00:35,689 --> 00:00:38,689
+So, and just to keep things flowing through.
+
+13
+00:00:38,662 --> 00:00:41,582
+this demonstration if you can just leave all the Q and I's
+
+14
+00:00:41,634 --> 00:00:43,794
+to the end. That would be great.
+
+15
+00:00:44,606 --> 00:00:47,606
+So yeah, I'll be taking you through the bench.
+
+16
+00:00:47,578 --> 00:00:50,538
+Benchflow, workflow from creating a quote through
+
+17
+00:00:50,550 --> 00:00:52,550
+to generating a proposal.
+
+18
+00:00:53,522 --> 00:00:56,362
+the client's acceptance, invoicing,
+
+19
+00:00:56,495 --> 00:00:59,055
+in the non-production management.
+
+20
+00:00:59,055 --> 00:01:00,895
+And also--
+
+21
+00:00:59,467 --> 00:01:02,467
+I'll show you some supply integrations that we've got.
+
+22
+00:01:02,439 --> 00:01:05,319
+at the moment, the pricing database.
+
+23
+00:01:05,411 --> 00:01:08,411
+and if you have the features we've been building from the
+
+24
+00:01:08,383 --> 00:01:10,383
+feedback of some of our beta testers.
+
+25
+00:01:11,355 --> 00:01:14,355
+So we've got 20 amazing value too.
+
+26
+00:01:14,328 --> 00:01:17,328
+is helping us out in this initial phase.
+
+27
+00:01:17,300 --> 00:01:20,300
+Yeah, so I mean, I'm in bench.
+
+28
+00:01:20,272 --> 00:01:23,272
+flow initially started as the e-mail.
+
+29
+00:01:23,244 --> 00:01:26,244
+internal project for my business and
+
+30
+00:01:26,216 --> 00:01:56,216
+like many of you, I was frustrated with how many different
+
+31
+00:01:29,188 --> 00:01:34,188
+systems we're using. I think at one point we're using seven different
+
+32
+00:01:32,160 --> 00:01:34,900
+systems just to make the day-to-day operations of our
+
+33
+00:01:35,133 --> 00:01:37,693
+custom workshop operate.
+
+34
+00:01:38,105 --> 00:01:41,105
+And that included spreadsheets.
+
+35
+00:01:41,077 --> 00:01:43,077
+and numerous other subscriptions.
+
+36
+00:01:44,049 --> 00:01:46,609
+I kind of got Jack of that and wanted to have
+
+37
+00:01:47,021 --> 00:01:49,901
+it will under one house and you know it's something
+
+38
+00:01:49,993 --> 00:01:53,033
+that I'd sort of started working on over a couple of years.
+
+39
+00:01:52,966 --> 00:01:55,966
+and especially over the last two years.
+
+40
+00:01:55,938 --> 00:02:00,938
+months got a lot more serious with it and the more I sort of be
+
+41
+00:01:58,910 --> 00:02:01,870
+to doubt the more I thought it would be very worth it.
+
+42
+00:02:01,882 --> 00:02:04,682
+wall for La Rada Jules to have access to it as well.
+
+43
+00:02:04,854 --> 00:02:07,854
+because we were finding it really helpful for our
+
+44
+00:02:07,826 --> 00:02:10,626
+business and to manage everything.
+
+45
+00:02:10,798 --> 00:02:13,798
+Yeah, that's why we've sort of been pushing really...
+
+46
+00:02:13,771 --> 00:02:16,771
+really hard to get this project operational.
+
+47
+00:02:16,743 --> 00:02:19,703
+where lots of different jillers can come on.
+
+48
+00:02:19,715 --> 00:02:22,675
+board and use software and hopefully
+
+49
+00:02:22,687 --> 00:02:25,427
+then will be a benefit to their business.
+
+50
+00:02:25,659 --> 00:02:28,659
+So...
+
+51
+00:02:28,631 --> 00:02:31,631
+So yeah, I mean let's...
+
+52
+00:02:31,604 --> 00:02:34,604
+Let's just keep things off.
+
+53
+00:02:34,576 --> 00:02:37,576
+So if you can see my screen now.
+
+54
+00:02:37,548 --> 00:02:40,548
+Actually, sorry, I will just mention that my camera...
+
+55
+00:02:40,520 --> 00:02:43,440
+members. Not very clear at all with with
+
+56
+00:02:43,492 --> 00:02:46,492
+my face because my main computer...
+
+57
+00:02:46,464 --> 00:02:49,464
+Jeter, the motherboard died this morning.
+
+58
+00:02:49,436 --> 00:02:52,316
+I couldn't believe it, like, you know.
+
+59
+00:02:52,409 --> 00:02:55,409
+all the timing. So I'm using my 10 year old diamond.
+
+60
+00:02:55,381 --> 00:02:58,221
+So that's why everything is super grainy.
+
+61
+00:02:58,353 --> 00:03:01,153
+But anyway, we'll push her and hopefully my...
+
+62
+00:03:01,325 --> 00:03:04,325
+My old dinosaur computer will make it through.
+
+63
+00:03:04,297 --> 00:03:09,017
+the end so things crossed.
+
+64
+00:03:07,269 --> 00:03:10,269
+So this is the main dashboard screen.
+
+65
+00:03:10,242 --> 00:03:13,242
+So when you get a new account, you will see
+
+66
+00:03:13,214 --> 00:03:16,214
+a dashboard which will have
+
+67
+00:03:16,186 --> 00:03:19,106
+step-by-step onboarding process.
+
+68
+00:03:19,158 --> 00:03:21,558
+and it will step you by.
+
+69
+00:03:22,130 --> 00:03:25,130
+each particular aspect.
+
+70
+00:03:25,102 --> 00:03:28,062
+to do in order and it will also have a
+
+71
+00:03:28,074 --> 00:03:31,034
+link where you can click and it will take you directly to
+
+72
+00:03:31,047 --> 00:03:34,007
+that different aspect that you should do before.
+
+73
+00:03:34,019 --> 00:03:36,619
+before you even start creating your first quote.
+
+74
+00:03:36,991 --> 00:03:39,671
+So what that would usually look like is
+
+75
+00:03:39,963 --> 00:03:41,963
+in the pricing database.
+
+76
+00:03:42,935 --> 00:03:45,935
+This is currently connected to Morrison Watson.
+
+77
+00:03:45,907 --> 00:03:48,907
+So we are working with some
+
+78
+00:03:48,880 --> 00:03:51,880
+companies like Ken Gold and Pat.
+
+79
+00:03:51,852 --> 00:03:54,852
+highloys to get them integrated into.
+
+80
+00:03:54,824 --> 00:03:56,824
+into the database.
+
+81
+00:03:57,796 --> 00:04:00,676
+This will automatically pull the pricing.
+
+82
+00:04:00,768 --> 00:04:03,648
+from the Morrison Watson API and
+
+83
+00:04:03,740 --> 00:04:06,140
+automatically uploaded every day.
+
+84
+00:04:06,712 --> 00:04:09,712
+As you can see here, the last sink was half an hour ago.
+
+85
+00:04:09,685 --> 00:04:12,685
+So, I mean, this has been a bit of a bone and continue.
+
+86
+00:04:12,657 --> 00:04:15,537
+for me over the years is trying to manually update all the prices.
+
+87
+00:04:15,629 --> 00:04:17,629
+when I'm doing quotes.
+
+88
+00:04:18,601 --> 00:04:21,401
+manually updating the process when I was doing quotes.
+
+89
+00:04:21,573 --> 00:04:24,573
+as this automatically pulls it from the system itself.
+
+90
+00:04:24,545 --> 00:04:27,545
+So yeah, this has been really really helpful.
+
+91
+00:04:27,518 --> 00:04:30,518
+you can also add in some mam.
+
+92
+00:04:30,490 --> 00:04:33,410
+price and if you wanted to. So this
+
+93
+00:04:33,462 --> 00:04:36,382
+one currently does pricing for all the castings.
+
+94
+00:04:36,434 --> 00:04:38,634
+and processing for the fabricated metals.
+
+95
+00:04:39,406 --> 00:04:42,406
+And, you know, things like 10 cards you can add in.
+
+96
+00:04:42,378 --> 00:04:47,258
+manual prices if you want to. In here you can also
+
+97
+00:04:45,350 --> 00:04:48,350
+also set your generic, you can set your markups.
+
+98
+00:04:48,323 --> 00:04:51,323
+And you can also put in your
+
+99
+00:04:51,295 --> 00:04:53,935
+scrap price that you offer for.
+
+100
+00:04:54,267 --> 00:04:57,227
+Clonset come in and you want to offer them, you know, up
+
+101
+00:04:57,239 --> 00:05:01,879
+for their scrap metal, you can add that in there too.
+
+102
+00:05:00,211 --> 00:05:02,731
+I just haven't got that set up quite yet.
+
+103
+00:05:03,183 --> 00:05:06,183
+And this is where you can also enter in all your pricing.
+
+104
+00:05:06,156 --> 00:05:09,116
+for your dominance.
+
+105
+00:05:09,128 --> 00:05:12,128
+Eli stones, currently.
+
+106
+00:05:12,100 --> 00:05:14,940
+just in this particular account.
+
+107
+00:05:15,072 --> 00:05:18,072
+So you've got rounds, but then you can also add in, you know, principle.
+
+108
+00:05:18,044 --> 00:05:20,044
+this cut so you can add in whatever shape you want.
+
+109
+00:05:21,016 --> 00:05:24,016
+So you can either put it in as a
+
+110
+00:05:23,988 --> 00:05:26,388
+costs per carat or a cost per sign.
+
+111
+00:05:26,961 --> 00:05:29,961
+And again, you can also add your markups.
+
+112
+00:05:29,933 --> 00:05:32,933
+in here. Again, all these markups, this is not
+
+113
+00:05:32,905 --> 00:05:35,505
+indication of any pricing.
+
+114
+00:05:35,877 --> 00:05:38,877
+This is just generic information for us to work with.
+
+115
+00:05:38,849 --> 00:05:41,889
+with is also a section for lab growth.
+
+116
+00:05:41,821 --> 00:05:44,821
+So you can split out your nose.
+
+117
+00:05:44,794 --> 00:05:47,794
+natural and your lab grounds, you can add in all your
+
+118
+00:05:47,766 --> 00:05:50,726
+gemstones in here and etc etc you can
+
+119
+00:05:50,738 --> 00:05:55,538
+add in the cost for settings.
+
+120
+00:05:53,710 --> 00:05:56,710
+as in, sorry, like how much it costs to
+
+121
+00:05:56,682 --> 00:06:01,642
+to set a stone and then you can put your mark
+
+122
+00:05:59,654 --> 00:06:02,534
+up in there as well. Same with chains if you've got some.
+
+123
+00:06:02,626 --> 00:06:05,106
+any particular chains which
+
+124
+00:06:05,599 --> 00:06:08,479
+you want to integrate into the system.
+
+125
+00:06:08,571 --> 00:06:11,451
+you can put the price per gram.
+
+126
+00:06:11,543 --> 00:06:14,343
+in here and then again your generic markups.
+
+127
+00:06:14,515 --> 00:06:16,715
+It has a spot for findings.
+
+128
+00:06:16,715 --> 00:06:17,475
+Michelais.
+
+129
+00:06:17,487 --> 00:06:20,487
+So the library section, this is where you're adding all your library.
+
+130
+00:06:20,459 --> 00:06:22,859
+for your various different components.
+
+131
+00:06:23,432 --> 00:06:25,432
+So now, you know, if you have
+
+132
+00:06:26,404 --> 00:06:29,284
+slightly different fee for manufacturing versus
+
+133
+00:06:29,376 --> 00:06:30,436
+There's card design.
+
+134
+00:06:30,436 --> 00:06:32,156
+You can input them in there.
+
+135
+00:06:32,156 --> 00:06:32,716
+So--
+
+136
+00:06:32,348 --> 00:06:35,348
+It's really important that this pricing database is filled out.
+
+137
+00:06:35,320 --> 00:06:39,760
+from the start because then this
+
+138
+00:06:38,292 --> 00:06:41,252
+This is what the quote pulls all the...
+
+139
+00:06:41,264 --> 00:06:44,224
+information from. So it allows you to do a quiet end.
+
+140
+00:06:44,237 --> 00:06:47,037
+in 30 seconds if all this is filled out correctly.
+
+141
+00:06:47,209 --> 00:06:50,209
+And in this business section you can just turn it on.
+
+142
+00:06:50,181 --> 00:06:52,581
+how much deposit you wanted to.
+
+143
+00:06:53,153 --> 00:06:56,153
+How much deposit you want to take for each person.
+
+144
+00:06:56,125 --> 00:06:59,125
+particular job and then you can also add in custom categories.
+
+145
+00:06:59,097 --> 00:07:02,097
+But yeah, this is just one very important part.
+
+146
+00:07:02,070 --> 00:07:04,950
+to get that all filled out correctly.
+
+147
+00:07:05,042 --> 00:07:08,042
+And I mean, but yeah, the more.
+
+148
+00:07:08,014 --> 00:07:11,014
+I mean once this is set up then you don't
+
+149
+00:07:10,986 --> 00:07:15,786
+really have to tinker with it too much especially.
+
+150
+00:07:13,958 --> 00:07:16,358
+with having this metal integration.
+
+151
+00:07:16,358 --> 00:07:17,318
+Thanks for more.
+
+152
+00:07:16,930 --> 00:07:21,770
+and Watson. I mean they came gold one.
+
+153
+00:07:19,902 --> 00:07:21,902
+is going to be coming next.
+
+154
+00:07:22,875 --> 00:07:25,475
+But yeah, for now we just have Morrison Watson there been
+
+155
+00:07:25,847 --> 00:07:28,007
+really fast and really good to deal with.
+
+156
+00:07:28,819 --> 00:07:31,059
+So I'll just quickly go.
+
+157
+00:07:31,059 --> 00:07:31,819
+So this is actually--
+
+158
+00:07:31,791 --> 00:07:36,671
+in beta mode at the moment so you'll see a lot of
+
+159
+00:07:34,763 --> 00:07:37,223
+things we've been updating all about.
+
+160
+00:07:37,735 --> 00:07:40,735
+users with the different updates. So this won't be
+
+161
+00:07:40,708 --> 00:07:43,708
+here. So this just shows that there's
+
+162
+00:07:43,680 --> 00:07:46,680
+It's been connected to Morrison Watson's confirmation.
+
+163
+00:07:46,652 --> 00:07:51,172
+of that. This talks about different quites.
+
+164
+00:07:49,624 --> 00:07:52,224
+that are in the system, how many clients you have.
+
+165
+00:07:52,596 --> 00:07:55,476
+that are imported and all the different parts.
+
+166
+00:07:55,568 --> 00:07:58,448
+puzzles you've sent. So again this is just all test information.
+
+167
+00:07:58,540 --> 00:08:00,540
+for now.
+
+168
+00:08:01,513 --> 00:08:04,513
+So this is the client data.
+
+169
+00:08:04,485 --> 00:08:07,485
+So again, this is where you can do it.
+
+170
+00:08:07,457 --> 00:08:10,417
+bulk import of all your existing clients from your existing city.
+
+171
+00:08:10,429 --> 00:08:13,429
+CRM. So that's it.
+
+172
+00:08:13,401 --> 00:08:16,401
+That's another thing which is good to do from the get go.
+
+173
+00:08:16,373 --> 00:08:18,933
+as well is inputting all your clients.
+
+174
+00:08:19,346 --> 00:08:22,346
+So there is, when this initial...
+
+175
+00:08:22,318 --> 00:08:25,318
+initial screen comes up it will have a certain
+
+176
+00:08:25,290 --> 00:08:28,170
+fields that it will require so you know it will need it.
+
+177
+00:08:28,262 --> 00:08:30,782
+your name, email and a phone number from the clients.
+
+178
+00:08:31,234 --> 00:08:33,234
+if you're doing a bulk import.
+
+179
+00:08:34,206 --> 00:08:37,206
+And it also will allow any birthday.
+
+180
+00:08:37,178 --> 00:08:41,978
+are anniversaries to be imported as well but if you want to make
+
+181
+00:08:40,151 --> 00:08:43,031
+manually add a client in, you can do that here.
+
+182
+00:08:43,123 --> 00:08:45,963
+I want to do it on this screen or do it in the quotes.
+
+183
+00:08:46,095 --> 00:08:48,375
+screen. But yeah, you can definitely.
+
+184
+00:08:49,067 --> 00:08:51,067
+manually add your clients in here.
+
+185
+00:08:52,039 --> 00:08:54,039
+So this is where the magic happens.
+
+186
+00:08:55,011 --> 00:08:56,691
+in this particular screen.
+
+187
+00:08:56,691 --> 00:08:58,051
+So if we go to...
+
+188
+00:08:57,984 --> 00:09:01,344
+a new full quote.
+
+189
+00:09:00,956 --> 00:09:03,956
+This is where we can begin the process of
+
+190
+00:09:03,928 --> 00:09:05,928
+starting the quote.
+
+191
+00:09:06,900 --> 00:09:09,940
+So with this quoting system, you can
+
+192
+00:09:09,872 --> 00:09:12,872
+can add in multiple options. So we will do just
+
+193
+00:09:12,844 --> 00:09:17,724
+the two option quote just so you can see
+
+194
+00:09:15,816 --> 00:09:18,376
+what it is. So in this option title,
+
+195
+00:09:18,789 --> 00:09:23,649
+option title section you'd want to put
+
+196
+00:09:21,761 --> 00:09:24,161
+what that particular option is.
+
+197
+00:09:24,161 --> 00:09:25,001
+So for example,
+
+198
+00:09:24,733 --> 00:09:27,673
+If you were quoting on an engaging the system
+
+199
+00:09:27,705 --> 00:09:30,145
+was a solitary gadget ring.
+
+200
+00:09:30,145 --> 00:09:30,985
+So in here,
+
+201
+00:09:30,677 --> 00:09:33,557
+you might put adding her like old.
+
+202
+00:09:36,622 --> 00:09:39,582
+engagement ring, the completion.
+
+203
+00:09:39,594 --> 00:09:42,554
+and time frame so this is more so important when it comes through.
+
+204
+00:09:42,566 --> 00:09:47,446
+to drafting up the proposal. So let's see.
+
+205
+00:09:45,538 --> 00:09:49,138
+say you know four to six weeks.
+
+206
+00:09:48,510 --> 00:09:53,430
+option description. So this
+
+207
+00:09:51,482 --> 00:09:54,082
+This is where you put a more detailed.
+
+208
+00:09:54,454 --> 00:09:57,494
+a more detailed description of what it actually
+
+209
+00:09:57,427 --> 00:10:02,387
+is as opposed to just the title. So let's just put adding
+
+210
+00:10:00,399 --> 00:10:03,279
+our yellow garden gauge ring with one.
+
+211
+00:10:03,371 --> 00:10:05,371
+carrot, mines, diamonds.
+
+212
+00:10:06,343 --> 00:10:09,343
+This is capable of simple just for this.
+
+213
+00:10:09,315 --> 00:10:11,715
+particular sample.
+
+214
+00:10:12,287 --> 00:10:15,287
+In here you can add in a piece.
+
+215
+00:10:15,260 --> 00:10:15,760
+feature.
+
+216
+00:10:18,232 --> 00:10:21,232
+So let's just put it in.
+
+217
+00:10:21,204 --> 00:10:24,204
+this one. So you can
+
+218
+00:10:24,176 --> 00:10:27,136
+add up to six pitches so this will be where you put your
+
+219
+00:10:27,148 --> 00:10:29,148
+designs for any particular client.
+
+220
+00:10:30,120 --> 00:10:33,120
+Okay, and in here's a...
+
+221
+00:10:33,092 --> 00:10:35,852
+This is where we're creating a new client or adding.
+
+222
+00:10:36,065 --> 00:10:38,425
+or searching for an existing client.
+
+223
+00:10:38,425 --> 00:10:39,065
+So let's just
+
+224
+00:10:39,037 --> 00:10:41,317
+It's probably random name.
+
+225
+00:10:41,317 --> 00:10:42,157
+Billy Bob.
+
+226
+00:10:42,009 --> 00:10:44,969
+But I'm it is my Billy Bob quants currently in this is
+
+227
+00:10:44,981 --> 00:10:47,981
+system. So we'll create a new client.
+
+228
+00:10:47,953 --> 00:10:50,833
+You have to add in
+
+229
+00:10:50,925 --> 00:10:52,925
+an email address.
+
+230
+00:10:53,898 --> 00:10:55,898
+And a final number.
+
+231
+00:10:56,870 --> 00:10:59,870
+So that will then create a new client.
+
+232
+00:11:08,758 --> 00:11:10,758
+So it's already found...
+
+233
+00:11:11,730 --> 00:11:13,730
+It has found an existing
+
+234
+00:11:14,703 --> 00:11:17,183
+that you enroll in the database.
+
+235
+00:11:17,183 --> 00:11:18,183
+That's not correct.
+
+236
+00:11:17,675 --> 00:11:19,675
+Let's try that again.
+
+237
+00:11:26,591 --> 00:11:29,191
+Let's just put in a random email.
+
+238
+00:11:32,536 --> 00:11:34,536
+and a random phone number.
+
+239
+00:11:41,452 --> 00:11:44,412
+Okay, so that is created in new client.
+
+240
+00:11:44,424 --> 00:11:47,424
+which will then be automatically updated and put in
+
+241
+00:11:47,396 --> 00:11:50,396
+into the quantity.
+
+242
+00:11:50,368 --> 00:11:53,088
+database.
+
+243
+00:11:53,341 --> 00:11:56,341
+So, a quite name. So, this is...
+
+244
+00:11:56,313 --> 00:11:59,273
+This is where we will just put gadget ring.
+
+245
+00:11:59,285 --> 00:12:01,285
+This is where you just keep it very generic.
+
+246
+00:12:02,257 --> 00:12:05,257
+So this is, you can allocate a bit too much.
+
+247
+00:12:05,229 --> 00:12:08,229
+process to this. So, you know, if for example,
+
+248
+00:12:08,201 --> 00:12:11,041
+example if you are doing a cast chunk.
+
+249
+00:12:11,174 --> 00:12:14,014
+in a handmade setting, for example.
+
+250
+00:12:14,146 --> 00:12:16,786
+We would put it as a custom hybrid CAD.
+
+251
+00:12:17,118 --> 00:12:20,058
+So hybrid, we refer that to you as, you know,
+
+252
+00:12:20,090 --> 00:12:22,810
+something which is utilizing both CAD and
+
+253
+00:12:23,062 --> 00:12:26,022
+handmade techniques. So we'll put that on the
+
+254
+00:12:26,034 --> 00:12:29,034
+job type. So this is just helpful when it comes down to
+
+255
+00:12:29,007 --> 00:12:31,967
+reporting later on. You can split out your
+
+256
+00:12:31,979 --> 00:12:35,699
+different proportions with
+
+257
+00:12:34,951 --> 00:12:37,751
+you know, the different type of processes you would create.
+
+258
+00:12:37,923 --> 00:12:39,923
+a piece of jurien.
+
+259
+00:12:40,895 --> 00:12:43,855
+Again, categories same sort of thing, it will help for reporting later.
+
+260
+00:12:43,867 --> 00:12:48,747
+on so you want to fill this out and this is just the current date.
+
+261
+00:12:46,839 --> 00:12:49,679
+In here you can add some internal notes.
+
+262
+00:12:49,812 --> 00:12:52,612
+Sometimes you get clients in or a bit of a...
+
+263
+00:12:52,784 --> 00:12:57,224
+or you know it can be extra special.
+
+264
+00:12:55,756 --> 00:12:58,756
+So, you know, this is where you can put any internal nights in.
+
+265
+00:12:58,728 --> 00:13:00,728
+So say, "Hey."
+
+266
+00:13:01,700 --> 00:13:03,860
+Very, funny.
+
+267
+00:13:04,672 --> 00:13:07,672
+So the client won't see this. This is just be sure.
+
+268
+00:13:07,645 --> 00:13:10,645
+shown for internal purposes. In here you can start importing
+
+269
+00:13:10,617 --> 00:13:12,057
+or the client measurements.
+
+270
+00:13:12,057 --> 00:13:13,657
+So for example, being the gauge.
+
+271
+00:13:13,589 --> 00:13:16,589
+measuring the Cise size M about if it's a necklace.
+
+272
+00:13:16,561 --> 00:13:19,281
+or brice that you can put in the measurements in here.
+
+273
+00:13:19,533 --> 00:13:22,533
+And if they're buying it for a gift for some...
+
+274
+00:13:22,505 --> 00:13:25,405
+You can add this in here. You can say it's gift for
+
+275
+00:13:25,477 --> 00:13:27,477
+Mary.
+
+276
+00:13:28,450 --> 00:13:31,330
+and it's for an engagement and the date.
+
+277
+00:13:31,422 --> 00:13:34,422
+But they're getting engaged, is going to be...
+
+278
+00:13:34,394 --> 00:13:36,394
+the 30th of August.
+
+279
+00:13:37,366 --> 00:13:40,386
+We want to make sure that we're going to get it done at least, you know, good co-
+
+280
+00:13:40,338 --> 00:13:43,338
+couple weeks beforehand.
+
+281
+00:13:43,310 --> 00:13:46,310
+put in for the 16th. So this is all useful when it comes to
+
+282
+00:13:46,283 --> 00:13:49,243
+to sending the proposal. In here you can add in
+
+283
+00:13:49,255 --> 00:13:53,975
+any extra personal notes or any
+
+284
+00:13:52,227 --> 00:13:54,227
+extra information you might want to add.
+
+285
+00:13:55,199 --> 00:13:58,199
+Okay, so this is where we're the
+
+286
+00:13:58,171 --> 00:14:01,171
+The magic starts to happen here, so when we start putting in the labour out,
+
+287
+00:14:01,143 --> 00:14:04,023
+It will come across into the quite summary and will lock
+
+288
+00:14:04,115 --> 00:14:06,335
+and we'll update this live as you go.
+
+289
+00:14:06,335 --> 00:14:07,175
+So let's say for
+
+290
+00:14:07,088 --> 00:14:09,548
+For example, we want to spend an hour doing the CAD.
+
+291
+00:14:10,060 --> 00:14:13,060
+and then to actually assemble the cap to
+
+292
+00:14:13,032 --> 00:14:17,752
+actually a symbol or the labor hours working on
+
+293
+00:14:16,004 --> 00:14:18,524
+on the casting itself.
+
+294
+00:14:18,524 --> 00:14:19,364
+So, you know,
+
+295
+00:14:18,976 --> 00:14:23,856
+we might spend two hours cleaning up that and then
+
+296
+00:14:21,948 --> 00:14:24,988
+And if we want to add in some hand-for-handmade.
+
+297
+00:14:24,921 --> 00:14:29,801
+cause or some handmade components in it.
+
+298
+00:14:27,893 --> 00:14:32,333
+we can section that off so we might want to add
+
+299
+00:14:30,865 --> 00:14:32,865
+maybe six hours for that.
+
+300
+00:14:33,837 --> 00:14:35,837
+can see here as we start typing this in.
+
+301
+00:14:36,809 --> 00:14:39,569
+the pricing will start to update. So this is
+
+302
+00:14:39,781 --> 00:14:42,781
+information is being pulled from that
+
+303
+00:14:42,753 --> 00:14:45,713
+pricing database so that's where it's important to make sure that's filled out.
+
+304
+00:14:45,726 --> 00:14:48,726
+and being a character.
+
+305
+00:14:48,698 --> 00:14:52,978
+cast autumn. There's a B printing fee.
+
+306
+00:14:51,670 --> 00:14:54,270
+So again, this is all put into the back end.
+
+307
+00:14:54,642 --> 00:14:57,362
+pricing database. So there's
+
+308
+00:14:57,614 --> 00:14:59,314
+Let's say there's one component.
+
+309
+00:15:00,586 --> 00:15:02,706
+and then there's one casting on them.
+
+310
+00:15:02,706 --> 00:15:03,946
+So this will be updated.
+
+311
+00:15:03,559 --> 00:15:05,959
+on the quite summary here.
+
+312
+00:15:06,531 --> 00:15:09,531
+So this is an additional labour item.
+
+313
+00:15:09,503 --> 00:15:11,743
+So this has been a request from some of the beta users.
+
+314
+00:15:11,743 --> 00:15:12,463
+So you
+
+315
+00:15:12,475 --> 00:15:15,475
+You know, they've been wanting to add in specific.
+
+316
+00:15:15,447 --> 00:15:17,447
+Labor items which
+
+317
+00:15:18,419 --> 00:15:21,419
+that just gives them an option to add in
+
+318
+00:15:21,391 --> 00:15:24,151
+some extra fees. So for example,
+
+319
+00:15:24,364 --> 00:15:26,364
+if...
+
+320
+00:15:27,336 --> 00:15:30,236
+I don't know if I needed to.
+
+321
+00:15:30,308 --> 00:15:33,488
+add in, do some more card, card work.
+
+322
+00:15:33,280 --> 00:15:36,280
+for a different component they need to be used.
+
+323
+00:15:36,252 --> 00:15:38,652
+initially planned on, they can add that in there.
+
+324
+00:15:39,224 --> 00:15:42,224
+But this this needs a little bit of reform it, but yeah, it will
+
+325
+00:15:42,197 --> 00:15:45,157
+as a request so we'll work on refining that a little bit.
+
+326
+00:15:45,169 --> 00:15:48,009
+bit more because it will probably make it more of a
+
+327
+00:15:48,141 --> 00:15:51,021
+of a custom kind of labour situation as opposed to...
+
+328
+00:15:51,113 --> 00:15:53,273
+to maybe adding in these extra.
+
+329
+00:15:54,085 --> 00:15:57,085
+sections here. Yep, then we come to
+
+330
+00:15:57,057 --> 00:16:01,897
+setting so again these are all pre-filled in the
+
+331
+00:16:00,029 --> 00:16:02,929
+back end. Not so pre-filled that these are
+
+332
+00:16:03,002 --> 00:16:05,842
+in the pricing database so you can
+
+333
+00:16:05,974 --> 00:16:08,934
+you can change these but you know a new account will
+
+334
+00:16:08,946 --> 00:16:11,886
+or just automatically list all these setting options.
+
+335
+00:16:11,918 --> 00:16:14,798
+So in this particular case, we want to do a core setting of three.
+
+336
+00:16:14,890 --> 00:16:17,170
+It's a round stein.
+
+337
+00:16:17,862 --> 00:16:20,862
+It's one stone. The cost, you know, it will
+
+338
+00:16:20,835 --> 00:16:23,835
+automatically pull this cost in from the pricing database, but what's the
+
+339
+00:16:23,807 --> 00:16:25,507
+So, you know, it's gonna be a tricky style,
+
+340
+00:16:25,507 --> 00:16:26,507
+so we might wanna...
+
+341
+00:16:26,779 --> 00:16:29,419
+charge it out at cost $100.
+
+342
+00:16:29,419 --> 00:16:29,759
+This is a--
+
+343
+00:16:29,751 --> 00:16:34,631
+put your mark up in and again we'll show you
+
+344
+00:16:32,723 --> 00:16:35,683
+Precious Metal, again this is...
+
+345
+00:16:35,695 --> 00:16:38,295
+is pulling directly from the Mars and Watson feed.
+
+346
+00:16:38,667 --> 00:16:40,667
+So, casting metal.
+
+347
+00:16:47,584 --> 00:16:49,584
+Thank you.
+
+348
+00:16:49,584 --> 00:16:50,584
+I got all three grams.
+
+349
+00:16:53,528 --> 00:16:56,408
+Actually, let's change that to 4.
+
+350
+00:16:56,500 --> 00:16:59,500
+Let's say there's a bit of adding care.
+
+351
+00:16:59,473 --> 00:17:00,473
+What goals?
+
+352
+00:17:05,417 --> 00:17:08,417
+Let's just do that.
+
+353
+00:17:08,389 --> 00:17:13,269
+example. So this is where we got our pricing updated here.
+
+354
+00:17:11,361 --> 00:17:14,361
+adding in a center star.
+
+355
+00:17:14,333 --> 00:17:17,333
+So currently I don't have any sense of diamonds.
+
+356
+00:17:17,305 --> 00:17:20,065
+add-ins to pricing database. So this is
+
+357
+00:17:20,278 --> 00:17:23,378
+where we'll do say one carrot, you put in your color.
+
+358
+00:17:26,222 --> 00:17:27,582
+- Marty.
+
+359
+00:17:29,194 --> 00:17:32,194
+You can add in certificate. This is a...
+
+360
+00:17:32,166 --> 00:17:35,286
+the cost is five grand.
+
+361
+00:17:35,138 --> 00:17:38,138
+the two mark up and that's reflected in the quote over here.
+
+362
+00:17:38,111 --> 00:17:41,111
+you know if there's any change.
+
+363
+00:17:41,083 --> 00:17:43,083
+You can add in change findings.
+
+364
+00:17:44,055 --> 00:17:46,935
+miscellaneous, so that's where you can add in valuations.
+
+365
+00:17:47,027 --> 00:17:49,987
+or kind of charge for packaging, shipping, insurance, what.
+
+366
+00:17:49,999 --> 00:17:52,959
+kind of stuff you can add that in there and if there's any scraps.
+
+367
+00:17:52,971 --> 00:17:54,971
+You can also add that in.
+
+368
+00:17:55,943 --> 00:17:59,383
+which will then...
+
+369
+00:17:58,916 --> 00:18:01,816
+Okay, so what am I?
+
+370
+00:18:01,888 --> 00:18:06,288
+head back just into the...
+
+371
+00:18:04,860 --> 00:18:07,420
+original quite we did and just do a second option here.
+
+372
+00:18:07,832 --> 00:18:10,832
+Just so I can show you what's accepting a...
+
+373
+00:18:10,804 --> 00:18:14,964
+multi-stage proposal looks like.
+
+374
+00:18:13,776 --> 00:18:16,776
+So, what we can actually do...
+
+375
+00:18:16,749 --> 00:18:19,749
+is we can actually duplicate.
+
+376
+00:18:19,721 --> 00:18:22,721
+create this particular option.
+
+377
+00:18:22,693 --> 00:18:25,693
+So, as you're having to input all the details again.
+
+378
+00:18:25,665 --> 00:18:26,985
+especially if you're just quoting like
+
+379
+00:18:26,985 --> 00:18:28,985
+adding character versus nine characters.
+
+380
+00:18:28,637 --> 00:18:30,637
+so we can just hit that.
+
+381
+00:18:31,609 --> 00:18:33,609
+It will create.
+
+382
+00:18:33,609 --> 00:18:34,609
+I see.
+
+383
+00:18:34,581 --> 00:18:37,581
+the emerald version of it.
+
+384
+00:18:37,554 --> 00:18:40,554
+can change through the details here saying we're doing 9 characters.
+
+385
+00:18:43,498 --> 00:18:45,498
+We will look what else we need to change.
+
+386
+00:18:45,498 --> 00:18:46,498
+We will change.
+
+387
+00:18:46,470 --> 00:18:50,070
+the mouse in the middle.
+
+388
+00:18:49,442 --> 00:18:52,442
+And we would change.
+
+389
+00:18:52,414 --> 00:18:54,414
+the black gold.
+
+390
+00:18:55,387 --> 00:18:59,387
+As you can see here, it's reflected that in the
+
+391
+00:18:58,359 --> 00:19:01,359
+So this is the original price here 18,300.
+
+392
+00:19:01,331 --> 00:19:04,291
+363 and in 9 carat 16,000.
+
+393
+00:19:04,303 --> 00:19:07,263
+540. Just make sure you're thinking about it.
+
+394
+00:19:07,275 --> 00:19:09,275
+is so good, which is...
+
+395
+00:19:10,247 --> 00:19:12,247
+Okay, so that is
+
+396
+00:19:13,219 --> 00:19:16,019
+Another feature of this is that it automatically saves.
+
+397
+00:19:16,192 --> 00:19:18,832
+throughout the process as well.
+
+398
+00:19:18,832 --> 00:19:19,232
+So if you
+
+399
+00:19:19,164 --> 00:19:22,164
+If you do go out of the screen, it will be a great way to do it.
+
+400
+00:19:22,136 --> 00:19:25,096
+be saved as you go.
+
+401
+00:19:25,108 --> 00:19:29,508
+and be safe just like a draft.
+
+402
+00:19:28,080 --> 00:19:30,080
+We'll hit update.
+
+403
+00:19:34,025 --> 00:19:39,025
+Okay, and what we'll do now is we'll create a new video.
+
+404
+00:19:36,997 --> 00:19:39,997
+the proposal so you just one click of a button.
+
+405
+00:19:39,969 --> 00:19:41,969
+button and it creates a new proposal.
+
+406
+00:19:41,969 --> 00:19:43,969
+So this is the--
+
+407
+00:19:42,941 --> 00:19:44,941
+client facing side.
+
+408
+00:19:45,913 --> 00:19:48,913
+This is where you'd fill in the details that will be.
+
+409
+00:19:48,885 --> 00:19:51,485
+sense of the client for them to approve the quote.
+
+410
+00:19:51,485 --> 00:19:51,845
+The quote.
+
+411
+00:19:51,857 --> 00:19:54,857
+Function is purely for in-house purposes.
+
+412
+00:19:54,830 --> 00:19:57,830
+So this introduction message
+
+413
+00:19:57,802 --> 00:20:00,762
+closing message here that's all pre-filled in the sitting section.
+
+414
+00:20:00,774 --> 00:20:05,414
+beforehand so this will automatically pull in what you've
+
+415
+00:20:03,746 --> 00:20:05,746
+written and it also will have
+
+416
+00:20:06,718 --> 00:20:09,818
+and all the quite is valid for, so this again can be changed.
+
+417
+00:20:09,690 --> 00:20:12,690
+So this is
+
+418
+00:20:12,663 --> 00:20:15,543
+This is going to order populate.
+
+419
+00:20:15,635 --> 00:20:18,595
+some of the options in the pricing etc.
+
+420
+00:20:18,607 --> 00:20:21,567
+from the quite crowd so you just need to email.
+
+421
+00:20:21,579 --> 00:20:26,439
+put it from the quote. So this is the
+
+422
+00:20:24,551 --> 00:20:27,351
+quite redid up.
+
+423
+00:20:27,523 --> 00:20:30,363
+And as you can see, it's pulled in...
+
+424
+00:20:30,495 --> 00:20:33,375
+that information and because we had two options.
+
+425
+00:20:33,468 --> 00:20:36,468
+you've got your 18 karat yellow gold here and your 9 karat yellow gold.
+
+426
+00:20:36,440 --> 00:20:38,440
+here and it's put in the pricing.
+
+427
+00:20:39,412 --> 00:20:41,412
+We'll just head back up here for a sec because
+
+428
+00:20:42,384 --> 00:20:45,344
+You got a payment schedule here, so some people like to take
+
+429
+00:20:45,356 --> 00:20:50,356
+it's a new percent deposit something would like to take a few
+
+430
+00:20:48,328 --> 00:20:51,288
+center puzzle so you can actually add this in here.
+
+431
+00:20:51,301 --> 00:20:53,581
+It does have some pre-filled.
+
+432
+00:20:54,273 --> 00:20:57,233
+ones down below. So let's just say in this particular case,
+
+433
+00:20:57,245 --> 00:21:00,045
+take a few percent deposit with the balance.
+
+434
+00:21:00,217 --> 00:21:03,217
+paid at different times.
+
+435
+00:21:03,189 --> 00:21:06,189
+This one, this is after accepting the proposal.
+
+436
+00:21:06,161 --> 00:21:09,161
+then, you know,
+
+437
+00:21:09,133 --> 00:21:12,813
+they need to have 24 hours to pay.
+
+438
+00:21:12,106 --> 00:21:14,986
+got the price breaking down and then the final balance.
+
+439
+00:21:15,078 --> 00:21:18,078
+Once we can set it to the end.
+
+440
+00:21:18,050 --> 00:21:20,930
+as percentage or fixed.
+
+441
+00:21:21,022 --> 00:21:24,022
+I've got in this particular case it's just a remaining balance.
+
+442
+00:21:23,994 --> 00:21:26,994
+because we're doing a 50% deposit and a 50% deposit.
+
+443
+00:21:26,966 --> 00:21:29,366
+to be sent before they collect.
+
+444
+00:21:29,939 --> 00:21:32,939
+You can also choose some different options here.
+
+445
+00:21:32,911 --> 00:21:35,911
+whether you want them to pay before.
+
+446
+00:21:35,883 --> 00:21:38,123
+we stop production, we can click that option.
+
+447
+00:21:38,855 --> 00:21:41,855
+So, let's see.
+
+448
+00:21:41,827 --> 00:21:44,687
+this sections part is
+
+449
+00:21:44,799 --> 00:21:47,799
+when, for example, if you were quite...
+
+450
+00:21:47,771 --> 00:21:50,771
+on the Engage Ring and they also want to
+
+451
+00:21:50,744 --> 00:21:53,744
+it a bracelet you would sectional
+
+452
+00:21:53,716 --> 00:21:55,716
+off the engagement ring as one.
+
+453
+00:21:56,688 --> 00:21:59,288
+as one section and then the
+
+454
+00:21:59,660 --> 00:22:02,140
+Brice it will be sectioned off as a separate section.
+
+455
+00:22:02,140 --> 00:22:04,060
+So we do--
+
+456
+00:22:02,632 --> 00:22:05,512
+that because we've got multiple options for the gauge rings.
+
+457
+00:22:05,604 --> 00:22:08,684
+so they can still pick either 18 carat or 9 carat.
+
+458
+00:22:08,577 --> 00:22:13,457
+and then also they can then choose to accept the
+
+459
+00:22:11,549 --> 00:22:14,549
+bracelet as well. This particular case because there's
+
+460
+00:22:14,521 --> 00:22:17,481
+only one item technically required, which is
+
+461
+00:22:17,493 --> 00:22:21,173
+engagement we might need to section it off.
+
+462
+00:22:20,465 --> 00:22:23,425
+So we just want to double check these off.
+
+463
+00:22:23,437 --> 00:22:24,437
+field correctly.
+
+464
+00:22:26,409 --> 00:22:29,409
+If you do want to display the...
+
+465
+00:22:29,382 --> 00:22:32,342
+price of the stone individually in the proposal you can.
+
+466
+00:22:32,354 --> 00:22:35,354
+can just toggle this on when most people don't.
+
+467
+00:22:35,326 --> 00:22:38,206
+usually do that but you can decide to do that if you wish.
+
+468
+00:22:38,298 --> 00:22:40,298
+[chuckles]
+
+469
+00:22:41,270 --> 00:22:44,230
+This is where you would upload that is
+
+470
+00:22:44,242 --> 00:22:47,242
+So on again, we will actually get this pulling in from the corner.
+
+471
+00:22:47,215 --> 00:22:50,055
+but for now it's just a manual upload of the
+
+472
+00:22:50,187 --> 00:22:51,187
+Design again.
+
+473
+00:22:56,131 --> 00:22:58,131
+Boop.
+
+474
+00:23:02,075 --> 00:23:05,075
+So you can attach up to six images again.
+
+475
+00:23:05,048 --> 00:23:07,448
+Let's just leave this one off for now.
+
+476
+00:23:08,020 --> 00:23:11,020
+You can also choose to, you know,
+
+477
+00:23:10,992 --> 00:23:13,992
+So give them a little discount if you wish or like.
+
+478
+00:23:13,964 --> 00:23:16,844
+complimentary add on like complimentary.
+
+479
+00:23:16,936 --> 00:23:46,936
+polishing cloth etc. EK
+
+480
+00:23:19,908 --> 00:23:22,808
+and set up a template for this mistake.
+
+481
+00:23:22,880 --> 00:23:24,880
+I'll just leave it off.
+
+482
+00:23:25,853 --> 00:23:28,853
+So once that's all done, you just need to click Save.
+
+483
+00:23:31,797 --> 00:23:33,797
+and then you can send it directly to the client.
+
+484
+00:23:34,769 --> 00:23:37,729
+So you can also copy the link if you want to text
+
+485
+00:23:37,741 --> 00:23:42,541
+to them or send a via WhatsApp etc but in the
+
+486
+00:23:40,713 --> 00:23:43,713
+to the case, we will send it for email.
+
+487
+00:23:43,686 --> 00:23:48,086
+is just a random generic email.
+
+488
+00:23:46,658 --> 00:23:49,538
+and or generic but it's just a random email and
+
+489
+00:23:49,630 --> 00:23:52,630
+And this can be filled out as a template.
+
+490
+00:23:52,602 --> 00:23:57,562
+and you can put whatever you wish on here but it has the link.
+
+491
+00:23:55,574 --> 00:23:58,474
+Thank you for the centre of the coin.
+
+492
+00:23:58,546 --> 00:24:01,346
+the link that I'll click on. So we'll do those clicks send.
+
+493
+00:24:04,491 --> 00:24:07,491
+That will send it.
+
+494
+00:24:07,463 --> 00:24:09,463
+directly to the client.
+
+495
+00:24:10,435 --> 00:24:12,435
+But what we might actually do...
+
+496
+00:24:13,407 --> 00:24:15,407
+is actually Senator Real.
+
+497
+00:24:16,379 --> 00:24:18,739
+e-mail address.
+
+498
+00:24:19,351 --> 00:24:22,351
+So I can show you what it looks like from the client side.
+
+499
+00:24:28,268 --> 00:24:30,748
+Okay, so.
+
+500
+00:24:31,240 --> 00:24:34,240
+I will pop back into the...
+
+501
+00:24:34,212 --> 00:24:38,692
+email address and I'll show you what that looks like.
+
+502
+00:24:43,129 --> 00:24:46,129
+Okay, so this is what the decline is.
+
+503
+00:24:46,101 --> 00:24:50,261
+we'll see. It will come through.
+
+504
+00:24:49,073 --> 00:24:51,513
+In the email, I have some branding.
+
+505
+00:24:51,513 --> 00:24:53,473
+This city could be--
+
+506
+00:24:52,045 --> 00:24:54,445
+link.
+
+507
+00:25:00,962 --> 00:25:03,962
+So this is really options will come up so the design will come up.
+
+508
+00:25:03,934 --> 00:25:05,934
+you can choose to watermark it.
+
+509
+00:25:06,906 --> 00:25:09,786
+particularly your design. You'll have the title of the
+
+510
+00:25:09,878 --> 00:25:12,878
+and this is the description.
+
+511
+00:25:12,850 --> 00:25:15,850
+So that can be filled out in that quote screen.
+
+512
+00:25:15,822 --> 00:25:18,822
+It will just sort of break down.
+
+513
+00:25:18,794 --> 00:25:22,794
+materials that are in the
+
+514
+00:25:21,767 --> 00:25:26,647
+piece. So they've got their two options.
+
+515
+00:25:24,739 --> 00:25:31,739
+So let's say for example, I want to go ahead and say, "I'm going to go ahead and do this."
+
+516
+00:25:27,711 --> 00:25:30,671
+I have with the adding card option or they need to do so.
+
+517
+00:25:30,683 --> 00:25:31,683
+Select it.
+
+518
+00:25:33,655 --> 00:25:36,495
+and then it will bring up the deposit they need.
+
+519
+00:25:36,627 --> 00:25:39,467
+pay, but also do the terms and conditions.
+
+520
+00:25:39,600 --> 00:25:42,000
+So again, this is all pre-filled on the back end.
+
+521
+00:25:45,544 --> 00:25:48,544
+This is just confirmation.
+
+522
+00:25:48,516 --> 00:25:51,316
+that they have happy with those terms and conditions.
+
+523
+00:26:06,349 --> 00:26:13,349
+This is just accepting the fact that you're not going to be able to get the right answer.
+
+524
+00:26:09,321 --> 00:26:12,321
+quote and from their end I'll say the
+
+525
+00:26:12,293 --> 00:26:14,293
+So clearly see that it's accepted.
+
+526
+00:26:15,265 --> 00:26:18,265
+and they can then keep this for their records.
+
+527
+00:26:18,238 --> 00:26:21,238
+So then we'll head back into the bench.
+
+528
+00:26:21,210 --> 00:26:22,210
+So I dashboard now.
+
+529
+00:26:27,154 --> 00:26:30,154
+Okay, so this is just back in the proposal section.
+
+530
+00:26:30,126 --> 00:26:33,006
+So as you can see here, you can see that it's been.
+
+531
+00:26:33,098 --> 00:26:36,098
+second in the letter I've seen it.
+
+532
+00:26:36,070 --> 00:26:39,070
+which has been confirmed and they have signed it.
+
+533
+00:26:39,043 --> 00:26:42,043
+teas and teas. So this then will then it will
+
+534
+00:26:42,015 --> 00:26:44,015
+automatically create two things.
+
+535
+00:26:47,959 --> 00:26:50,959
+One thing it will create.
+
+536
+00:26:53,903 --> 00:26:56,903
+is you'll head into the production.
+
+537
+00:26:56,876 --> 00:27:01,356
+board. So this is where the
+
+538
+00:26:59,848 --> 00:27:04,768
+workflow management starts to happen.
+
+539
+00:27:02,820 --> 00:27:05,820
+the other.
+
+540
+00:27:05,792 --> 00:27:08,932
+in this particular section, you can
+
+541
+00:27:08,764 --> 00:27:10,764
+it breaks down all the different steps.
+
+542
+00:27:11,736 --> 00:27:13,736
+have this so you can remove certain steps.
+
+543
+00:27:14,708 --> 00:27:19,188
+all the way but it's sort of pre-filled these out for now.
+
+544
+00:27:17,681 --> 00:27:20,681
+So it's also called in
+
+545
+00:27:20,653 --> 00:27:23,653
+some data from the actual question.
+
+546
+00:27:23,625 --> 00:27:26,625
+itself. So you
+
+547
+00:27:26,597 --> 00:27:29,957
+these can obviously be changed.
+
+548
+00:27:29,569 --> 00:27:32,569
+You can also track how many they actually take as well.
+
+549
+00:27:32,541 --> 00:27:36,781
+and put that into the workflow.
+
+550
+00:27:35,514 --> 00:27:38,514
+You can change the status.
+
+551
+00:27:38,486 --> 00:27:41,486
+of the job itself. So currently
+
+552
+00:27:41,458 --> 00:27:44,418
+it's not started but you know you can click
+
+553
+00:27:44,430 --> 00:27:47,430
+that has been scheduled out.
+
+554
+00:27:47,402 --> 00:27:52,262
+priority you can then also change
+
+555
+00:27:50,374 --> 00:27:57,374
+materials have been ordered not.
+
+556
+00:27:53,346 --> 00:27:56,346
+And if you're waiting on any particular thing like...
+
+557
+00:27:56,319 --> 00:27:59,319
+For example, still waiting for the gemstone to come.
+
+558
+00:27:59,291 --> 00:28:03,971
+etc. Change it due date.
+
+559
+00:28:02,263 --> 00:28:05,143
+I can obviously click where the polls being received or not.
+
+560
+00:28:05,235 --> 00:28:08,235
+You can add in pictures here.
+
+561
+00:28:08,207 --> 00:28:11,207
+This is where you can upload any sort of vent shots or renders.
+
+562
+00:28:11,179 --> 00:28:13,759
+the designs again.
+
+563
+00:28:14,152 --> 00:28:16,552
+You can apps 25 photos for this particular one.
+
+564
+00:28:17,124 --> 00:28:19,124
+You will also then be able to
+
+565
+00:28:20,096 --> 00:28:23,096
+be able to allocate team members to each other.
+
+566
+00:28:23,068 --> 00:28:26,788
+particular stage.
+
+567
+00:28:26,040 --> 00:28:28,920
+As you can see here, because we click schedule, we're scrolling into the next.
+
+568
+00:28:29,012 --> 00:28:32,332
+next step.
+
+569
+00:28:31,984 --> 00:28:34,984
+So this is where you can add in all your tools.
+
+570
+00:28:34,957 --> 00:28:37,957
+Again, this is just generic information.
+
+571
+00:28:37,929 --> 00:28:40,809
+So here's just got some pre-filled out.
+
+572
+00:28:40,901 --> 00:28:43,901
+particular person is a jeweler and a polisher.
+
+573
+00:28:43,873 --> 00:28:46,873
+So they productive for season.
+
+574
+00:28:46,845 --> 00:28:49,245
+sales a day and productive 24 hours a week.
+
+575
+00:28:49,817 --> 00:28:52,817
+This turnaround dates is more suitable for contractors.
+
+576
+00:28:52,790 --> 00:28:55,790
+Obviously, if you inhale, there's no turnaround days per se.
+
+577
+00:28:55,762 --> 00:28:56,262
+Bye.
+
+578
+00:28:58,734 --> 00:29:01,734
+If you want to...
+
+579
+00:29:01,706 --> 00:29:04,586
+add a new team member you simply add them in.
+
+580
+00:29:04,678 --> 00:29:07,558
+here. But they are and you just add
+
+581
+00:29:07,650 --> 00:29:10,210
+them into your team here.
+
+582
+00:29:10,622 --> 00:29:13,622
+Then you can also add in your contractors.
+
+583
+00:29:13,595 --> 00:29:16,095
+So, I'm just taking the case.
+
+584
+00:29:16,567 --> 00:29:18,567
+I'm going to end grave up.
+
+585
+00:29:18,567 --> 00:29:19,567
+Turn around, Tom's usually.
+
+586
+00:29:19,539 --> 00:29:21,699
+10 days and it takes two days in trouble.
+
+587
+00:29:31,428 --> 00:29:34,428
+You've also got a calendar function here once you start scheduling.
+
+588
+00:29:34,400 --> 00:29:37,280
+jobs out. This will be showing up within the calendar itself.
+
+589
+00:29:37,372 --> 00:29:40,332
+and then you can drag and drop things around as you go that will reflect.
+
+590
+00:29:40,344 --> 00:29:43,344
+back into the job itself.
+
+591
+00:29:43,316 --> 00:29:45,316
+So, family change dates.
+
+592
+00:29:46,288 --> 00:29:50,288
+So this is quite a big...
+
+593
+00:29:49,260 --> 00:29:52,260
+This is quite a big feature.
+
+594
+00:29:52,233 --> 00:29:55,233
+but we're still working out the nitty gritty parts here.
+
+595
+00:29:55,205 --> 00:29:58,205
+But within a week we should have this.
+
+596
+00:29:58,177 --> 00:30:01,057
+pretty running smoothly. This is going to be it.
+
+597
+00:30:01,149 --> 00:30:04,149
+a quite an exciting feature, especially
+
+598
+00:30:04,121 --> 00:30:07,161
+considering it pulls in as soon as proposal exists.
+
+599
+00:30:07,093 --> 00:30:10,093
+was accepted. The headshot.
+
+600
+00:30:10,066 --> 00:30:14,906
+in production. We will also...
+
+601
+00:30:13,038 --> 00:30:16,038
+be making sure that when a proposal
+
+602
+00:30:16,010 --> 00:30:18,890
+is accepted it would be automatically generate an invoice.
+
+603
+00:30:18,982 --> 00:30:21,882
+and that invoice would automatically be...
+
+604
+00:30:21,954 --> 00:30:24,914
+sent to the client as well. So that will be generated up here.
+
+605
+00:30:24,926 --> 00:30:27,926
+It will work very similarly.
+
+606
+00:30:27,898 --> 00:30:32,698
+a proposal not only will it all make
+
+607
+00:30:30,871 --> 00:30:32,871
+But you can also push it
+
+608
+00:30:33,843 --> 00:30:35,843
+manually to the client as well.
+
+609
+00:30:36,815 --> 00:30:39,815
+and you know it will have clearly everything split out.
+
+610
+00:30:39,787 --> 00:30:42,667
+into different payments you can generate a
+
+611
+00:30:42,759 --> 00:30:45,759
+If you wish, any other stuff.
+
+612
+00:30:45,731 --> 00:30:48,611
+messages you want to give them but this will also be...
+
+613
+00:30:48,704 --> 00:30:51,504
+branded pretty much identical to the proposal itself.
+
+614
+00:30:51,676 --> 00:30:54,676
+>> Okay.
+
+615
+00:30:54,648 --> 00:30:57,528
+we come to the reporting section so this for
+
+616
+00:30:57,620 --> 00:31:00,620
+is reasonably generic.
+
+617
+00:31:00,592 --> 00:31:03,552
+say it just outlines the amount of questions.
+
+618
+00:31:03,564 --> 00:31:06,404
+you've created obviously the proposal you sent months that
+
+619
+00:31:06,536 --> 00:31:09,536
+and it talks about your conversion rate, which is obviously how you can do it.
+
+620
+00:31:09,509 --> 00:31:13,629
+helpful for tracking. So you know you can
+
+621
+00:31:12,481 --> 00:31:15,321
+if that is a low number,
+
+622
+00:31:15,453 --> 00:31:19,973
+can work on increasing your conversions by maybe changing your
+
+623
+00:31:18,425 --> 00:31:21,305
+some wording in your proposals or doing something.
+
+624
+00:31:21,397 --> 00:31:25,397
+offering them something slightly extra.
+
+625
+00:31:24,369 --> 00:31:27,169
+as just an extra incentive for them to go ahead.
+
+626
+00:31:27,342 --> 00:31:30,342
+And then it just titles the amount of revenue you've collected.
+
+627
+00:31:30,314 --> 00:31:32,914
+it over time and the average job value.
+
+628
+00:31:33,286 --> 00:31:36,166
+So, and then yeah, an obviously sort of break.
+
+629
+00:31:36,258 --> 00:31:38,018
+stand and imagine here as well.
+
+630
+00:31:38,018 --> 00:31:39,018
+So you can then expo--
+
+631
+00:31:39,230 --> 00:31:42,230
+this data and, you know, for any
+
+632
+00:31:42,202 --> 00:31:45,202
+the, you know, keeping
+
+633
+00:31:45,174 --> 00:31:48,134
+track measuring any sort of thing you want to measure.
+
+634
+00:31:48,147 --> 00:31:51,147
+This will be built out over time to
+
+635
+00:31:51,119 --> 00:31:55,119
+become a...
+
+636
+00:31:54,091 --> 00:31:57,091
+some more reporting.
+
+637
+00:31:57,063 --> 00:32:27,063
+Yeah, the
+
+638
+00:32:00,035 --> 00:32:02,675
+more reports available is what I'm trying to say.
+
+639
+00:32:03,007 --> 00:32:05,807
+in here and we do have a plan to
+
+640
+00:32:05,980 --> 00:32:10,580
+integrate zero within the next month.
+
+641
+00:32:08,952 --> 00:32:11,792
+So any job that is invoiced out.
+
+642
+00:32:11,924 --> 00:32:14,924
+Any payments that are made will be integrated.
+
+643
+00:32:14,896 --> 00:32:19,216
+of zero. So that's pretty exciting that we're going to
+
+644
+00:32:17,868 --> 00:32:20,428
+get that integrated sooner rather than later.
+
+645
+00:32:20,840 --> 00:32:23,840
+So yeah, as time goes on this one.
+
+646
+00:32:23,812 --> 00:32:26,532
+be a bit more customizable and you can choose to.
+
+647
+00:32:26,785 --> 00:32:29,185
+have particular things in here or not.
+
+648
+00:32:29,757 --> 00:32:32,717
+just keep it really simple and just have one that you sort of want to track in between.
+
+649
+00:32:32,729 --> 00:32:37,609
+particular but yeah this will be more customizable in the future.
+
+650
+00:32:35,701 --> 00:32:37,701
+Um...
+
+651
+00:32:38,673 --> 00:32:41,673
+That is pretty much the workflow from start to finish.
+
+652
+00:32:41,645 --> 00:32:44,525
+So as you can see it covers from getting the...
+
+653
+00:32:44,618 --> 00:32:47,618
+their client into the system, all our through quotes, proposals.
+
+654
+00:32:47,590 --> 00:32:50,590
+invoices, production workflow.
+
+655
+00:32:50,562 --> 00:32:55,442
+and yeah and then
+
+656
+00:32:53,534 --> 00:32:56,534
+and tracking measuring.
+
+657
+00:32:56,506 --> 00:33:00,946
+everything throughout the stages.
+
+658
+00:32:59,478 --> 00:33:02,478
+So we touched on the pricing database.
+
+659
+00:33:02,450 --> 00:33:07,330
+a little bit. So in this setting section this is where you're into
+
+660
+00:33:05,423 --> 00:33:08,323
+Sorry, in New Year.
+
+661
+00:33:08,395 --> 00:33:11,395
+So you can change all the colors.
+
+662
+00:33:11,367 --> 00:33:14,367
+You can add all that in there.
+
+663
+00:33:14,339 --> 00:33:16,499
+This is where you add your quote.
+
+664
+00:33:16,499 --> 00:33:17,699
+Come on, the quotes about it.
+
+665
+00:33:17,311 --> 00:33:20,311
+for and you can also assign some
+
+666
+00:33:20,283 --> 00:33:23,243
+team members so you know if you've got
+
+667
+00:33:23,256 --> 00:33:28,136
+a front of house that you want to invite.
+
+668
+00:33:26,228 --> 00:33:29,108
+you can just add the mean here. You can allocate who they actually are.
+
+669
+00:33:29,200 --> 00:33:31,200
+or what sort of level of...
+
+670
+00:33:32,172 --> 00:33:35,172
+what sort of level that user can access.
+
+671
+00:33:35,144 --> 00:33:39,824
+the platform and it will send an email.
+
+672
+00:33:38,116 --> 00:33:40,716
+to them to add into the system.
+
+673
+00:33:41,088 --> 00:33:44,088
+Yeah, and this is
+
+674
+00:33:44,061 --> 00:33:47,061
+where you're also, this is important to set up before you keep things on.
+
+675
+00:33:47,033 --> 00:33:50,033
+is to all the different weddings that are
+
+676
+00:33:50,005 --> 00:33:52,645
+you want to have in the quads or proposals.
+
+677
+00:33:52,645 --> 00:33:54,645
+You can
+
+678
+00:33:52,977 --> 00:33:55,497
+can also protect the designs by having
+
+679
+00:33:55,949 --> 00:33:58,849
+the images overlaid.
+
+680
+00:33:58,921 --> 00:34:01,321
+with your logo or anything else.
+
+681
+00:34:01,894 --> 00:34:04,894
+So yeah, that also protects all the designs that
+
+682
+00:34:04,866 --> 00:34:06,226
+that you send through to them.
+
+683
+00:34:07,838 --> 00:34:10,838
+So yeah, it will take about...
+
+684
+00:34:10,810 --> 00:34:15,610
+you know 30 minutes to to set up your account properly.
+
+685
+00:34:13,782 --> 00:34:16,782
+But like I said earlier on, mindset's
+
+686
+00:34:16,754 --> 00:34:19,314
+done, then you won't really need to do it.
+
+687
+00:34:19,727 --> 00:34:22,607
+again because...
+
+688
+00:34:22,699 --> 00:34:25,579
+all this would be automatically polls and it's so much.
+
+689
+00:34:25,671 --> 00:34:28,391
+to sit and forget unless you want to update it of course.
+
+690
+00:34:34,587 --> 00:34:37,587
+You can adjust your...
+
+691
+00:34:37,559 --> 00:34:41,839
+GP guidelines in here as well.
+
+692
+00:34:40,532 --> 00:34:42,532
+And
+
+693
+00:34:43,504 --> 00:34:46,384
+This is where another place of this is.
+
+694
+00:34:46,476 --> 00:34:49,376
+the place where you set up your supply integrations as well.
+
+695
+00:34:49,448 --> 00:34:52,328
+during the onboarding it will direct you to here and
+
+696
+00:34:52,420 --> 00:34:55,420
+and this is where if you do use Morrison Watson.
+
+697
+00:34:55,392 --> 00:34:58,272
+This is where you start to set up all this.
+
+698
+00:34:58,365 --> 00:35:01,365
+This seems really complicated, but...
+
+699
+00:35:01,337 --> 00:35:04,337
+We've got some help functions available to help.
+
+700
+00:35:04,309 --> 00:35:07,269
+help connect with this and Marisam Watson are also able to
+
+701
+00:35:07,281 --> 00:35:10,321
+help as well if you call them. But they have a lot of
+
+702
+00:35:10,253 --> 00:35:13,253
+allowed every user of their own.
+
+703
+00:35:13,225 --> 00:35:15,825
+platform to access their APIs.
+
+704
+00:35:16,197 --> 00:35:19,237
+So yeah, again, it looks very complicated, but once it's set up...
+
+705
+00:35:19,170 --> 00:35:22,170
+It will import all this property.
+
+706
+00:35:22,142 --> 00:35:24,542
+pricing on a daily basis.
+
+707
+00:35:25,114 --> 00:35:28,114
+And last thing we have also in the chat.
+
+708
+00:35:28,086 --> 00:35:31,086
+integrated a full help system into this.
+
+709
+00:35:31,058 --> 00:35:33,638
+And so we have
+
+710
+00:35:34,030 --> 00:35:36,830
+currently about 70 articles in the back end.
+
+711
+00:35:37,003 --> 00:35:40,003
+So, you know, if you want to know...
+
+712
+00:35:39,975 --> 00:35:42,975
+How to create?
+
+713
+00:35:42,947 --> 00:35:44,947
+I quote...
+
+714
+00:35:48,891 --> 00:35:51,891
+It will pop up here in this little message bar.
+
+715
+00:35:51,863 --> 00:35:54,863
+and then it will show the different articles that you can then click on.
+
+716
+00:35:54,835 --> 00:35:57,795
+and look at to get help if you need help with any aspect.
+
+717
+00:35:57,808 --> 00:35:59,808
+of it during the time.
+
+718
+00:36:00,780 --> 00:36:05,660
+and this is where you need this is if you need to contact some
+
+719
+00:36:03,752 --> 00:36:06,632
+AKA me. It will.
+
+720
+00:36:06,724 --> 00:36:11,404
+be able to send a message to me and
+
+721
+00:36:09,696 --> 00:36:12,436
+I'll be able to action and help you out.
+
+722
+00:36:12,668 --> 00:36:15,668
+We will be offering
+
+723
+00:36:15,641 --> 00:36:18,601
+a, um, we're.
+
+724
+00:36:18,613 --> 00:36:20,613
+also will be offering onboarding as well.
+
+725
+00:36:21,585 --> 00:36:24,465
+15 minute onboarding call if you need any
+
+726
+00:36:24,557 --> 00:36:27,157
+help with actually sitting here.
+
+727
+00:36:27,529 --> 00:36:30,329
+everything up. And if you find a bug.
+
+728
+00:36:30,501 --> 00:36:32,501
+Please, please report it.
+
+729
+00:36:33,473 --> 00:36:38,033
+that will allow us to fix it and
+
+730
+00:36:36,446 --> 00:36:39,346
+A great thing about the way that we have.
+
+731
+00:36:39,418 --> 00:36:42,418
+produces platform is that we can fix a bug and
+
+732
+00:36:42,390 --> 00:36:44,870
+get it live within five minutes.
+
+733
+00:36:44,870 --> 00:36:45,710
+So it's not.
+
+734
+00:36:45,362 --> 00:36:47,962
+something that will take months and months and months to do.
+
+735
+00:36:48,334 --> 00:36:52,814
+is very very quick so we can move very
+
+736
+00:36:51,306 --> 00:36:54,306
+and same if you have an idea that
+
+737
+00:36:54,279 --> 00:36:57,279
+of a feature you want to add, please request.
+
+738
+00:36:57,251 --> 00:37:00,251
+it because the more people will request a particular feature.
+
+739
+00:37:00,223 --> 00:37:02,223
+is
+
+740
+00:37:03,195 --> 00:37:06,195
+Obviously shows us what the demand is and then we can
+
+741
+00:37:06,167 --> 00:37:09,207
+and again input that feature in and get it live.
+
+742
+00:37:09,139 --> 00:37:11,859
+the next day so we can do
+
+743
+00:37:12,111 --> 00:37:14,911
+off really really quickly which is which is very exciting.
+
+744
+00:37:15,084 --> 00:37:18,084
+So that is everything.
+
+745
+00:37:18,056 --> 00:37:20,056
+That is everything inside the system.
+
+746
+00:37:21,028 --> 00:37:24,028
+And so I'll book.
+
+747
+00:37:24,000 --> 00:37:27,000
+put a link in the chat.
+
+748
+00:37:26,972 --> 00:37:29,972
+if you want to pre-register your interest.
+
+749
+00:37:29,944 --> 00:37:32,344
+because you do get a discount.
+
+750
+00:37:32,917 --> 00:37:35,917
+If you pre-read.
+
+751
+00:37:35,889 --> 00:37:38,889
+register your interest in signing up to the platform.
+
+752
+00:37:38,861 --> 00:37:41,501
+I will actually extend that out.
+
+753
+00:37:41,833 --> 00:37:46,633
+for a month. I was initially
+
+754
+00:37:44,805 --> 00:37:47,405
+you're just gonna do it until the launch, which is tomorrow.
+
+755
+00:37:47,777 --> 00:37:50,777
+I will extend it out because I do realize that
+
+756
+00:37:50,749 --> 00:37:53,749
+There will be still some bugs that will soon end be found.
+
+757
+00:37:53,722 --> 00:37:56,722
+and things might not be.
+
+758
+00:37:56,694 --> 00:37:59,654
+running 100% smoothly so we'll extend out.
+
+759
+00:37:59,666 --> 00:38:01,666
+for any users that sign up.
+
+760
+00:38:02,638 --> 00:38:07,638
+within the month then they will get a perfect
+
+761
+00:38:05,610 --> 00:38:07,610
+a lifetime discount.
+
+762
+00:38:08,582 --> 00:38:11,582
+for the life and our access to all the premium features.
+
+763
+00:38:11,555 --> 00:38:14,555
+ongoing as well. So that basically
+
+764
+00:38:14,527 --> 00:38:17,527
+ends with demonstration and...
+
+765
+00:38:17,499 --> 00:38:20,499
+If you do have any questions, please.
+
+766
+00:38:20,471 --> 00:38:25,391
+feel free to ask or you can also
+
+767
+00:38:23,443 --> 00:38:24,963
+So send me an email.
+
+768
+00:38:24,963 --> 00:38:26,483
+So that is support at
+
+769
+00:38:26,415 --> 00:38:28,955
+at benchflow.app.
+
+770
+00:38:29,387 --> 00:38:33,827
+put that in the chat as well.
+
+771
+00:38:35,332 --> 00:38:38,292
+But if you do need to contact me via email, that is
+
+772
+00:38:38,304 --> 00:38:41,384
+the email to sender2.
+

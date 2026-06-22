@@ -69,6 +69,7 @@ public partial class CustomQuoteBuilderWindow : Window
             QuoteDate = DateTime.Today,
             ValidUntil = DateTime.Today.AddDays(14),
             DepositPercent = 30m,
+            ProposalStatus = "Not Sent",
             Introduction = "Thank you for the opportunity to create this piece. The design options below can be adjusted before approval.",
             Terms = settings.TermsAndConditions
         };
@@ -234,7 +235,8 @@ public partial class CustomQuoteBuilderWindow : Window
         var status = string.IsNullOrWhiteSpace(_quote.Status) ? "Draft" : _quote.Status;
         var customer = CustomerCombo.SelectedItem is Customer c && c.Id > 0 ? c.FullName : "No customer selected";
         var code = string.IsNullOrWhiteSpace(_quote.QuoteCode) ? "Unsaved quote" : _quote.QuoteCode;
-        return $"{code} | {status} | {customer}";
+        var proposal = string.IsNullOrWhiteSpace(_quote.ProposalStatus) ? "Proposal not sent" : $"Proposal {_quote.ProposalStatus}";
+        return $"{code} | {status} | {proposal} | {customer}";
     }
 
     private string BuildQuoteExpiryText()
@@ -265,8 +267,10 @@ public partial class CustomQuoteBuilderWindow : Window
             return "This quote is expired. Update the expiry date or create a follow-up before progressing.";
         if (!_options.Any(x => x.IsRecommended))
             return "Mark the strongest option as recommended, then preview the proposal.";
+        if (!string.Equals(_quote.ProposalStatus, "Sent", StringComparison.OrdinalIgnoreCase) && !_quote.AcceptedOptionId.HasValue)
+            return "Preview the proposal, then use Send / Record Proposal to prepare the customer message and follow-up.";
         if (!_quote.AcceptedOptionId.HasValue)
-            return "Preview the proposal, record customer feedback, then accept the chosen option.";
+            return "The proposal is sent. Record feedback, follow up, then accept the chosen option.";
         if (_quote.AcceptedOptionId == selected.Id && !_quote.LinkedJobId.HasValue)
             return "The selected option is accepted. Create the production job when ready.";
         if (_quote.LinkedJobId.HasValue)
@@ -863,14 +867,155 @@ public partial class CustomQuoteBuilderWindow : Window
     {
         try
         {
-            SaveQuote();
-            using var db = new AppDbContext();
-            var customer = _quote.CustomerId.HasValue ? db.Customers.AsNoTracking().FirstOrDefault(x => x.Id == _quote.CustomerId) : null;
-            var externalLinks = db.QuoteOptionExternalDiamondLinks.AsNoTracking().Where(x => _options.Select(o => o.Id).Contains(x.QuoteOptionId)).ToList().GroupBy(x => x.QuoteOptionId).ToDictionary(g => g.Key, g => g.ToList());
-            var path = CustomQuoteDocumentService.CreateProposal(_quote, customer, _options, externalLinks);
+            var path = GenerateProposalFile(recordPrepared: true, out _);
             Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "Proposal", MessageBoxButton.OK, MessageBoxImage.Error); }
+    }
+
+    private void SendProposal_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = GenerateProposalFile(recordPrepared: true, out var customer);
+            var settings = BusinessSettingsService.Load();
+            var subject = MergeProposalTemplate(settings.ProposalEmailSubjectTemplate, customer, path);
+            var message = MergeProposalTemplate(settings.ProposalEmailMessageTemplate, customer, path);
+            var followUpDate = GetSuggestedProposalFollowUpDate();
+
+            var window = new SendProposalWindow(
+                _quote.QuoteCode,
+                _quote.Title,
+                customer?.FullName,
+                string.IsNullOrWhiteSpace(_quote.ProposalEmailTo) ? customer?.Email : _quote.ProposalEmailTo,
+                path,
+                string.IsNullOrWhiteSpace(_quote.ProposalEmailSubject) ? subject : _quote.ProposalEmailSubject,
+                string.IsNullOrWhiteSpace(_quote.ProposalEmailMessage) ? message : _quote.ProposalEmailMessage,
+                _quote.ProposalFollowUpDueAt ?? followUpDate)
+            {
+                Owner = this
+            };
+
+            if (window.ShowDialog() != true)
+                return;
+
+            using var db = new AppDbContext();
+            _quote.ProposalStatus = "Sent";
+            _quote.ProposalSentAt = DateTime.Now;
+            _quote.ProposalFollowUpDueAt = window.FollowUpDueDate;
+            _quote.ProposalLastPath = path;
+            _quote.ProposalEmailTo = window.EmailTo;
+            _quote.ProposalEmailSubject = window.EmailSubject;
+            _quote.ProposalEmailMessage = window.EmailMessage;
+            if (!IsAcceptedOrConvertedStatus(_quote.Status))
+                _quote.Status = "Proposal Sent";
+
+            db.CustomQuotes.Update(_quote);
+            if (window.CreateFollowUp)
+                CreateSentProposalFollowUp(db, window.FollowUpDueDate ?? followUpDate);
+            db.SaveChanges();
+
+            WorkflowStatusText.Text = $"Proposal recorded as sent to {window.EmailTo}";
+            RefreshQuoteOverview();
+            MessageBox.Show("Proposal recorded as sent. The email draft can be sent from your mail app, and the follow-up is ready on the dashboard.", "Send proposal", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Send proposal", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private string GenerateProposalFile(bool recordPrepared, out Customer? customer)
+    {
+        SaveQuote();
+        using var db = new AppDbContext();
+        customer = _quote.CustomerId.HasValue ? db.Customers.AsNoTracking().FirstOrDefault(x => x.Id == _quote.CustomerId) : null;
+        var optionIds = _options.Where(o => o.Id > 0).Select(o => o.Id).ToList();
+        var externalLinks = db.QuoteOptionExternalDiamondLinks
+            .AsNoTracking()
+            .Where(x => optionIds.Contains(x.QuoteOptionId))
+            .ToList()
+            .GroupBy(x => x.QuoteOptionId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+        var path = CustomQuoteDocumentService.CreateProposal(_quote, customer, _options, externalLinks);
+
+        _quote.ProposalLastGeneratedAt = DateTime.Now;
+        _quote.ProposalLastPath = path;
+        if (recordPrepared && (string.IsNullOrWhiteSpace(_quote.ProposalStatus) || _quote.ProposalStatus == "Not Sent"))
+            _quote.ProposalStatus = "Prepared";
+        if (recordPrepared && string.Equals(_quote.Status, "Draft", StringComparison.OrdinalIgnoreCase))
+            _quote.Status = "Proposal Prepared";
+
+        db.CustomQuotes.Update(_quote);
+        db.SaveChanges();
+        RefreshQuoteOverview();
+        return path;
+    }
+
+    private string MergeProposalTemplate(string template, Customer? customer, string proposalPath)
+    {
+        var settings = BusinessSettingsService.Load();
+        var basis = GetProposalBasisOption();
+        var deposit = basis == null ? 0m : basis.TotalPrice * _quote.DepositPercent / 100m;
+        return (template ?? string.Empty)
+            .Replace("{CustomerName}", string.IsNullOrWhiteSpace(customer?.FullName) ? "there" : customer.FullName)
+            .Replace("{QuoteCode}", _quote.QuoteCode)
+            .Replace("{QuoteTitle}", _quote.Title)
+            .Replace("{BusinessName}", settings.BusinessName)
+            .Replace("{ProposalLink}", proposalPath)
+            .Replace("{ProposalPath}", proposalPath)
+            .Replace("{DepositAmount}", deposit.ToString("C"))
+            .Replace("{ValidUntil}", _quote.ValidUntil?.ToString("dd MMM yyyy") ?? string.Empty);
+    }
+
+    private QuoteOption? GetProposalBasisOption()
+    {
+        return _options.FirstOrDefault(x => x.Id > 0 && _quote.AcceptedOptionId == x.Id)
+            ?? _options.FirstOrDefault(x => x.IsRecommended)
+            ?? _options.FirstOrDefault();
+    }
+
+    private DateTime GetSuggestedProposalFollowUpDate()
+    {
+        if (_quote.ValidUntil.HasValue)
+        {
+            var expiry = _quote.ValidUntil.Value.Date;
+            if (expiry <= DateTime.Today.AddDays(2))
+                return expiry < DateTime.Today ? DateTime.Today : expiry;
+        }
+
+        return DateTime.Today.AddDays(3);
+    }
+
+    private void CreateSentProposalFollowUp(AppDbContext db, DateTime dueDate)
+    {
+        var title = $"Follow up sent proposal {_quote.QuoteCode}";
+        var duplicate = db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t =>
+            t.IsOpen &&
+            string.Equals(t.Title, title, StringComparison.OrdinalIgnoreCase) &&
+            t.CustomerId == _quote.CustomerId);
+        if (duplicate)
+            return;
+
+        db.BusinessTasks.Add(new BusinessTask
+        {
+            TaskCode = TaskWorkflowService.GenerateTaskCode(),
+            Title = title,
+            Category = BusinessTaskCategory.CustomerFollowUp,
+            Priority = dueDate.Date <= DateTime.Today ? BusinessTaskPriority.High : BusinessTaskPriority.Normal,
+            Status = BusinessTaskStatus.ToDo,
+            DueDate = dueDate,
+            ReminderDate = dueDate,
+            CustomerId = _quote.CustomerId,
+            Description = $"Check whether the customer has reviewed proposal {_quote.QuoteCode} for {_quote.Title}.\n\nLast proposal file: {_quote.ProposalLastPath}".Trim(),
+            ShowOnDashboard = true
+        });
+    }
+
+    private static bool IsAcceptedOrConvertedStatus(string? status)
+    {
+        return string.Equals(status, "Accepted", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "Converted to Job", StringComparison.OrdinalIgnoreCase);
     }
 
     private void AcceptOption_Click(object sender, RoutedEventArgs e)
@@ -918,6 +1063,7 @@ public partial class CustomQuoteBuilderWindow : Window
 
             _quote.AcceptedOptionId = selectedOption.Id;
             _quote.Status = "Accepted";
+            _quote.ProposalStatus = "Accepted";
             db.CustomQuotes.Update(_quote);
             db.SaveChanges();
             transaction.Commit();
@@ -943,6 +1089,8 @@ public partial class CustomQuoteBuilderWindow : Window
             foreach (var link in externals) link.LinkStatus = "Proposed";
             _quote.AcceptedOptionId = null;
             _quote.Status = "Draft";
+            if (string.Equals(_quote.ProposalStatus, "Accepted", StringComparison.OrdinalIgnoreCase))
+                _quote.ProposalStatus = _quote.ProposalSentAt.HasValue ? "Sent" : "Prepared";
             db.CustomQuotes.Update(_quote);
             db.SaveChanges();
             ReloadCurrentQuoteLinks(db);
@@ -1010,6 +1158,7 @@ public partial class CustomQuoteBuilderWindow : Window
             _quote.LinkedJobId = job.Id;
             _quote.AcceptedOptionId = selectedOption.Id;
             _quote.Status = "Converted to Job";
+            _quote.ProposalStatus = "Converted to Job";
             db.CustomQuotes.Update(_quote);
             db.SaveChanges();
             WorkflowStatusText.Text = $"Created {job.JobCode}";

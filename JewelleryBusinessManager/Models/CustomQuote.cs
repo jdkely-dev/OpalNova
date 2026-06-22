@@ -11,6 +11,14 @@ public class CustomQuote : BaseEntity
     public DateTime? ValidUntil { get; set; } = DateTime.Today.AddDays(14);
     public int? AcceptedOptionId { get; set; }
     public decimal DepositPercent { get; set; } = 30m;
+    public string ProposalStatus { get; set; } = "Not Sent";
+    public DateTime? ProposalLastGeneratedAt { get; set; }
+    public DateTime? ProposalSentAt { get; set; }
+    public DateTime? ProposalFollowUpDueAt { get; set; }
+    public string? ProposalLastPath { get; set; }
+    public string? ProposalEmailTo { get; set; }
+    public string? ProposalEmailSubject { get; set; }
+    public string? ProposalEmailMessage { get; set; }
     public string? Introduction { get; set; }
     public string? CustomerNotes { get; set; }
     public string? InternalNotes { get; set; }

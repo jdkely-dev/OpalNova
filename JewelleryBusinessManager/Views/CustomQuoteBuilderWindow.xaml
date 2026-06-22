@@ -9,7 +9,7 @@
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                 <StackPanel><TextBlock Text="Custom Quote &amp; Proposal Workflow" FontSize="24" FontWeight="Bold"/><TextBlock Text="Build several design options, compare live totals, create a proposal, then convert the accepted option into a production job." Foreground="{StaticResource MutedTextBrush}" Margin="0,5,0,0"/></StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal"><Button Content="New Quote" Click="NewQuote_Click" Style="{StaticResource ToolbarButtonStyle}"/><Button Content="Save" Click="Save_Click" Style="{StaticResource AccentButtonStyle}"/><Button Content="Preview Proposal" Click="Preview_Click" Style="{StaticResource AccentButtonStyle}"/></StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal"><Button Content="New Quote" Click="NewQuote_Click" Style="{StaticResource ToolbarButtonStyle}"/><Button Content="Save" Click="Save_Click" Style="{StaticResource AccentButtonStyle}"/><Button Content="Preview Proposal" Click="Preview_Click" Style="{StaticResource AccentButtonStyle}"/><Button Content="Send / Record" Click="SendProposal_Click" Style="{StaticResource AccentButtonStyle}"/></StackPanel>
             </Grid>
         </Border>
 
@@ -151,6 +151,7 @@
                             <UniformGrid Columns="1">
                                 <Button Content="Save Quote" Click="Save_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Save the quote and all option links."/>
                                 <Button Content="Preview Proposal" Click="Preview_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Save and open the customer-facing proposal."/>
+                                <Button Content="Send / Record Proposal" Click="SendProposal_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Prepare an email draft, record the proposal as sent, and create a follow-up."/>
                                 <Button Content="Mark Recommended" Click="RecommendOption_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Mark only the selected option as recommended."/>
                                 <Button Content="Create Follow-Up" Click="CreateQuoteFollowUp_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Create a dashboard follow-up task for this quote."/>
                                 <Button Content="Accept Option" Click="AcceptOption_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Reserve the selected option and mark it accepted."/>

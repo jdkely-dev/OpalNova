@@ -477,6 +477,14 @@ CREATE TABLE IF NOT EXISTS CustomQuotes (
     ValidUntil TEXT NULL,
     AcceptedOptionId INTEGER NULL,
     DepositPercent TEXT NOT NULL DEFAULT '30',
+    ProposalStatus TEXT NOT NULL DEFAULT 'Not Sent',
+    ProposalLastGeneratedAt TEXT NULL,
+    ProposalSentAt TEXT NULL,
+    ProposalFollowUpDueAt TEXT NULL,
+    ProposalLastPath TEXT NULL,
+    ProposalEmailTo TEXT NULL,
+    ProposalEmailSubject TEXT NULL,
+    ProposalEmailMessage TEXT NULL,
     Introduction TEXT NULL,
     CustomerNotes TEXT NULL,
     InternalNotes TEXT NULL,
@@ -539,6 +547,15 @@ CREATE TABLE IF NOT EXISTS QuoteOptionMaterialLinks (
 );
 CREATE INDEX IF NOT EXISTS IX_QuoteOptionMaterialLinks_QuoteOptionId ON QuoteOptionMaterialLinks (QuoteOptionId);
 CREATE INDEX IF NOT EXISTS IX_QuoteOptionMaterialLinks_MaterialId ON QuoteOptionMaterialLinks (MaterialId);");
+
+        EnsureColumn(db, "CustomQuotes", "ProposalStatus", "TEXT NOT NULL DEFAULT 'Not Sent'");
+        EnsureColumn(db, "CustomQuotes", "ProposalLastGeneratedAt", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "ProposalSentAt", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "ProposalFollowUpDueAt", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "ProposalLastPath", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "ProposalEmailTo", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "ProposalEmailSubject", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "ProposalEmailMessage", "TEXT NULL");
     }
 
 

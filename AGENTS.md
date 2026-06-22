@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.49.1 Quote Image Attachment Polish
+- Current workspace version: V1.50.0 Premium Proposal Send Workflow
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,24 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.50.0 State
+
+V1.50.0 begins the premium proposal output/send workflow build:
+
+- Bumped visible/project version metadata to 1.50.0.
+- Added additive quote proposal tracking fields for prepared/sent/accepted state, generated proposal path, email draft details, sent time, and follow-up due date.
+- Added a dark themed `SendProposalWindow` for recipient, subject, message, open proposal, copy email draft, open mail draft, record sent, and create follow-up.
+- Wired quote builder actions so proposal preview records a prepared proposal and send/record marks the proposal as sent without direct SMTP.
+- Added proposal email subject/message template defaults to business settings.
+- Created duplicate-safe sent-proposal follow-up tasks using the existing `BusinessTask` workflow.
+- Improved generated proposal HTML with cleaner customer-facing layout, recommendation badge, payment schedule, next steps, and corrected separator encoding.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.49.1 State
 

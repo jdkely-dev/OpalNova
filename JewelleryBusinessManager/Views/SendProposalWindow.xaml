@@ -1,0 +1,115 @@
+<Window x:Class="JewelleryBusinessManager.Views.SendProposalWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Send / Record Proposal"
+        Height="700"
+        Width="760"
+        MinHeight="620"
+        MinWidth="680"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource AppBackgroundBrush}">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Background="{StaticResource CardGradientBrush}"
+                BorderBrush="{StaticResource BorderBrushSoft}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="18"
+                Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="Send / Record Proposal" FontSize="24" FontWeight="Bold"/>
+                <TextBlock x:Name="HeaderText"
+                           Foreground="{StaticResource MutedTextBrush}"
+                           TextWrapping="Wrap"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Background="{StaticResource CardGradientBrush}"
+                        BorderBrush="{StaticResource BorderBrushSoft}"
+                        BorderThickness="1"
+                        CornerRadius="16"
+                        Padding="16"
+                        Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="Email draft" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <TextBlock Text="To"/>
+                        <TextBox x:Name="ToBox" Margin="0,4,0,10"/>
+                        <TextBlock Text="Subject"/>
+                        <TextBox x:Name="SubjectBox" Margin="0,4,0,10"/>
+                        <TextBlock Text="Message"/>
+                        <TextBox x:Name="MessageBodyBox"
+                                 Height="210"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"
+                                 Margin="0,4,0,8"/>
+                        <TextBlock Text="This prepares the customer message and proposal link. OPALNOVA does not send email directly in this build."
+                                   Foreground="{StaticResource MutedTextBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{StaticResource CardGradientBrush}"
+                        BorderBrush="{StaticResource BorderBrushSoft}"
+                        BorderThickness="1"
+                        CornerRadius="16"
+                        Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="Record next step" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="ProposalPathText"
+                                   Foreground="{StaticResource SecondaryTextBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,10"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="210"/>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox x:Name="CreateFollowUpCheck"
+                                      Content="Create proposal follow-up task"
+                                      IsChecked="True"
+                                      VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Follow up due"/>
+                                <DatePicker x:Name="FollowUpDatePicker" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="2"
+                Background="{StaticResource CardGradientBrush}"
+                BorderBrush="{StaticResource BorderBrushSoft}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="12"
+                Margin="0,12,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Open Proposal" Click="OpenProposal_Click" Style="{StaticResource ToolbarButtonStyle}"/>
+                    <Button Content="Copy Email Draft" Click="CopyDraft_Click" Style="{StaticResource ToolbarButtonStyle}"/>
+                    <Button Content="Open Email Draft" Click="OpenEmailDraft_Click" Style="{StaticResource ToolbarButtonStyle}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="Cancel" Click="Cancel_Click" Style="{StaticResource ToolbarButtonStyle}"/>
+                    <Button Content="Record Sent" Click="RecordSent_Click" Style="{StaticResource AccentButtonStyle}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

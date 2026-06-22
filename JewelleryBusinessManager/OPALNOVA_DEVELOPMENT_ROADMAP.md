@@ -2,9 +2,9 @@
 
 ## Current Baseline
 
-Current workspace baseline: V1.49.1.
+Current workspace baseline: V1.50.0.
 
-V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options.
+V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout.
 
 The next work should stay focused on improving daily workflow quality before adding broad new feature areas.
 
@@ -23,11 +23,13 @@ Goal: make quoting faster, clearer, and more customer-ready without changing quo
 - Add quote expiry and unanswered-quote follow-up prompts.
 - Improve design-image attachment handling before adding drag-and-drop.
 
-### V1.50 - Premium Proposal Output
+### V1.50 - Premium Proposal Output And Send Workflow
 
-Goal: make proposals suitable to send directly to customers.
+Goal: make proposals suitable to send directly to customers and record the send/follow-up step without direct email-delivery risk.
 
-- Create a premium proposal HTML layout first.
+- Create a premium proposal HTML layout first. Done in V1.50.0 as a first pass.
+- Add proposal send/record modal with recipient, subject, message, proposal link, copy/open email draft, record sent, and follow-up task creation. Done in V1.50.0.
+- Surface proposal prepared/sent/accepted/converted state on the quote. Started in V1.50.0.
 - Add PDF export after the HTML layout is stable.
 - Add option comparison, payment schedule display, and accepted-option clarity.
 - Show linked external diamond certificate/video fields where available.
