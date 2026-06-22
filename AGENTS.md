@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.50.0 Premium Proposal Send Workflow
+- Current workspace version: V1.51.0 Universal Next Action And Alert Centre
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,24 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.51.0 State
+
+V1.51.0 begins the universal next-action and alert-centre build:
+
+- Bumped visible/project version metadata to 1.51.0.
+- Added a shared `NextActionService` and `NextActionItem` model for runtime-calculated quote, production, payment, supplier diamond, inventory, and follow-up alerts.
+- Added a dark themed `AlertCentreWindow` hosted in workspace tabs with search, filters, summary counts, selected-alert detail, and workflow-opening actions.
+- Added dashboard and toolbar entry points for Alert Centre, plus a dashboard next-action count tile driven by the shared service.
+- Added a dashboard setup-readiness card using existing settings, quote, job, proposal, supplier, and backup data without schema changes.
+- Added a plain-text V1.50 proposal-send testing checklist for manual validation.
+- Preserved database schema and existing workflow state transitions.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.50.0 State
 

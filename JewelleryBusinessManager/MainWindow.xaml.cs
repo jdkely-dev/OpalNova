@@ -52,6 +52,7 @@ public partial class MainWindow : Window
     private readonly HashSet<string> _toolSections = new()
     {
         "Project Workbench",
+        "Alert Centre",
         "Quotes & Proposals",
         "Production",
         "Payments & Sales",
@@ -78,6 +79,8 @@ public partial class MainWindow : Window
     };
 
     private sealed record ToolAction(string Title, string Description, RoutedEventHandler Handler);
+    private sealed record SetupReadinessRow(string Status, string Title, string Detail, string TargetKey, bool IsComplete, bool CountsTowardProgress = true);
+    private string _dashboardSetupTarget = "settings";
     private sealed record EntitySelectionOption(string Label, object Entity)
     {
         public override string ToString() => string.IsNullOrWhiteSpace(Label) ? "Select record" : Label;
@@ -201,6 +204,13 @@ public partial class MainWindow : Window
     {
         if (sender is not Border tile || tile.Tag is not string target || string.IsNullOrWhiteSpace(target))
             return;
+
+        if (target == "Alert Centre")
+        {
+            AlertCentre_Click(sender, e);
+            e.Handled = true;
+            return;
+        }
 
         SelectNavigationSection(target);
         StatusText.Text = $"Opened {target} from dashboard tile.";
@@ -857,6 +867,7 @@ public partial class MainWindow : Window
     private static string GetToolPageDescription(string section) => section switch
     {
         "Project Workbench" => "Guided next-action hub across quotes, proposals, external diamonds, production jobs, balances and customer follow-ups.",
+        "Alert Centre" => "Prioritised alerts and next actions across quotes, production jobs, payments, supplier diamonds, inventory and follow-ups.",
         "Quotes & Proposals" => "Create customer quotes, compare options, generate proposals and move accepted work into production.",
         "Production" => "Run the workshop board, job handover steps, batch work and opal/stone production tools.",
         "Payments & Sales" => "Record payments, create handover paperwork, finish sales and review money that needs attention.",
@@ -888,10 +899,21 @@ public partial class MainWindow : Window
         "Project Workbench" => new ToolAction[]
         {
             new("Open Project Workbench", "Open the guided next-action hub for every active quote, job, supplier diamond, payment and follow-up.", ProjectWorkbench_Click),
+            new("Alert Centre", "Open urgent and high-priority next actions in a focused alert list.", AlertCentre_Click),
             new("Custom Quote Builder", "Create or update a multi-option quote from the current workflow.", CustomQuoteBuilder_Click),
             new("Production Board", "Open the visual workshop pipeline.", ProductionBoard_Click),
             new("Payment & Collection", "Finish payment, pickup, shipping and sale creation.", PaymentCollection_Click),
             new("Supplier Holds & Orders", "Protect customer-approved supplier diamonds with hold/order tracking.", SupplierDiamondWorkflow_Click),
+        },
+        "Alert Centre" => new ToolAction[]
+        {
+            new("Open Alert Centre", "Review urgent quote, job, payment, supplier diamond, stock and follow-up alerts.", AlertCentre_Click),
+            new("Project Workbench", "Open the broader guided next-action hub with message/context detail.", ProjectWorkbench_Click),
+            new("Custom Quote Builder", "Open quote proposals and sent-proposal follow-ups.", CustomQuoteBuilder_Click),
+            new("Production Board", "Open current production warnings and due jobs.", ProductionBoard_Click),
+            new("Payment & Collection", "Open balances, handovers and receipts.", PaymentCollection_Click),
+            new("Supplier Holds & Orders", "Open supplier diamond hold/order warnings.", SupplierDiamondWorkflow_Click),
+            new("Tasks", "Open the task and follow-up queue.", (_, _) => SelectNavigationSection("Tasks")),
         },
         "Quotes & Proposals" => new ToolAction[]
         {
@@ -1528,7 +1550,9 @@ public partial class MainWindow : Window
         var activeJobsList = activeJobsQuery.AsEnumerable().ToList();
         var monthSales = db.Sales.AsNoTracking().AsEnumerable().Where(s => s.SaleDate.Month == today.Month && s.SaleDate.Year == today.Year).ToList();
         var weekSales = db.Sales.AsNoTracking().AsEnumerable().Where(s => s.SaleDate.Date >= weekStart && s.SaleDate.Date < weekEnd).ToList();
+        var nextActions = NextActionService.BuildActions(db, today);
 
+        NextActionsText.Text = nextActions.Count(x => x.IsActionNeeded).ToString();
         QuotesAwaitingText.Text = db.CustomQuotes.AsNoTracking().AsEnumerable()
             .Count(q => !string.Equals(q.Status, "Accepted", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(q.Status, "Converted", StringComparison.OrdinalIgnoreCase)
@@ -1619,7 +1643,142 @@ public partial class MainWindow : Window
         TasksDueTodayText.Text = openTasks.Count(t => t.DueDate.HasValue && t.DueDate.Value.Date == DateTime.Today).ToString();
         OverdueTasksText.Text = openTasks.Count(t => t.IsOverdue).ToString();
         HighPriorityTasksText.Text = openTasks.Count(t => t.Priority == BusinessTaskPriority.High || t.Priority == BusinessTaskPriority.Urgent).ToString();
+        RefreshSetupReadiness(db, settings, today);
         StatusText.Text = $"Database: {DatabaseBootstrapper.DatabasePath}";
+    }
+
+    private void RefreshSetupReadiness(AppDbContext db, BusinessSettings settings, DateTime today)
+    {
+        var rows = new List<SetupReadinessRow>();
+        var defaultSettings = BusinessSettingsService.CreateDefaultSettings();
+        var hasBusinessProfile = !string.IsNullOrWhiteSpace(settings.BusinessName)
+            && !string.Equals(settings.BusinessName, defaultSettings.BusinessName, StringComparison.OrdinalIgnoreCase)
+            && (!string.IsNullOrWhiteSpace(settings.Email) || !string.IsNullOrWhiteSpace(settings.Phone));
+        rows.Add(CreateSetupRow(
+            hasBusinessProfile,
+            "Business profile",
+            hasBusinessProfile ? $"{settings.BusinessName} has contact details for documents." : "Add business name plus phone or email for customer paperwork.",
+            "settings"));
+
+        var hasPricingDefaults = settings.DefaultLabourRate > 0m
+            && settings.DefaultProfitMarginPercent > 0m
+            && settings.GstRatePercent >= 0m
+            && !string.IsNullOrWhiteSpace(settings.TaxLabel);
+        rows.Add(CreateSetupRow(
+            hasPricingDefaults,
+            "Labour, margin and tax defaults",
+            hasPricingDefaults ? $"Labour {settings.DefaultLabourRate:C}/hr, margin {settings.DefaultProfitMarginPercent:0.##}%, {settings.TaxLabel} {settings.GstRatePercent:0.##}%." : "Set labour rate, default margin and tax label before serious quoting.",
+            "settings"));
+
+        var hasMetalPricing = settings.GoldPricePerGram > 0m
+            || settings.SilverPricePerGram > 0m
+            || settings.PlatinumPricePerGram > 0m
+            || settings.PalladiumPricePerGram > 0m;
+        rows.Add(CreateSetupRow(
+            hasMetalPricing,
+            "Metal price assumptions",
+            hasMetalPricing ? $"Metal prices are set. Last update: {settings.MetalPricesLastUpdated?.ToString("g") ?? "manual"}." : "Enter current metal assumptions so pricing tools are not quoting from blanks.",
+            "metal"));
+
+        var hasProposalTemplates = !string.IsNullOrWhiteSpace(settings.TermsAndConditions)
+            && !string.IsNullOrWhiteSpace(settings.DocumentFooterText)
+            && !string.IsNullOrWhiteSpace(settings.ProposalEmailSubjectTemplate)
+            && !string.IsNullOrWhiteSpace(settings.ProposalEmailMessageTemplate);
+        rows.Add(CreateSetupRow(
+            hasProposalTemplates,
+            "Proposal templates",
+            hasProposalTemplates ? "Terms, footer and proposal email draft templates are ready." : "Review proposal terms, footer and email templates before sending customer proposals.",
+            "settings"));
+
+        var customerCount = db.Customers.AsNoTracking().Count();
+        rows.Add(CreateSetupRow(
+            customerCount > 0,
+            "Client list",
+            customerCount > 0 ? $"{customerCount} customer record(s) available." : "Add or import at least one customer so quote workflows can start cleanly.",
+            "customers"));
+
+        var quoteCount = db.CustomQuotes.AsNoTracking().Count();
+        rows.Add(CreateSetupRow(
+            quoteCount > 0,
+            "First quote",
+            quoteCount > 0 ? $"{quoteCount} custom quote(s) created." : "Create the first custom quote with at least one option.",
+            "quote"));
+
+        var proposalSentCount = db.CustomQuotes.AsNoTracking().AsEnumerable().Count(q =>
+            q.ProposalSentAt.HasValue
+            || q.ProposalStatus is "Sent" or "Accepted" or "Converted to Job"
+            || q.Status is "Proposal Sent" or "Accepted" or "Converted to Job");
+        rows.Add(CreateSetupRow(
+            proposalSentCount > 0,
+            "First proposal sent",
+            proposalSentCount > 0 ? $"{proposalSentCount} proposal(s) have been recorded as sent or accepted." : "Use Send / Record Proposal from the quote workspace to complete the first proposal milestone.",
+            "quote"));
+
+        var jobCount = db.Jobs.AsNoTracking().Count();
+        rows.Add(CreateSetupRow(
+            jobCount > 0,
+            "Production workflow",
+            jobCount > 0 ? $"{jobCount} job record(s) exist." : "Convert an accepted quote option into a production job when ready.",
+            "production"));
+
+        var latestBackup = GetLatestBackup(settings);
+        var backupIsFresh = latestBackup != null && latestBackup.LastWriteTime.Date >= today.AddDays(-7);
+        rows.Add(CreateSetupRow(
+            backupIsFresh,
+            "Backup health",
+            latestBackup == null ? "Create a backup before more data entry." : backupIsFresh ? $"Latest backup: {latestBackup.LastWriteTime:g}." : $"Latest backup is older than 7 days: {latestBackup.LastWriteTime:g}.",
+            "backup"));
+
+        var hasNivodaCredentials = !string.IsNullOrWhiteSpace(settings.NivodaUsername)
+            && !string.IsNullOrWhiteSpace(settings.NivodaPassword);
+        rows.Add(new SetupReadinessRow(
+            hasNivodaCredentials ? "Ready" : "Optional",
+            "Supplier diamond connection",
+            hasNivodaCredentials ? $"Nivoda credentials are entered. Last test: {settings.NivodaLastConnectionTestAt?.ToString("g") ?? "not tested"}." : "Enter supplier credentials only if external diamond quoting is part of your workflow.",
+            "supplier",
+            hasNivodaCredentials,
+            CountsTowardProgress: false));
+
+        var requiredRows = rows.Where(r => r.CountsTowardProgress).ToList();
+        var completedRequired = requiredRows.Count(r => r.IsComplete);
+        var percent = requiredRows.Count == 0 ? 100 : completedRequired * 100.0 / requiredRows.Count;
+        SetupReadinessProgress.Value = percent;
+        SetupReadinessSummaryText.Text = $"{completedRequired} of {requiredRows.Count} setup milestones complete ({percent:0}%).";
+        SetupReadinessItems.ItemsSource = rows;
+
+        var next = requiredRows.FirstOrDefault(r => !r.IsComplete) ?? rows.FirstOrDefault(r => !r.IsComplete);
+        if (next == null)
+        {
+            _dashboardSetupTarget = "project";
+            SetupNextActionText.Text = "Setup is ready. Keep using the dashboard for daily quote, production, payment and stock actions.";
+            SetupNextActionButton.Content = "Open Project Workbench";
+        }
+        else
+        {
+            _dashboardSetupTarget = next.TargetKey;
+            SetupNextActionText.Text = next.Detail;
+            SetupNextActionButton.Content = $"Open {next.Title}";
+        }
+    }
+
+    private static SetupReadinessRow CreateSetupRow(bool complete, string title, string detail, string targetKey)
+    {
+        return new SetupReadinessRow(complete ? "Complete" : "Open", title, detail, targetKey, complete);
+    }
+
+    private static FileInfo? GetLatestBackup(BusinessSettings settings)
+    {
+        var folder = string.IsNullOrWhiteSpace(settings.BackupFolder)
+            ? BusinessSettingsService.GetBackupFolder()
+            : settings.BackupFolder;
+        if (!Directory.Exists(folder))
+            return null;
+
+        return Directory.EnumerateFiles(folder, "jbm-backup-*.db")
+            .Select(path => new FileInfo(path))
+            .Where(file => file.Exists)
+            .OrderByDescending(file => file.LastWriteTime)
+            .FirstOrDefault();
     }
 
     private void LoadRecords(string section)
@@ -3877,9 +4036,43 @@ public partial class MainWindow : Window
         StatusText.Text = "Opened Tasks for customer follow-ups. Use the filter/search box to narrow the work queue.";
     }
 
+    private void DashboardSetupNextAction_Click(object sender, RoutedEventArgs e)
+    {
+        switch (_dashboardSetupTarget)
+        {
+            case "settings":
+                Settings_Click(sender, e);
+                break;
+            case "metal":
+                MetalPrices_Click(sender, e);
+                break;
+            case "customers":
+                SelectNavigationSection("Customers");
+                StatusText.Text = "Opened Customers from setup readiness.";
+                break;
+            case "quote":
+                CustomQuoteBuilder_Click(sender, e);
+                break;
+            case "production":
+                ProductionBoard_Click(sender, e);
+                break;
+            case "backup":
+                Backup_Click(sender, e);
+                break;
+            case "supplier":
+                SupplierDiamondWorkflow_Click(sender, e);
+                break;
+            default:
+                ProjectWorkbench_Click(sender, e);
+                break;
+        }
+    }
+
     private void DashboardCreateBackup_Click(object sender, RoutedEventArgs e) => Backup_Click(sender, e);
 
     private void DashboardWeeklyReport_Click(object sender, RoutedEventArgs e) => BusinessIntelligenceReport_Click(sender, e);
+
+    private void DashboardAlertCentre_Click(object sender, RoutedEventArgs e) => AlertCentre_Click(sender, e);
 
     private void RestoreBackup_Click(object sender, RoutedEventArgs e)
     {
@@ -4590,6 +4783,58 @@ public partial class MainWindow : Window
     private void StockLabelSetup_Click(object sender, RoutedEventArgs e) =>
         ShowSingleRecordToolPanel("Stock Label", "Choose a jewellery stock item for a printable price/stock label.", new[] { "Jewellery Stock" }, StockLabel_Click, "Generate Stock Label");
 
+    private void AlertCentre_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new AlertCentreWindow { IsHostedInTab = true };
+        TabItem? tab = null;
+        window.OpenTargetRequested += (_, target) => OpenNextActionTarget(target);
+        window.CloseRequested += (_, _) => CloseWorkspaceTab(tab);
+        tab = OpenWindowInWorkspaceTab("Alert Centre", window, "workflow:alert-centre", RefreshAfterWorkspaceTabClosed);
+    }
+
+    private void OpenNextActionTarget(string target)
+    {
+        switch (target)
+        {
+            case "Project Workbench":
+                ProjectWorkbench_Click(this, new RoutedEventArgs());
+                break;
+            case "Custom Quotes":
+                CustomQuoteBuilder_Click(this, new RoutedEventArgs());
+                break;
+            case "Production":
+                ProductionBoard_Click(this, new RoutedEventArgs());
+                break;
+            case "Payments":
+                PaymentCollection_Click(this, new RoutedEventArgs());
+                break;
+            case "Diamond Holds":
+                SupplierDiamondWorkflow_Click(this, new RoutedEventArgs());
+                break;
+            case "Diamond Search":
+                DiamondSupplier_Click(this, new RoutedEventArgs());
+                break;
+            case "Materials":
+            case "Tasks":
+            case "Customers":
+            case "Jobs":
+            case "External Diamonds":
+                SelectNavigationSection(target);
+                StatusText.Text = $"Opened {target} from Alert Centre.";
+                break;
+            default:
+                if (_sectionTypes.ContainsKey(target) || _toolSections.Contains(target))
+                {
+                    SelectNavigationSection(target);
+                    StatusText.Text = $"Opened {target} from Alert Centre.";
+                }
+                else
+                {
+                    ProjectWorkbench_Click(this, new RoutedEventArgs());
+                }
+                break;
+        }
+    }
 
     private void ProjectWorkbench_Click(object sender, RoutedEventArgs e)
     {

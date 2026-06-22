@@ -2,9 +2,9 @@
 
 ## Current Baseline
 
-Current workspace baseline: V1.50.0.
+Current workspace baseline: V1.51.0.
 
-V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout.
+V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout. V1.51.0 adds a shared runtime next-action service, a workspace-hosted Alert Centre, dashboard alert count, and setup-readiness guidance.
 
 The next work should stay focused on improving daily workflow quality before adding broad new feature areas.
 
@@ -40,8 +40,9 @@ Goal: make proposals suitable to send directly to customers and record the send/
 Goal: turn OPALNOVA into a guided daily work system rather than only a record system.
 
 - Extract Project Workbench action rules into a reusable next-action service.
-- Add one alert centre for overdue jobs, unpaid balances, expiring diamond holds, low stock, quote expiry, and follow-ups.
-- Add dashboard and workspace entry points to the same alert data.
+- Add one alert centre for overdue jobs, unpaid balances, expiring diamond holds, low stock, quote expiry, and follow-ups. Done in V1.51.0 as a first pass.
+- Add dashboard and workspace entry points to the same alert data. Done in V1.51.0.
+- Add guided setup readiness on the dashboard using existing settings/data. Done in V1.51.0.
 - Add recently opened records/tabs after the alert centre is stable.
 - Add unsaved-change warnings for hosted editors after the tab lifecycle remains stable.
 

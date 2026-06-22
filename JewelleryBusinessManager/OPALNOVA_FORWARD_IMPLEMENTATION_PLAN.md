@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.50.0 Premium Proposal Send Workflow
+Current baseline: V1.51.0 Universal Next Action And Alert Centre
 
 ## Purpose
 
@@ -71,12 +71,12 @@ Ease:
 | Proposal send/record workflow | P1 | M | Reference app shows proposal sending as a simple modal. OPALNOVA can draft/copy/open email first, record sent status, and create follow-ups without direct SMTP. | V1.50 |
 | Proposal sent/accepted status surface | P1 | M | The transcript shows sent/viewed/signed/accepted states driving production and invoicing. OPALNOVA needs clearer state before a Proposal Centre. | V1.50 |
 | Proposal email templates and payment schedule display | P1 | S-M | Template-driven message text and deposit/final-balance clarity are high-value and fit the existing quote/proposal flow. | V1.50 |
-| Guided first-run/setup checklist | P1 | S-M | Dashboard, settings, tasks, and backup services already exist. This improves new-user workflow without heavy schema work. | V1.50.x-V1.51 |
+| Guided first-run/setup checklist | P1 | S-M | Dashboard, settings, tasks, and backup services already exist. Implemented as dashboard setup readiness in V1.51.0. | V1.51 |
 | Proposal PDF export | P2 | M-L | Best done after the HTML proposal is stable. Needs render/export verification. | V1.50 |
 | Proposal centre / sent proposal queue | P2 | M | Useful once proposals can be sent/recorded. Keep this as a focused list rather than another broad dashboard. | V1.50-V1.51 |
 | Quote measurements, occasion, and internal note polish | P2 | S-M | The transcript highlights measurements, gift/occasion deadlines, and non-client-visible notes as useful quote context. | V1.50-V1.51 |
-| Universal next-action service | P2 | M-L | Project Hub rules exist, but should move into a shared service before broader alerts. | V1.51 |
-| Alert centre | P2 | M | Dashboard already has alert tiles and task data; consolidate into one alert model/view. | V1.51 |
+| Universal next-action service | P2 | M-L | Implemented in V1.51.0 as a shared runtime service for Alert Centre and dashboard counts; Project Hub can be refactored to share it more deeply later. | V1.51 |
+| Alert centre | P2 | M | Implemented in V1.51.0 as a workspace-hosted alert list with filters, search, counts, details, and workflow actions. | V1.51 |
 | Recently opened tabs/items | P2 | S-M | Useful once tab lifecycle is stable. Can be local settings-backed first. | V1.51 |
 | Unsaved-change warnings for tab close | P2 | M-L | Important, but must be designed across hosted editors to avoid false prompts. | V1.51 |
 | Payment schedule tracking | P2 | M | Supports quote approvals and handover. Should follow proposal/action changes. | V1.50-V1.51 |
@@ -206,7 +206,7 @@ Primary files:
 
 Scope:
 
-- Extract action rules from Project Workbench into a reusable service.
+- Add a reusable next-action service, then progressively align Project Workbench rules to it after the alert centre proves stable.
 - Generate next actions for:
   - quote expiry.
   - unanswered quotes.
@@ -218,8 +218,8 @@ Scope:
   - ordered diamonds not received.
   - low stock.
   - open follow-ups.
-- Add one Alert Centre surface fed by the same service.
-- Add a guided setup checklist using existing settings/data:
+- Add one Alert Centre surface fed by the same service. Done in V1.51.0.
+- Add a guided setup checklist using existing settings/data. Done in V1.51.0 as dashboard setup readiness:
   - business profile complete.
   - labour rates configured.
   - GST/settings reviewed.
@@ -227,13 +227,13 @@ Scope:
   - pricing/material defaults reviewed.
   - backup health checked.
   - first quote/proposal/job created.
-- Add dashboard entry points to the same alert data.
+- Add dashboard entry points to the same alert data. Done in V1.51.0.
 - Add recently opened items after alert navigation is stable.
 - Add unsaved-change warnings after tab/editor lifecycle is consistent.
 
 Definition of done:
 
-- Project Hub and Alert Centre agree on counts and priorities.
+- Dashboard and Alert Centre agree on action-needed counts and priorities.
 - Dashboard can show a setup progress card without crowding daily work tiles.
 - Alerts do not create duplicate tasks unless the user explicitly creates one.
 - Alert actions open the right workflow tab.

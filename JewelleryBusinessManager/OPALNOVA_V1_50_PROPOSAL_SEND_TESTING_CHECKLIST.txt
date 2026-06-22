@@ -1,0 +1,159 @@
+OPALNOVA V1.50 Proposal Send Workflow Testing Checklist
+
+Before You Start
+
+- Create a backup from OPALNOVA before testing with real business data.
+- Use a test customer, test quote, and test job where possible.
+- Keep the generated proposal file open only when checking it, then close it before retesting generation.
+- Record anything that looks wrong with the screen name, action taken, and exact error message.
+
+Launch And Basic Smoke Test
+
+- Open the published OPALNOVA.exe.
+- Confirm the dashboard loads without an error.
+- Confirm the header shows Version 1.50.0.
+- Open Project Hub / Project Workbench.
+- Close the Project Workbench tab using the tab close button.
+- Reopen Project Workbench and confirm it loads rows/counts normally.
+- Open Settings and confirm business details still load.
+- Close OPALNOVA and reopen it once before continuing.
+
+Customer And Quote Setup
+
+- Open Customers.
+- Create or select a test customer with name and email.
+- Open Custom Quotes from the dashboard or toolbar.
+- Create a new quote for the test customer.
+- Add a quote title that is easy to identify.
+- Confirm the quote has a sensible valid-until date.
+- Create at least two quote options.
+- Enter option names, descriptions, metal details, stone details, labour, costs, markup, and GST.
+- Mark one option as recommended.
+- Save the quote.
+- Close the quote tab.
+- Reopen Custom Quotes and confirm the quote, customer, options, totals, and recommended option persisted.
+
+Design Image Attachment
+
+- Select a quote option.
+- Attach a test design image.
+- Save the quote.
+- Confirm the selected option shows image/attachment status.
+- Close and reopen the quote.
+- Confirm the attached image is still linked.
+- Remove the image from one option if testing removal.
+- Save and reopen again to confirm removal or attachment persisted correctly.
+
+Proposal Preview / Generation
+
+- Open the test quote.
+- Generate or preview the proposal.
+- Confirm the proposal opens successfully.
+- Confirm the proposal shows OPALNOVA branding and business details.
+- Confirm customer details are correct.
+- Confirm quote title/code/date/expiry are correct.
+- Confirm option comparison appears clearly.
+- Confirm the recommended option is obvious.
+- Confirm totals and deposit/payment schedule look correct.
+- Confirm attached design images render in the proposal.
+- Confirm next steps / acceptance wording appears.
+- Confirm there are no broken characters such as "â€”" or unreadable symbols.
+- Close the proposal file/browser window.
+- Save the quote and reopen it.
+- Confirm the quote now records that a proposal was prepared/generated.
+
+Send Proposal Window
+
+- From the quote, open the Send Proposal / Record Proposal workflow.
+- Confirm recipient email is filled from the customer where available.
+- Confirm the subject line is sensible.
+- Confirm the message body is customer-facing and not blank.
+- Confirm the generated proposal path/link is visible if a proposal was generated.
+- Click Open Proposal and confirm it opens the latest proposal.
+- Click Copy Email Draft.
+- Paste into Notepad and confirm the subject/message content is copied correctly.
+- Click Open Mail Draft if configured on the PC.
+- Confirm the mail draft opens without OPALNOVA crashing.
+- Do not send a real email unless you are intentionally testing with your own address.
+
+Record Proposal Sent
+
+- In the Send Proposal window, click Record Sent.
+- Confirm the app gives a clear success message or status update.
+- Close the Send Proposal window.
+- Save/close/reopen the quote.
+- Confirm the quote still shows proposal sent status/details.
+- Confirm proposal recipient, subject, message, sent time, and generated proposal path remain available.
+
+Follow-Up Creation
+
+- Reopen the Send Proposal window for the same quote.
+- Create a proposal follow-up.
+- Open Tasks / Follow-Ups.
+- Confirm a follow-up task exists for the sent proposal.
+- Confirm the task title, due date, customer link, and notes are sensible.
+- Go back to the same quote and try creating the same sent-proposal follow-up again.
+- Confirm OPALNOVA does not create unsafe duplicate follow-up tasks.
+
+Project Workbench Regression
+
+- Open Project Workbench.
+- Search for the test customer or quote.
+- Confirm the quote appears with a sensible next action.
+- Use the filters for Quotes, Follow-ups, and All Projects.
+- Confirm counts match the visible filtered rows.
+- Use the primary action button from a selected row.
+- Confirm it opens the expected workflow tab.
+- Close the workflow tab using the tab close button.
+- Confirm Project Workbench does not unexpectedly reopen after being closed.
+
+Quote Acceptance / Production Handoff Regression
+
+- Return to the test quote.
+- Mark or record the selected option as accepted if you are testing acceptance.
+- Confirm the quote can still create or link a production job.
+- Open Production Board.
+- Confirm the linked job appears or can be found in Jobs.
+- Confirm Project Workbench now recommends the production/payment next step instead of proposal sending.
+
+Payment And Collection Regression
+
+- Open Payment & Collection.
+- Find the linked test job if one was created.
+- Confirm deposit, balance, and handover information displays correctly.
+- Record a small test payment only if using test data.
+- Confirm payment updates do not break the quote/job workflow.
+
+Dark Theme / UI Layout Checks
+
+- Check the quote builder, Send Proposal window, Project Workbench, Production Board, and Payment & Collection screens.
+- Confirm text is readable on the dark theme.
+- Confirm ComboBox, TextBox, DatePicker, selector, and popup controls do not show bright white backgrounds.
+- Confirm buttons and footer bars are not clipped.
+- Confirm bottom Close buttons close the current workspace tab where expected.
+- Confirm tabs fill the available workspace area.
+
+Windows Scaling Checks
+
+- Test at 100 percent scaling.
+- Test at 125 percent scaling.
+- Test at 150 percent scaling.
+- At each scaling level, check quote builder, proposal send window, Project Workbench, and dashboard.
+- Confirm no tabs, buttons, text, headers, or footer bars are clipped.
+- Confirm the Send Proposal buttons remain reachable.
+- Confirm the proposal preview can still be opened.
+
+Final Pass
+
+- Close all workspace tabs.
+- Refresh the dashboard.
+- Confirm no error message appears.
+- Create a backup after successful testing if you changed useful data.
+- Close OPALNOVA.
+- Reopen OPALNOVA once more.
+- Confirm the test quote, proposal sent state, and follow-up task are still present.
+
+Pass / Fail Notes
+
+- Pass: V1.50 is ready for normal use if proposal generation, send/record, follow-up creation, quote reopen, and Project Workbench regression checks all pass.
+- Fail: Stop and report the exact step if proposal generation fails, sent status does not persist, duplicate follow-ups appear, or a workspace tab cannot close correctly.
