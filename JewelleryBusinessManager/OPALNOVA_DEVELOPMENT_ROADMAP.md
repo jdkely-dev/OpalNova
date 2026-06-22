@@ -8,6 +8,8 @@ V1.48.2 completed the workspace stability pass for Project Workbench counts, hos
 
 The next work should stay focused on improving daily workflow quality before adding broad new feature areas.
 
+For the detailed priority/ease analysis and implementation sequence, see `OPALNOVA_FORWARD_IMPLEMENTATION_PLAN.md`.
+
 ## Priority Order
 
 ### V1.49 - Quote Workspace Polish
