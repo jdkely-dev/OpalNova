@@ -49,6 +49,8 @@ public static class NextActionService
             var generated = quote.ProposalLastGeneratedAt.HasValue || !string.IsNullOrWhiteSpace(quote.ProposalLastPath);
             var expired = quote.ValidUntil.HasValue && quote.ValidUntil.Value.Date < today && !accepted;
             var dueSoon = quote.ValidUntil.HasValue && quote.ValidUntil.Value.Date <= soon && !accepted;
+            var requiredPassed = quote.RequiredBy.HasValue && quote.RequiredBy.Value.Date < today && !accepted;
+            var requiredSoon = quote.RequiredBy.HasValue && quote.RequiredBy.Value.Date <= soon && !accepted;
             var linkedDiamonds = GetLinkedDiamonds(quote.Id, quoteOptions, diamondLinksByOption, externalDiamonds);
             var hasDiamondRisk = linkedDiamonds.Any(DiamondNeedsAction);
 
@@ -68,6 +70,14 @@ public static class NextActionService
                     quote.ValidUntil, topOption?.TotalPrice, "Custom Quotes", "Open Quote Workflow",
                     "Expired quotes may have unsafe supplier, diamond, or metal pricing.", $"quote:{quote.Id}:expired"));
             }
+            else if (requiredPassed)
+            {
+                actions.Add(Create("Quote", "Urgent", 1, title,
+                    "Customer required-by date has passed before acceptance.",
+                    "Contact the customer, confirm timing, and replan the proposal before progressing.",
+                    quote.RequiredBy, topOption?.TotalPrice, "Custom Quotes", "Open Quote Workflow",
+                    "The customer deadline may no longer be achievable.", $"quote:{quote.Id}:required-passed"));
+            }
             else if (hasDiamondRisk)
             {
                 actions.Add(Create("Diamond", "Urgent", 1, title,
@@ -85,6 +95,14 @@ public static class NextActionService
                     "Contact the customer and record the next response.",
                     quote.ProposalFollowUpDueAt, topOption?.TotalPrice, "Custom Quotes", "Open Quote Workflow",
                     "A sent proposal without a follow-up can stall the sale.", $"quote:{quote.Id}:proposal-followup"));
+            }
+            else if (requiredSoon)
+            {
+                actions.Add(Create("Quote", "High", 2, title,
+                    "Customer required-by date is coming up.",
+                    proposalSent ? "Follow up and confirm timing before the deadline." : "Finish and send the proposal before the customer deadline.",
+                    quote.RequiredBy, topOption?.TotalPrice, "Custom Quotes", "Open Quote Workflow",
+                    string.Empty, $"quote:{quote.Id}:required-soon"));
             }
             else if (dueSoon)
             {

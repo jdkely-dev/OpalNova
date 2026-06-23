@@ -33,8 +33,21 @@
                             <StackPanel><TextBlock Text="Valid until"/><DatePicker x:Name="ValidUntilPicker" Margin="0,4,0,8"/></StackPanel>
                             <StackPanel Grid.Column="2"><TextBlock Text="Deposit %"/><TextBox x:Name="DepositPercentBox" Margin="0,4,0,8" TextChanged="CostField_TextChanged"/></StackPanel>
                         </Grid>
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="8"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="Occasion"/><TextBox x:Name="OccasionBox" Margin="0,4,0,8"/></StackPanel>
+                            <StackPanel Grid.Column="2"><TextBlock Text="Required by"/><DatePicker x:Name="RequiredByPicker" Margin="0,4,0,8"/></StackPanel>
+                        </Grid>
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="8"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="Ring size"/><TextBox x:Name="RingSizeBox" Margin="0,4,0,8"/></StackPanel>
+                            <StackPanel Grid.Column="2"><TextBlock Text="Budget / target"/><TextBox x:Name="BudgetRangeBox" Margin="0,4,0,8"/></StackPanel>
+                        </Grid>
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="8"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="Preferred metal"/><TextBox x:Name="PreferredMetalBox" Margin="0,4,0,8"/></StackPanel>
+                            <StackPanel Grid.Column="2"><TextBlock Text="Preferred stone"/><TextBox x:Name="PreferredStoneBox" Margin="0,4,0,8"/></StackPanel>
+                        </Grid>
                         <TextBlock Text="Introduction"/><TextBox x:Name="IntroductionBox" Height="76" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,4,0,8"/>
                         <TextBlock Text="Customer notes / requirements"/><TextBox x:Name="CustomerNotesBox" Height="70" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,4,0,8"/>
+                        <TextBlock Text="Internal notes"/><TextBox x:Name="InternalNotesBox" Height="62" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,4,0,8" ToolTip="Private notes for the workshop or sales process. These are not shown in proposal output."/>
                     </StackPanel></Border>
                     <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="16" Padding="14"><StackPanel>
                         <TextBlock Text="Design options" FontSize="17" FontWeight="Bold"/>

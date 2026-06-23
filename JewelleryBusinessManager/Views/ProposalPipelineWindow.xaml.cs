@@ -121,6 +121,7 @@ public partial class ProposalPipelineWindow : Window
         var title = string.IsNullOrWhiteSpace(quote.Title) ? "Untitled quote" : quote.Title;
         var fileAvailable = !string.IsNullOrWhiteSpace(quote.ProposalLastPath) && File.Exists(quote.ProposalLastPath);
         var emailAvailable = !string.IsNullOrWhiteSpace(quote.ProposalEmailSubject) || !string.IsNullOrWhiteSpace(quote.ProposalEmailMessage);
+        var contextLine = BuildContextLine(quote);
 
         return new ProposalPipelineRow(
             quote.Id,
@@ -135,6 +136,7 @@ public partial class ProposalPipelineWindow : Window
             risk,
             followUpLine,
             valueLine,
+            contextLine,
             quote.Status,
             quote.ProposalStatus,
             quote.ValidUntil,
@@ -150,6 +152,18 @@ public partial class ProposalPipelineWindow : Window
             fileAvailable,
             emailAvailable,
             priorityRank <= 2);
+    }
+
+    private static string BuildContextLine(CustomQuote quote)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(quote.Occasion)) parts.Add($"Occasion: {quote.Occasion}");
+        if (quote.RequiredBy.HasValue) parts.Add($"Required by: {quote.RequiredBy.Value:dd MMM yyyy}");
+        if (!string.IsNullOrWhiteSpace(quote.RingSize)) parts.Add($"Ring size: {quote.RingSize}");
+        if (!string.IsNullOrWhiteSpace(quote.BudgetRange)) parts.Add($"Budget: {quote.BudgetRange}");
+        if (!string.IsNullOrWhiteSpace(quote.PreferredMetal)) parts.Add($"Metal: {quote.PreferredMetal}");
+        if (!string.IsNullOrWhiteSpace(quote.PreferredStone)) parts.Add($"Stone: {quote.PreferredStone}");
+        return string.Join(" | ", parts);
     }
 
     private static string FirstText(params string?[] values)
@@ -198,7 +212,7 @@ public partial class ProposalPipelineWindow : Window
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(x =>
-                $"{x.PriorityLabel} {x.Stage} {x.QuoteCode} {x.CustomerName} {x.Title} {x.EmailTo} {x.NextAction} {x.ProposalStatus} {x.QuoteStatus}"
+                $"{x.PriorityLabel} {x.Stage} {x.QuoteCode} {x.CustomerName} {x.Title} {x.EmailTo} {x.NextAction} {x.ProposalStatus} {x.QuoteStatus} {x.ContextLine}"
                     .Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -256,6 +270,7 @@ public partial class ProposalPipelineWindow : Window
             $"Sent: {FormatDateTime(row.ProposalSentAt)}\n" +
             $"Follow-up due: {row.FollowUpLine}\n" +
             $"Email to: {row.EmailTo}\n" +
+            $"Project context: {(string.IsNullOrWhiteSpace(row.ContextLine) ? "Not recorded" : row.ContextLine)}\n" +
             $"Display option: {row.OptionName} {row.ValueLine}\n" +
             $"Proposal file: {(row.ProposalFileAvailable ? row.ProposalPath : "Not available")}";
         SetActionButtons(true);
@@ -386,6 +401,7 @@ public partial class ProposalPipelineWindow : Window
         string Risk,
         string FollowUpLine,
         string ValueLine,
+        string ContextLine,
         string QuoteStatus,
         string ProposalStatus,
         DateTime? ValidUntil,

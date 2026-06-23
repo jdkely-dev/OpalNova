@@ -107,9 +107,16 @@ public partial class CustomQuoteBuilderWindow : Window
         QuoteCodeBox.Text = _quote.QuoteCode;
         TitleBox.Text = _quote.Title;
         ValidUntilPicker.SelectedDate = _quote.ValidUntil;
+        OccasionBox.Text = _quote.Occasion ?? string.Empty;
+        RequiredByPicker.SelectedDate = _quote.RequiredBy;
+        RingSizeBox.Text = _quote.RingSize ?? string.Empty;
+        BudgetRangeBox.Text = _quote.BudgetRange ?? string.Empty;
+        PreferredMetalBox.Text = _quote.PreferredMetal ?? string.Empty;
+        PreferredStoneBox.Text = _quote.PreferredStone ?? string.Empty;
         DepositPercentBox.Text = _quote.DepositPercent.ToString("0.##");
         IntroductionBox.Text = _quote.Introduction ?? string.Empty;
         CustomerNotesBox.Text = _quote.CustomerNotes ?? string.Empty;
+        InternalNotesBox.Text = _quote.InternalNotes ?? string.Empty;
         CustomerCombo.SelectedItem = CustomerCombo.Items.Cast<Customer>().FirstOrDefault(x => _quote.CustomerId.HasValue && x.Id == _quote.CustomerId.Value);
         if (CustomerCombo.SelectedIndex < 0) CustomerCombo.SelectedIndex = 0;
         OptionsList.ItemsSource = null;
@@ -125,9 +132,16 @@ public partial class CustomQuoteBuilderWindow : Window
         var selectedCustomer = CustomerCombo.SelectedItem as Customer;
         _quote.CustomerId = selectedCustomer != null && selectedCustomer.Id > 0 ? selectedCustomer.Id : null;
         _quote.ValidUntil = ValidUntilPicker.SelectedDate;
+        _quote.Occasion = OccasionBox.Text.Trim();
+        _quote.RequiredBy = RequiredByPicker.SelectedDate;
+        _quote.RingSize = RingSizeBox.Text.Trim();
+        _quote.BudgetRange = BudgetRangeBox.Text.Trim();
+        _quote.PreferredMetal = PreferredMetalBox.Text.Trim();
+        _quote.PreferredStone = PreferredStoneBox.Text.Trim();
         _quote.DepositPercent = D(DepositPercentBox.Text);
         _quote.Introduction = IntroductionBox.Text.Trim();
         _quote.CustomerNotes = CustomerNotesBox.Text.Trim();
+        _quote.InternalNotes = InternalNotesBox.Text.Trim();
         PullOptionFields();
         RefreshQuoteOverview();
     }
@@ -265,6 +279,10 @@ public partial class CustomQuoteBuilderWindow : Window
             return "Add a quote option before previewing or sending a proposal.";
         if (selected == null)
             return "Select an option to edit, compare, recommend, or accept.";
+        if (_quote.RequiredBy.HasValue && _quote.RequiredBy.Value.Date < DateTime.Today && _quote.Status is not "Accepted" and not "Converted to Job")
+            return "The customer's required-by date has passed. Reconfirm timing before progressing the proposal.";
+        if (_quote.RequiredBy.HasValue && _quote.RequiredBy.Value.Date <= DateTime.Today.AddDays(7) && !_quote.AcceptedOptionId.HasValue)
+            return $"Required by {_quote.RequiredBy.Value:dd MMM yyyy}. Confirm timing and follow up before the deadline.";
         if (_quote.ValidUntil.HasValue && _quote.ValidUntil.Value.Date < DateTime.Today && _quote.Status is not "Accepted" and not "Converted to Job")
             return "This quote is expired. Update the expiry date or create a follow-up before progressing.";
         if (!_options.Any(x => x.IsRecommended))

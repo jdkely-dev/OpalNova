@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.64.0 Proposal Pipeline
+Current baseline: V1.65.0 Quote Context Fields
 
 ## Purpose
 
@@ -75,7 +75,7 @@ Ease:
 | Guided first-run/setup checklist | P1 | S-M | Dashboard, settings, tasks, and backup services already exist. Implemented as dashboard setup readiness in V1.51.0. | V1.51 |
 | Proposal PDF export | P2 | M-L | Best done after the HTML proposal is stable. Needs render/export verification. | V1.50 |
 | Proposal centre / sent proposal queue | P2 | M | Implemented in V1.64.0 as a focused Proposal Pipeline for prepared, sent, due, accepted and converted proposals. | V1.64 |
-| Quote measurements, occasion, and internal note polish | P2 | S-M | The transcript highlights measurements, gift/occasion deadlines, and non-client-visible notes as useful quote context. | V1.50-V1.51 |
+| Quote measurements, occasion, and internal note polish | P2 | S-M | Implemented in V1.65.0 with additive quote context fields, customer-facing proposal details, internal notes and required-by next-action guidance. | V1.65 |
 | Universal next-action service | P2 | M-L | Implemented in V1.51.0 as a shared runtime service for Alert Centre and dashboard counts; Project Hub can be refactored to share it more deeply later. | V1.51 |
 | Alert centre | P2 | M | Implemented in V1.51.0 as a workspace-hosted alert list with filters, search, counts, details, and workflow actions. | V1.51 |
 | Recently opened tabs/items | P2 | S-M | Useful once tab lifecycle is stable. Can be local settings-backed first. | V1.51 |

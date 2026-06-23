@@ -9,6 +9,12 @@ public class CustomQuote : BaseEntity
     public string Status { get; set; } = "Draft";
     public DateTime QuoteDate { get; set; } = DateTime.Today;
     public DateTime? ValidUntil { get; set; } = DateTime.Today.AddDays(14);
+    public string? Occasion { get; set; }
+    public DateTime? RequiredBy { get; set; }
+    public string? RingSize { get; set; }
+    public string? BudgetRange { get; set; }
+    public string? PreferredMetal { get; set; }
+    public string? PreferredStone { get; set; }
     public int? AcceptedOptionId { get; set; }
     public decimal DepositPercent { get; set; } = 30m;
     public string ProposalStatus { get; set; } = "Not Sent";

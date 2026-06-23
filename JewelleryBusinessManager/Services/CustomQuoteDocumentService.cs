@@ -32,6 +32,8 @@ public static class CustomQuoteDocumentService
             sb.Append($"<p>{E(quote.Introduction).Replace("\n", "<br>")}</p>");
         sb.Append("</div>");
 
+        AppendProjectContext(sb, quote, E);
+
         foreach (var option in options)
             AppendOption(sb, option, externalDiamondLinks, E, Money);
 
@@ -51,6 +53,30 @@ public static class CustomQuoteDocumentService
         sb.Append($"<h3>Terms</h3><p>{E(quote.Terms ?? settings.TermsAndConditions).Replace("\n", "<br>")}</p><div class='footer'>{E(settings.DocumentFooterText)}</div></div></body></html>");
         File.WriteAllText(path, sb.ToString());
         return path;
+    }
+
+    private static void AppendProjectContext(StringBuilder sb, CustomQuote quote, Func<string?, string> encode)
+    {
+        var rows = new List<(string Label, string Value)>
+        {
+            ("Occasion", quote.Occasion ?? string.Empty),
+            ("Required by", quote.RequiredBy.HasValue ? quote.RequiredBy.Value.ToString("dd MMM yyyy") : string.Empty),
+            ("Ring size", quote.RingSize ?? string.Empty),
+            ("Budget / target", quote.BudgetRange ?? string.Empty),
+            ("Preferred metal", quote.PreferredMetal ?? string.Empty),
+            ("Preferred stone", quote.PreferredStone ?? string.Empty),
+            ("Customer brief", quote.CustomerNotes ?? string.Empty)
+        }
+        .Where(x => !string.IsNullOrWhiteSpace(x.Value))
+        .ToList();
+
+        if (rows.Count == 0)
+            return;
+
+        sb.Append("<div class='payment'><h3>Project details</h3><table class='costs'>");
+        foreach (var row in rows)
+            sb.Append($"<tr><td>{encode(row.Label)}</td><td>{encode(row.Value).Replace("\n", "<br>")}</td></tr>");
+        sb.Append("</table></div>");
     }
 
     private static void AppendOption(

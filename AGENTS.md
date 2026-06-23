@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.64.0 Proposal Pipeline
+- Current workspace version: V1.65.0 Quote Context Fields
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,24 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.65.0 State
+
+V1.65.0 continues quote/proposal workflow polish:
+
+- Bumped visible/project version metadata to 1.65.0.
+- Added additive `CustomQuote` context fields for occasion, required-by date, ring size, budget/target, preferred metal and preferred stone.
+- Added matching controls in the Custom Quote Builder and restored existing private `InternalNotes` editing in the quote UI.
+- Proposal output now includes customer-facing project details when recorded.
+- Required-by dates now feed quote next-action guidance and shared Alert Centre/Project Workbench rules.
+- Proposal Pipeline search/details now include quote context.
+- Preserved proposal send/record behavior and kept internal notes out of customer-facing proposal output.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.64.0 State
 

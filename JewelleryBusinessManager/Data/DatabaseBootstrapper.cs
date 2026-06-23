@@ -475,6 +475,12 @@ CREATE TABLE IF NOT EXISTS CustomQuotes (
     Status TEXT NOT NULL DEFAULT 'Draft',
     QuoteDate TEXT NOT NULL,
     ValidUntil TEXT NULL,
+    Occasion TEXT NULL,
+    RequiredBy TEXT NULL,
+    RingSize TEXT NULL,
+    BudgetRange TEXT NULL,
+    PreferredMetal TEXT NULL,
+    PreferredStone TEXT NULL,
     AcceptedOptionId INTEGER NULL,
     DepositPercent TEXT NOT NULL DEFAULT '30',
     ProposalStatus TEXT NOT NULL DEFAULT 'Not Sent',
@@ -556,6 +562,12 @@ CREATE INDEX IF NOT EXISTS IX_QuoteOptionMaterialLinks_MaterialId ON QuoteOption
         EnsureColumn(db, "CustomQuotes", "ProposalEmailTo", "TEXT NULL");
         EnsureColumn(db, "CustomQuotes", "ProposalEmailSubject", "TEXT NULL");
         EnsureColumn(db, "CustomQuotes", "ProposalEmailMessage", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "Occasion", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "RequiredBy", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "RingSize", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "BudgetRange", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "PreferredMetal", "TEXT NULL");
+        EnsureColumn(db, "CustomQuotes", "PreferredStone", "TEXT NULL");
     }
 
 
