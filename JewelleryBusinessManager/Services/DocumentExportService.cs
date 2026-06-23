@@ -126,21 +126,33 @@ public static class DocumentExportService
         var path = Path.Combine(PrintoutFolder, fileName);
 
         var html = new StringBuilder();
-        html.Append(HtmlHeader(balance <= 0 ? "Customer Receipt" : "Customer Invoice"));
-        html.AppendLine("<section class='card'>");
-        html.AppendLine(balance <= 0 ? "<h1>Customer Receipt</h1>" : "<h1>Customer Invoice</h1>");
-        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}</p>");
-        html.AppendLine(Row("Invoice / Job", $"{job.JobCode} {job.JobTitle}".Trim()));
-        html.AppendLine(Row("Customer", customer?.FullName ?? "Not linked"));
+        var documentTitle = balance <= 0 ? "Customer Receipt" : "Customer Invoice";
+        html.Append(HtmlHeader(documentTitle));
+        html.AppendLine("<section class='card premium-document'>");
+        AppendDocumentHero(html, documentTitle, $"{job.JobCode} {job.JobTitle}".Trim(), balance <= 0 ? "Paid in full" : $"Balance due {Money(balance)}");
+        AppendFinancialSummary(html,
+            ("Total amount", Money(amount), "Job total"),
+            ("Payments recorded", Money(paid), "Linked payments"),
+            ("Balance due", Money(balance), balance <= 0 ? "No balance owing" : "Payment required"));
+        html.AppendLine("<div class='document-columns'>");
+        html.AppendLine("<div>");
+        html.AppendLine("<h2>Customer</h2>");
+        html.AppendLine(Row("Name", customer?.FullName ?? "Not linked"));
         html.AppendLine(Row("Phone", customer?.Phone ?? string.Empty));
         html.AppendLine(Row("Email", customer?.Email ?? string.Empty));
+        html.AppendLine("</div><div>");
+        html.AppendLine("<h2>Job / Handover</h2>");
+        html.AppendLine(Row("Invoice / Job", $"{job.JobCode} {job.JobTitle}".Trim()));
         html.AppendLine(Row("Description", job.JobTitle));
-        html.AppendLine(Row("Total Amount", Money(amount)));
-        html.AppendLine(Row("Payments Recorded", Money(paid)));
-        html.AppendLine(Row("Balance Due", Money(balance)));
+        html.AppendLine(Row("Status", job.Status.ToString()));
+        html.AppendLine(Row("Due date", job.DueDate?.ToShortDateString() ?? "To be confirmed"));
+        html.AppendLine("</div></div>");
         html.AppendLine(NotesBlock("Work Notes", job.DesignNotes));
+        AppendDocumentNotice(html, "Handover status", BuildJobHandoverStatus(job, balance));
         AppendPaymentsTable(html, payments);
-        html.AppendLine("<p class='small'>Please check payment method and reference details before giving this document to the customer.</p>");
+        AppendDocumentNotice(html, "Payment check", balance <= 0
+            ? "This document can be used as a paid receipt. Confirm payment method and reference details before handover."
+            : "This invoice still has a balance owing. Confirm payment timing before collection, shipping or final handover.");
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
         File.WriteAllText(path, html.ToString());
@@ -159,19 +171,33 @@ public static class DocumentExportService
         var path = Path.Combine(PrintoutFolder, fileName);
 
         var html = new StringBuilder();
+        var paid = payments.Sum(p => p.Amount);
+        var displayPaid = paid > 0 ? paid : sale.SaleAmount;
+        var balance = Math.Max(0, sale.SaleAmount - displayPaid);
+
         html.Append(HtmlHeader("Customer Receipt"));
-        html.AppendLine("<section class='card'>");
-        html.AppendLine("<h1>Customer Receipt</h1>");
-        html.AppendLine(Row("Sale", $"Sale #{sale.Id}"));
+        html.AppendLine("<section class='card premium-document'>");
+        AppendDocumentHero(html, "Customer Receipt", $"Sale #{sale.Id}", balance <= 0 ? "Paid in full" : $"Balance due {Money(balance)}");
+        AppendFinancialSummary(html,
+            ("Sale amount", Money(sale.SaleAmount), "Recorded sale"),
+            ("Payments recorded", Money(displayPaid), paid > 0 ? "Linked payments" : "Sale payment method"),
+            ("Balance due", Money(balance), balance <= 0 ? "No balance owing" : "Review sale payments"));
+        html.AppendLine("<div class='document-columns'>");
+        html.AppendLine("<div>");
+        html.AppendLine("<h2>Customer</h2>");
+        html.AppendLine(Row("Name", customer?.FullName ?? "Not linked"));
+        html.AppendLine(Row("Phone", customer?.Phone ?? string.Empty));
+        html.AppendLine(Row("Email", customer?.Email ?? string.Empty));
+        html.AppendLine("</div><div>");
+        html.AppendLine("<h2>Sale</h2>");
         html.AppendLine(Row("Date", sale.SaleDate.ToShortDateString()));
-        html.AppendLine(Row("Customer", customer?.FullName ?? "Not linked"));
         html.AppendLine(Row("Item / Job", item?.ToString() ?? job?.ToString() ?? "General sale"));
         html.AppendLine(Row("Sale Location", sale.SaleLocation.ToString()));
         html.AppendLine(Row("Payment Method", sale.PaymentMethod.ToString()));
-        html.AppendLine(Row("Amount Paid", Money(sale.SaleAmount)));
+        html.AppendLine("</div></div>");
         html.AppendLine(NotesBlock("Notes", sale.Notes));
         AppendPaymentsTable(html, payments);
-        html.AppendLine("<p>Thank you for your purchase.</p>");
+        AppendDocumentNotice(html, "Handover note", "Thank you for your purchase. Confirm collection, shipping or customer handover notes before filing this receipt.");
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
         File.WriteAllText(path, html.ToString());
@@ -188,16 +214,27 @@ public static class DocumentExportService
         var path = Path.Combine(PrintoutFolder, fileName);
 
         var html = new StringBuilder();
+        var balance = Math.Max(0, amount - job.DepositPaid);
         html.Append(HtmlHeader("Deposit Receipt"));
-        html.AppendLine("<section class='card'>");
-        html.AppendLine("<h1>Deposit Receipt</h1>");
+        html.AppendLine("<section class='card premium-document'>");
+        AppendDocumentHero(html, "Deposit Receipt", $"{job.JobCode} {job.JobTitle}".Trim(), balance <= 0 ? "Paid in full" : $"Balance remaining {Money(balance)}");
+        AppendFinancialSummary(html,
+            ("Deposit paid", Money(job.DepositPaid), "Recorded on job"),
+            ("Total job amount", Money(amount), "Current job total"),
+            ("Balance remaining", Money(balance), balance <= 0 ? "No balance owing" : "Due before handover"));
+        html.AppendLine("<div class='document-columns'>");
+        html.AppendLine("<div>");
+        html.AppendLine("<h2>Customer</h2>");
+        html.AppendLine(Row("Name", customer?.FullName ?? "Not linked"));
+        html.AppendLine(Row("Phone", customer?.Phone ?? string.Empty));
+        html.AppendLine(Row("Email", customer?.Email ?? string.Empty));
+        html.AppendLine("</div><div>");
+        html.AppendLine("<h2>Job</h2>");
         html.AppendLine(Row("Job", $"{job.JobCode} {job.JobTitle}".Trim()));
-        html.AppendLine(Row("Customer", customer?.FullName ?? "Not linked"));
         html.AppendLine(Row("Date", DateTime.Today.ToShortDateString()));
-        html.AppendLine(Row("Deposit Paid", Money(job.DepositPaid)));
-        html.AppendLine(Row("Total Job Amount", Money(amount)));
-        html.AppendLine(Row("Balance Remaining", Money(Math.Max(0, amount - job.DepositPaid))));
-        html.AppendLine("<p class='small'>This receipt confirms the deposit currently recorded on the job record.</p>");
+        html.AppendLine(Row("Status", job.Status.ToString()));
+        html.AppendLine("</div></div>");
+        AppendDocumentNotice(html, "Deposit note", "This receipt confirms the deposit currently recorded on the job. Final balance should be checked before collection or shipping.");
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
         File.WriteAllText(path, html.ToString());
@@ -219,18 +256,35 @@ public static class DocumentExportService
         var path = Path.Combine(PrintoutFolder, fileName);
 
         var html = new StringBuilder();
+        var relatedTotal = job != null
+            ? job.FinalPrice > 0 ? job.FinalPrice : job.QuoteAmount
+            : sale?.SaleAmount ?? payment.Amount;
+        var relatedBalance = job != null
+            ? job.BalanceOwing
+            : sale == null ? 0 : Math.Max(0, sale.SaleAmount - payment.Amount);
         html.Append(HtmlHeader("Payment Receipt"));
-        html.AppendLine("<section class='card'>");
-        html.AppendLine("<h1>Payment Receipt</h1>");
-        html.AppendLine(Row("Payment", $"Payment #{payment.Id}"));
-        html.AppendLine(Row("Customer", customer?.FullName ?? "Not linked"));
+        html.AppendLine("<section class='card premium-document'>");
+        AppendDocumentHero(html, "Payment Receipt", $"Payment #{payment.Id}", relatedBalance <= 0 ? "Payment recorded" : $"Related balance {Money(relatedBalance)}");
+        AppendFinancialSummary(html,
+            ("Payment amount", Money(payment.Amount), payment.Method.ToString()),
+            ("Related total", Money(relatedTotal), job != null ? "Job total" : sale != null ? "Sale total" : "Payment only"),
+            ("Related balance", Money(Math.Max(0, relatedBalance)), relatedBalance <= 0 ? "No balance shown" : "Review before handover"));
+        html.AppendLine("<div class='document-columns'>");
+        html.AppendLine("<div>");
+        html.AppendLine("<h2>Customer</h2>");
+        html.AppendLine(Row("Name", customer?.FullName ?? "Not linked"));
+        html.AppendLine(Row("Phone", customer?.Phone ?? string.Empty));
+        html.AppendLine(Row("Email", customer?.Email ?? string.Empty));
+        html.AppendLine("</div><div>");
+        html.AppendLine("<h2>Payment</h2>");
         html.AppendLine(Row("Related Job", job?.ToString() ?? string.Empty));
         html.AppendLine(Row("Related Sale", sale == null ? string.Empty : sale.ToString()));
         html.AppendLine(Row("Date", payment.PaymentDate.ToShortDateString()));
-        html.AppendLine(Row("Amount", Money(payment.Amount)));
         html.AppendLine(Row("Method", payment.Method.ToString()));
         html.AppendLine(Row("Reference", payment.Reference ?? string.Empty));
+        html.AppendLine("</div></div>");
         html.AppendLine(NotesBlock("Notes", payment.Notes));
+        AppendDocumentNotice(html, "Payment check", "Confirm payment method, reference and related job or sale before handing this receipt to a customer.");
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
         File.WriteAllText(path, html.ToString());
@@ -1214,17 +1268,67 @@ public static class DocumentExportService
 
     private static void AppendPaymentsTable(StringBuilder html, List<Payment> payments)
     {
-        html.AppendLine("<h2>Payments</h2>");
+        html.AppendLine("<h2>Payment History</h2>");
         if (payments.Count == 0)
         {
-            html.AppendLine("<p class='small'>No linked payment records found.</p>");
+            html.AppendLine("<p class='notice'>No linked payment records found.</p>");
             return;
         }
 
-        html.AppendLine("<table><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th></tr>");
+        html.AppendLine("<table class='payment-ledger'><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th></tr>");
         foreach (var payment in payments)
             html.AppendLine($"<tr><td>{Html(payment.PaymentDate.ToShortDateString())}</td><td>{Money(payment.Amount)}</td><td>{Html(payment.Method.ToString())}</td><td>{Html(payment.Reference ?? string.Empty)}</td><td>{Html(payment.Notes ?? string.Empty)}</td></tr>");
         html.AppendLine("</table>");
+    }
+
+    private static void AppendDocumentHero(StringBuilder html, string title, string reference, string status)
+    {
+        html.AppendLine("<div class='document-hero'>");
+        html.AppendLine("<div>");
+        html.AppendLine("<p class='document-kicker'>OPALNOVA document</p>");
+        html.AppendLine($"<h1>{Html(title)}</h1>");
+        html.AppendLine($"<p class='document-reference'>{Html(reference)}</p>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}</p>");
+        html.AppendLine("</div>");
+        html.AppendLine($"<div class='document-status'>{Html(status)}</div>");
+        html.AppendLine("</div>");
+    }
+
+    private static void AppendFinancialSummary(StringBuilder html, params (string Label, string Value, string Hint)[] items)
+    {
+        html.AppendLine("<div class='financial-summary'>");
+        foreach (var item in items)
+        {
+            html.AppendLine("<div class='summary-tile'>");
+            html.AppendLine($"<span>{Html(item.Label)}</span>");
+            html.AppendLine($"<strong>{Html(item.Value)}</strong>");
+            html.AppendLine($"<em>{Html(item.Hint)}</em>");
+            html.AppendLine("</div>");
+        }
+        html.AppendLine("</div>");
+    }
+
+    private static void AppendDocumentNotice(StringBuilder html, string title, string text)
+    {
+        html.AppendLine("<div class='notice'>");
+        html.AppendLine($"<strong>{Html(title)}</strong>");
+        html.AppendLine($"<p>{Html(text)}</p>");
+        html.AppendLine("</div>");
+    }
+
+    private static string BuildJobHandoverStatus(Job job, decimal balance)
+    {
+        var paymentText = balance <= 0 ? "No balance is currently owing." : $"Balance still owing: {Money(balance)}.";
+        var statusText = job.Status switch
+        {
+            JobStatus.ReadyForPickup => "Ready for customer pickup. Confirm identity, payment and item condition at handover.",
+            JobStatus.ReadyToShip => "Ready to ship. Confirm address, postage method, insurance and tracking before dispatch.",
+            JobStatus.Completed => "Job is marked complete. Keep this document with the final customer handover record.",
+            JobStatus.Cancelled => "Job is cancelled. Check whether this document should be issued before sending.",
+            _ => $"Current job status: {job.Status}. Confirm handover readiness before collection or shipping."
+        };
+
+        return $"{statusText} {paymentText}";
     }
 
     private static string SignatureBlock(string label)
@@ -1276,6 +1380,20 @@ public static class DocumentExportService
         html.AppendLine(".brand-details { font-size: 12px; color: #444; line-height: 1.4; }");
         html.AppendLine(".footer { margin-top: 24px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 11px; color: #555; white-space: pre-wrap; }");
         html.AppendLine(".card { max-width: 1120px; border: 1px solid #ccc; padding: 22px; }");
+        html.AppendLine(".premium-document { border-color: #d5c49a; box-shadow: 0 8px 22px rgba(17,24,39,.08); }");
+        html.AppendLine(".document-hero { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; border-bottom: 2px solid #d5c49a; padding-bottom: 16px; margin-bottom: 18px; }");
+        html.AppendLine(".document-kicker { margin: 0 0 6px 0; color: #7c5a13; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: bold; }");
+        html.AppendLine(".document-reference { margin: 0; color: #4b5563; font-size: 14px; }");
+        html.AppendLine(".document-status { min-width: 180px; border: 1px solid #d5c49a; background: #fff8e5; color: #4b3510; border-radius: 8px; padding: 12px; text-align: center; font-weight: bold; }");
+        html.AppendLine(".financial-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0 20px 0; }");
+        html.AppendLine(".summary-tile { border: 1px solid #ddd; background: #fafafa; border-radius: 8px; padding: 12px; }");
+        html.AppendLine(".summary-tile span { display: block; color: #555; font-size: 12px; font-weight: bold; }");
+        html.AppendLine(".summary-tile strong { display: block; font-size: 24px; margin: 6px 0; }");
+        html.AppendLine(".summary-tile em { display: block; color: #666; font-size: 11px; font-style: normal; }");
+        html.AppendLine(".document-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin: 12px 0 18px 0; }");
+        html.AppendLine(".notice { border: 1px solid #ddd; background: #f8fafc; border-left: 4px solid #d5c49a; padding: 10px 12px; margin: 12px 0; color: #333; }");
+        html.AppendLine(".notice p { margin: 6px 0 0 0; }");
+        html.AppendLine(".payment-ledger td:nth-child(2), .payment-ledger th:nth-child(2) { text-align: right; }");
         html.AppendLine(".label { width: 360px; border: 1px solid #222; padding: 16px; }");
         html.AppendLine("h1 { margin: 0 0 12px 0; }");
         html.AppendLine("h2 { margin: 18px 0 8px 0; }");
@@ -1291,7 +1409,7 @@ public static class DocumentExportService
         html.AppendLine("table { border-collapse: collapse; width: 100%; margin-bottom: 18px; font-size: 12px; }");
         html.AppendLine("th, td { border: 1px solid #ddd; padding: 7px; text-align: left; }");
         html.AppendLine("th { background: #f2f2f2; }");
-        html.AppendLine("@media print { button { display: none; } body { margin: 8mm; } .card { border: none; } .brand { break-inside: avoid; } }");
+        html.AppendLine("@media print { button { display: none; } body { margin: 8mm; } .card { border: none; } .brand, .document-hero, .financial-summary { break-inside: avoid; } }");
         html.AppendLine("</style>");
         html.AppendLine("</head>");
         html.AppendLine("<body>");

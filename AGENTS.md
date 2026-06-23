@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.56.0 Customer Timeline and Profile Polish
+- Current workspace version: V1.57.0 Invoice and Receipt Polish
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,24 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.57.0 State
+
+V1.57.0 begins the invoice and receipt polish pass:
+
+- Bumped visible/project version metadata to 1.57.0.
+- Refreshed job invoice/receipt, sale receipt, deposit receipt, and payment receipt HTML output.
+- Added shared customer-facing document sections for document header, status badge, financial summary tiles, notices, and payment ledger styling.
+- Added clearer handover notes for pickup/shipping/completed/cancelled job states.
+- Added clearer payment checks for outstanding balances, payment methods, and references.
+- Updated release notes and About text to V1.57.0.
+- Preserved database schema, payment logic, sale creation logic, and existing document entry points.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.56.0 State
 

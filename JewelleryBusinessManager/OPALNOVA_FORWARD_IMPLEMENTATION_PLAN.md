@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.56.0 Customer Timeline and Profile Polish
+Current baseline: V1.57.0 Invoice and Receipt Polish
 
 ## Purpose
 
@@ -80,7 +80,7 @@ Ease:
 | Recently opened tabs/items | P2 | S-M | Useful once tab lifecycle is stable. Can be local settings-backed first. | V1.51 |
 | Unsaved-change warnings for tab close | P2 | M-L | Important, but must be designed across hosted editors to avoid false prompts. | V1.51 |
 | Payment schedule tracking | P2 | M | Supports quote approvals and handover. Should follow proposal/action changes. | V1.50-V1.51 |
-| Polished invoice/receipt templates | P2 | M | `PaymentCollectionWindow` already has invoice generation entry point. | V1.50-V1.51 |
+| Polished invoice/receipt templates | P2 | M | Implemented in V1.57.0 for job invoices/receipts, sale receipts, deposit receipts and payment receipts. | V1.57 |
 | Job completion checklist and stock consume/release wizard | P2 | L | Implemented in V1.52.0 as an explicit completion checklist that consumes reserved materials, marks reserved stones set, releases unconsumed reservations, and writes material movement audit entries. | V1.52 |
 | Production stage checklist, waiting flags, and job files | P2 | M-L | The transcript shows these as central after proposal acceptance. Do this around the safe job-completion work. | V1.52 |
 | Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
@@ -369,26 +369,26 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start V1.57 with this ticket:
+Start V1.58 with this ticket:
 
-Title: V1.57 Invoice And Receipt Polish - cleaner customer handover documents
+Title: V1.58 Stock Ageing and Slow-Moving Inventory - better purchasing decisions
 
 Tasks:
 
-- Refresh invoice and receipt HTML templates using the current OPALNOVA document styling direction.
-- Keep amounts, balances, payment references and linked job/sale context clear.
-- Add clearer handover notes for pickup, shipping and final payment state.
-- Preserve existing payment and sale creation logic.
-- Avoid direct accounting/tax assumptions beyond existing recorded values.
+- Add a stock ageing report using existing stock dates, statuses and sale links.
+- Add a slow-moving inventory report for older unsold jewellery and stones.
+- Surface stock age bands and estimated value tied up.
+- Keep calculations read-only and avoid inventory status changes.
+- Add the report to Reports / Reports Studio.
 
 Validation:
 
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual document smoke:
-  - select a job with payments.
-  - generate invoice/receipt.
-  - select a sale and generate invoice/receipt.
-  - confirm balances and payment references display correctly.
-  - confirm existing payment collection workflow still completes.
+- manual inventory reporting smoke:
+  - open Reports.
+  - generate stock ageing / slow-moving inventory report.
+  - confirm older unsold records appear.
+  - confirm sold/archived records are not treated as available stock.
+  - confirm no inventory records are changed.

@@ -2,9 +2,9 @@
 
 ## Current Baseline
 
-Current workspace baseline: V1.56.0.
+Current workspace baseline: V1.57.0.
 
-V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout. V1.51.0 adds a shared runtime next-action service, a workspace-hosted Alert Centre, dashboard alert count, and setup-readiness guidance. V1.52.0 adds an explicit job completion checklist that consumes reserved materials, marks reserved stones as set, records material movement audit entries, and releases unconsumed reservations through a reviewable workflow. V1.53.0 adds received external diamond conversion into owned loose-stone inventory without schema changes. V1.54.0 adds a single Excel-compatible BI workbook export for stable reporting datasets. V1.55.0 adds dashboard backup health, restore preview, and release notes access. V1.56.0 adds customer timeline reporting and stronger customer summary cards.
+V1.48.2 completed the workspace stability pass for Project Workbench counts, hosted-tab initialization, tab close behavior, workspace fill, and Project Workbench dark control consistency. V1.48.3 removed the unsafe Nivoda development credential helper and aligned the roadmap to the actual app state. V1.49.0 started the quote workspace polish pass with clearer quote status, option comparison, and next-action controls. V1.49.1 adds design-image attachment, preview, and proposal embedding for quote options. V1.50.0 adds the proposal send/record workflow, proposal tracking fields, email draft preparation, sent-proposal follow-up creation, and a cleaner proposal HTML layout. V1.51.0 adds a shared runtime next-action service, a workspace-hosted Alert Centre, dashboard alert count, and setup-readiness guidance. V1.52.0 adds an explicit job completion checklist that consumes reserved materials, marks reserved stones as set, records material movement audit entries, and releases unconsumed reservations through a reviewable workflow. V1.53.0 adds received external diamond conversion into owned loose-stone inventory without schema changes. V1.54.0 adds a single Excel-compatible BI workbook export for stable reporting datasets. V1.55.0 adds dashboard backup health, restore preview, and release notes access. V1.56.0 adds customer timeline reporting and stronger customer summary cards. V1.57.0 refreshes invoice and receipt output for clearer handover paperwork.
 
 The next work should stay focused on improving daily workflow quality before adding broad new feature areas.
 
@@ -98,6 +98,17 @@ Goal: make customer context faster to review before follow-ups, quotes, handover
 - Add preferred ring size / metal / stone display in quote workflow. Already visible in customer summary/timeline reports; quote workflow display remains later polish.
 - Add customer communication templates.
 - Add customer lifetime value and repeat-customer follow-up suggestions.
+
+### V1.57 - Invoice and Receipt Polish
+
+Goal: make customer handover documents clearer and more polished without changing payment logic.
+
+- Add more polished invoice/receipt templates. Done in V1.57.0 for job invoices/receipts, sale receipts, deposit receipts and payment receipts.
+- Add partial-payment history view inside each job. Existing payment ledger appears on generated paperwork; in-app job panel remains later polish.
+- Add balance reminder messages.
+- Add shipping/collection confirmation document.
+- Add handover checklist.
+- Add final customer thank-you/follow-up task.
 
 ## Deferred Until Core Workflow Is Stable
 
