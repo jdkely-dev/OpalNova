@@ -1,0 +1,184 @@
+<Window x:Class="JewelleryBusinessManager.Views.ProposalPipelineWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OPALNOVA Proposal Pipeline" Height="780" Width="1320" WindowStartupLocation="CenterOwner"
+        Background="#040813">
+    <Grid x:Name="PipelineRoot" Margin="0">
+        <Grid.Resources>
+            <SolidColorBrush x:Key="PipelinePanelBrush" Color="#0D1422" />
+            <SolidColorBrush x:Key="PipelineSoftBrush" Color="#162033" />
+            <SolidColorBrush x:Key="PipelineBorderBrush" Color="#29384F" />
+            <SolidColorBrush x:Key="PipelineTextBrush" Color="#EFEAE0" />
+            <SolidColorBrush x:Key="PipelineMutedBrush" Color="#B8AD9E" />
+            <SolidColorBrush x:Key="PipelineGoldBrush" Color="#CDA24A" />
+            <SolidColorBrush x:Key="PipelineGoldHoverBrush" Color="#B8892E" />
+
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource PipelineTextBrush}" />
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="Margin" Value="4" />
+                <Setter Property="Padding" Value="11,7" />
+                <Setter Property="MinHeight" Value="34" />
+                <Setter Property="Background" Value="#1B2942" />
+                <Setter Property="Foreground" Value="{StaticResource PipelineTextBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource PipelineBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Cursor" Value="Hand" />
+            </Style>
+            <Style x:Key="PrimaryPipelineButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="Background" Value="{StaticResource PipelineGoldBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource PipelineGoldHoverBrush}" />
+                <Setter Property="Foreground" Value="#040813" />
+                <Setter Property="FontWeight" Value="Bold" />
+            </Style>
+            <Style TargetType="TextBox">
+                <Setter Property="Margin" Value="4" />
+                <Setter Property="Padding" Value="8,5" />
+                <Setter Property="MinHeight" Value="32" />
+                <Setter Property="Background" Value="#040813" />
+                <Setter Property="Foreground" Value="{StaticResource PipelineTextBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource PipelineBorderBrush}" />
+            </Style>
+            <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                <Setter Property="Margin" Value="4" />
+                <Setter Property="Padding" Value="7,5" />
+                <Setter Property="MinHeight" Value="32" />
+                <Setter Property="Background" Value="#040813" />
+                <Setter Property="Foreground" Value="{StaticResource PipelineTextBrush}" />
+            </Style>
+            <Style TargetType="DataGrid">
+                <Setter Property="Background" Value="#040813" />
+                <Setter Property="Foreground" Value="{StaticResource PipelineTextBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource PipelineBorderBrush}" />
+                <Setter Property="GridLinesVisibility" Value="Horizontal" />
+                <Setter Property="HorizontalGridLinesBrush" Value="#29384F" />
+                <Setter Property="RowBackground" Value="#08101D" />
+                <Setter Property="AlternatingRowBackground" Value="#0D1422" />
+                <Setter Property="HeadersVisibility" Value="Column" />
+                <Setter Property="AutoGenerateColumns" Value="False" />
+                <Setter Property="IsReadOnly" Value="True" />
+                <Setter Property="CanUserAddRows" Value="False" />
+                <Setter Property="SelectionMode" Value="Single" />
+                <Setter Property="SelectionUnit" Value="FullRow" />
+            </Style>
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="#162033" />
+                <Setter Property="Foreground" Value="{StaticResource PipelineTextBrush}" />
+                <Setter Property="Padding" Value="8,6" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+        </Grid.Resources>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="{StaticResource PipelinePanelBrush}" BorderBrush="{StaticResource PipelineBorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Proposal Pipeline" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <TextBlock Text="Prepared, sent, due, accepted and converted quote proposals" Foreground="{StaticResource PipelineMutedBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+                <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBox x:Name="SearchBox" Width="260" TextChanged="SearchBox_TextChanged" ToolTip="Search quote, customer, title, status, email or action" />
+                    <ComboBox x:Name="FilterCombo" Width="190" SelectionChanged="FilterCombo_SelectionChanged" SelectedIndex="0">
+                        <ComboBoxItem Content="Action needed" />
+                        <ComboBoxItem Content="Prepared not sent" />
+                        <ComboBoxItem Content="Follow-up due" />
+                        <ComboBoxItem Content="Sent" />
+                        <ComboBoxItem Content="Accepted" />
+                        <ComboBoxItem Content="Converted" />
+                        <ComboBoxItem Content="All proposals" />
+                    </ComboBox>
+                    <Button Content="Refresh" Click="Refresh_Click" />
+                </WrapPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="0,6,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <UniformGrid Grid.Row="0" Columns="6" Margin="0,0,0,8">
+                <Border Background="{StaticResource PipelineSoftBrush}" BorderBrush="{StaticResource PipelineBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Action Needed" Foreground="{StaticResource PipelineMutedBrush}" /><TextBlock x:Name="ActionNeededCountText" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PipelineGoldBrush}" /></StackPanel>
+                </Border>
+                <Border Background="{StaticResource PipelineSoftBrush}" BorderBrush="{StaticResource PipelineBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Prepared" Foreground="{StaticResource PipelineMutedBrush}" /><TextBlock x:Name="PreparedCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                </Border>
+                <Border Background="{StaticResource PipelineSoftBrush}" BorderBrush="{StaticResource PipelineBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Sent" Foreground="{StaticResource PipelineMutedBrush}" /><TextBlock x:Name="SentCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                </Border>
+                <Border Background="{StaticResource PipelineSoftBrush}" BorderBrush="{StaticResource PipelineBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Follow-Up Due" Foreground="{StaticResource PipelineMutedBrush}" /><TextBlock x:Name="FollowUpDueCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                </Border>
+                <Border Background="{StaticResource PipelineSoftBrush}" BorderBrush="{StaticResource PipelineBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Accepted" Foreground="{StaticResource PipelineMutedBrush}" /><TextBlock x:Name="AcceptedCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                </Border>
+                <Border Background="{StaticResource PipelineSoftBrush}" BorderBrush="{StaticResource PipelineBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                    <StackPanel><TextBlock Text="Open Value" Foreground="{StaticResource PipelineMutedBrush}" /><TextBlock x:Name="OpenValueText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2.3*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="1.05*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{StaticResource PipelinePanelBrush}" BorderBrush="{StaticResource PipelineBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="8">
+                    <DataGrid x:Name="PipelineGrid" SelectionChanged="PipelineGrid_SelectionChanged" MouseDoubleClick="PipelineGrid_MouseDoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Priority" Binding="{Binding PriorityLabel}" Width="95" />
+                            <DataGridTextColumn Header="Stage" Binding="{Binding Stage}" Width="120" />
+                            <DataGridTextColumn Header="Quote" Binding="{Binding QuoteCode}" Width="115" />
+                            <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="170" />
+                            <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="2*" />
+                            <DataGridTextColumn Header="Follow-Up" Binding="{Binding FollowUpLine}" Width="130" />
+                            <DataGridTextColumn Header="Value" Binding="{Binding ValueLine}" Width="100" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <Border Grid.Column="2" Background="{StaticResource PipelinePanelBrush}" BorderBrush="{StaticResource PipelineBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock x:Name="SelectedTitleText" Text="Select a proposal" FontSize="22" FontWeight="Bold" TextWrapping="Wrap" />
+                            <TextBlock x:Name="SelectedSubtitleText" Text="Choose a row to see proposal state, draft details and next step." Foreground="{StaticResource PipelineMutedBrush}" Margin="0,4,0,12" TextWrapping="Wrap" />
+
+                            <Border Background="#040813" BorderBrush="{StaticResource PipelineBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="Next action" Foreground="{StaticResource PipelineGoldBrush}" FontWeight="Bold" />
+                                    <TextBlock x:Name="NextActionText" Text="No proposal selected." FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                    <TextBlock x:Name="RiskText" Foreground="#FB7185" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Text="Proposal details" Foreground="{StaticResource PipelineGoldBrush}" FontWeight="Bold" Margin="0,2,0,4" />
+                            <TextBlock x:Name="DetailText" Foreground="{StaticResource PipelineMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+                            <WrapPanel Margin="0,8,0,0">
+                                <Button x:Name="OpenQuoteButton" Content="Open Quote" Click="OpenQuote_Click" Style="{StaticResource PrimaryPipelineButtonStyle}" />
+                                <Button x:Name="OpenProposalButton" Content="Open Proposal File" Click="OpenProposal_Click" />
+                                <Button x:Name="CopyDraftButton" Content="Copy Email Draft" Click="CopyDraft_Click" />
+                                <Button x:Name="CreateFollowUpButton" Content="Create Follow-Up" Click="CreateFollowUp_Click" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <DockPanel Grid.Row="2" LastChildFill="True" Margin="0,4,0,0">
+            <Button DockPanel.Dock="Right" Content="Close" Click="Close_Click" />
+            <TextBlock x:Name="StatusText" Foreground="{StaticResource PipelineMutedBrush}" VerticalAlignment="Center" Text="Proposal Pipeline ready." />
+        </DockPanel>
+    </Grid>
+</Window>

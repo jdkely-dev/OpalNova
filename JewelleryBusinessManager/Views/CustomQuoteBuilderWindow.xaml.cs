@@ -23,10 +23,12 @@ public partial class CustomQuoteBuilderWindow : Window
     private bool _loading;
     private bool _refreshingComparison;
 
-    public CustomQuoteBuilderWindow()
+    public CustomQuoteBuilderWindow(int? initialQuoteId = null)
     {
         InitializeComponent();
         LoadReferenceData();
+        if (initialQuoteId.HasValue && LoadQuote(initialQuoteId.Value))
+            return;
         StartNewQuote();
     }
 
@@ -674,11 +676,14 @@ public partial class CustomQuoteBuilderWindow : Window
         return DateTime.Today.AddDays(2);
     }
 
-    private void QuoteCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    private bool LoadQuote(int quoteId)
     {
-        if (_loading || QuoteCombo.SelectedItem is not CustomQuote selected || selected.Id <= 0) return;
+        if (quoteId <= 0) return false;
         using var db = new AppDbContext();
-        _quote = db.CustomQuotes.AsNoTracking().First(x => x.Id == selected.Id);
+        var quote = db.CustomQuotes.AsNoTracking().FirstOrDefault(x => x.Id == quoteId);
+        if (quote == null) return false;
+
+        _quote = quote;
         _options.Clear();
         _stoneLinks.Clear();
         _materialLinks.Clear();
@@ -691,10 +696,18 @@ public partial class CustomQuoteBuilderWindow : Window
             _externalDiamondLinks[option] = db.QuoteOptionExternalDiamondLinks.AsNoTracking().Where(x => x.QuoteOptionId == option.Id).OrderBy(x => x.Id).ToList();
         }
         _loading = true;
+        QuoteCombo.SelectedItem = QuoteCombo.Items.Cast<CustomQuote>().FirstOrDefault(x => x.Id == _quote.Id);
         BindQuote();
         _loading = false;
         OptionsList.SelectedIndex = _options.Count > 0 ? 0 : -1;
         RefreshQuoteOverview();
+        return true;
+    }
+
+    private void QuoteCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (_loading || QuoteCombo.SelectedItem is not CustomQuote selected || selected.Id <= 0) return;
+        LoadQuote(selected.Id);
     }
 
     private void StoneCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

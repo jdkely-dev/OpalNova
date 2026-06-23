@@ -9,10 +9,10 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>OPALNOVA</AssemblyName>
     <RootNamespace>JewelleryBusinessManager</RootNamespace>
-    <Version>1.63.0</Version>
-    <AssemblyVersion>1.63.0.0</AssemblyVersion>
-    <FileVersion>1.63.0.0</FileVersion>
-    <InformationalVersion>1.63.0 OPALNOVA Text Encoding and Copy Cleanup</InformationalVersion>
+    <Version>1.64.0</Version>
+    <AssemblyVersion>1.64.0.0</AssemblyVersion>
+    <FileVersion>1.64.0.0</FileVersion>
+    <InformationalVersion>1.64.0 OPALNOVA Proposal Pipeline</InformationalVersion>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <Authors>Jack The Jeweller</Authors>
     <Company>Jack The Jeweller</Company>

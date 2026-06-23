@@ -22,7 +22,7 @@
                                 <TextBlock Text="Command Centre" Style="{StaticResource PillTextStyle}" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Version 1.63.0 - text encoding and copy cleanup" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
+                        <TextBlock Text="Version 1.64.0 - proposal pipeline" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -48,6 +48,7 @@
                 <MenuItem Header="Alert Centre" Click="AlertCentre_Click" />
                 <MenuItem Header="Customers" Tag="Customers" Click="MenuNavigate_Click" />
                 <MenuItem Header="Quotes &amp; Proposals" Tag="Quotes &amp; Proposals" Click="MenuNavigate_Click" />
+                <MenuItem Header="Proposal Pipeline" Click="ProposalPipeline_Click" />
                 <MenuItem Header="Production" Tag="Production" Click="MenuNavigate_Click" />
                 <MenuItem Header="Payments &amp; Sales" Tag="Payments &amp; Sales" Click="MenuNavigate_Click" />
                 <MenuItem Header="Inventory" Tag="Inventory" Click="MenuNavigate_Click" />

@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.63.0 Text Encoding and Copy Cleanup
+- Current workspace version: V1.64.0 Proposal Pipeline
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,23 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.64.0 State
+
+V1.64.0 continues the quote/proposal workflow pass:
+
+- Bumped visible/project version metadata to 1.64.0.
+- Added a hosted `ProposalPipelineWindow` for prepared, sent, follow-up due, accepted and converted proposals.
+- Added pipeline filters, search, status counts, selected-proposal detail, open-value summary and action guidance.
+- Pipeline rows can reopen the exact quote in a workspace tab, open the generated proposal file, copy recorded email drafts and create duplicate-safe follow-up tasks.
+- Added Proposal Pipeline entry points in Workflow menu, Project Workbench actions, Alert Centre actions, Quotes & Proposals, Reports and Custom Workflow Studio.
+- Preserved database schema and kept proposal send/record behavior in the existing quote builder.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.63.0 State
 

@@ -900,6 +900,7 @@ public partial class MainWindow : Window
         {
             new("Open Project Workbench", "Open the guided next-action hub for every active quote, job, supplier diamond, payment and follow-up.", ProjectWorkbench_Click),
             new("Alert Centre", "Open urgent and high-priority next actions in a focused alert list.", AlertCentre_Click),
+            new("Proposal Pipeline", "Review prepared, sent, due, accepted and converted proposals in one focused queue.", ProposalPipeline_Click),
             new("Custom Quote Builder", "Create or update a multi-option quote from the current workflow.", CustomQuoteBuilder_Click),
             new("Production Board", "Open the visual workshop pipeline.", ProductionBoard_Click),
             new("Payment & Collection", "Finish payment, pickup, shipping and sale creation.", PaymentCollection_Click),
@@ -909,6 +910,7 @@ public partial class MainWindow : Window
         {
             new("Open Alert Centre", "Review urgent quote, job, payment, supplier diamond, stock and follow-up alerts.", AlertCentre_Click),
             new("Project Workbench", "Open the broader guided next-action hub with message/context detail.", ProjectWorkbench_Click),
+            new("Proposal Pipeline", "Review proposal send/follow-up actions before they become stale.", ProposalPipeline_Click),
             new("Custom Quote Builder", "Open quote proposals and sent-proposal follow-ups.", CustomQuoteBuilder_Click),
             new("Production Board", "Open current production warnings and due jobs.", ProductionBoard_Click),
             new("Payment & Collection", "Open balances, handovers and receipts.", PaymentCollection_Click),
@@ -918,6 +920,7 @@ public partial class MainWindow : Window
         "Quotes & Proposals" => new ToolAction[]
         {
             new("Custom Quote Builder", "Create multi-option customer quotes, live totals, proposals and accepted jobs.", CustomQuoteBuilder_Click),
+            new("Proposal Pipeline", "Review proposal status, follow-up due dates, proposal files and email drafts.", ProposalPipeline_Click),
             new("Quote Register", "Review saved custom quotes, draft proposals, accepted options and converted jobs.", CustomQuoteRegister_Click),
             new("Customers", "Open customer records before creating a quote or follow-up.", (_, _) => SelectNavigationSection("Customers")),
             new("Nivoda Diamond Search", "Find supplier diamonds for a design option.", DiamondSupplier_Click),
@@ -970,6 +973,7 @@ public partial class MainWindow : Window
             new("Tax / GST Summary", "Preview tax-inclusive sales, estimated GST, payments and balances.", TaxSummaryReport_Click),
             new("Outstanding Balances", "Preview jobs with customer balances owing.", OutstandingBalancesReport_Click),
             new("Quote Conversion", "Preview quote status, acceptance and conversion performance.", QuoteConversionReport_Click),
+            new("Proposal Pipeline", "Open the live proposal follow-up queue.", ProposalPipeline_Click),
             new("Inventory Value", "Preview stock, stone and material value tied up in inventory.", InventoryValueReport_Click),
             new("Stock Ageing", "Preview older unsold stock and slow-moving inventory value.", StockAgeingReport_Click),
             new("Export BI CSV", "Export spreadsheet-ready reporting data.", ExportBusinessIntelligenceCsv_Click),
@@ -990,6 +994,7 @@ public partial class MainWindow : Window
         "Custom Workflow Studio" => new ToolAction[]
         {
             new("Custom Quote Builder", "Build multiple design options, compare live costs, generate a proposal and convert the accepted option into a production job.", CustomQuoteBuilder_Click),
+            new("Proposal Pipeline", "Track prepared, sent, follow-up due, accepted and converted proposals.", ProposalPipeline_Click),
             new("Nivoda Diamond Search", "Search external diamond stock and save selected supplier diamonds for quote planning.", DiamondSupplier_Click),
             new("Supplier Holds & Orders", "Protect customer-approved supplier diamonds with hold, order, arrival and release tracking.", SupplierDiamondWorkflow_Click),
             new("Quote Register", "Open the custom quote records and review draft, accepted and converted quotes.", CustomQuoteRegister_Click),
@@ -1505,12 +1510,18 @@ public partial class MainWindow : Window
         ["Documents Studio|Quote"] = new("Quote", "Create a customer quote preview.", "Generates quote paperwork from a selected job, price and customer information.", "Select the job/customer, confirm prices and details, generate preview, then open or print the HTML output.", "Always check expiry date, deposit terms and item details before sending.", "Quotes can create expectations. Make sure labour, stone and metal details are accurate."),
 
         ["Custom Workflow Studio|Custom Quote Builder"] = new("Custom Quote Builder", "Create one quote with several design and price options.", "Combines customer requirements, labour, metal, stones, setting, findings, markup and deposit information in one connected workflow.", "Choose or create a quote, add options, enter costs, save, preview the proposal, accept the chosen option, then create the production job.", "Save before previewing or converting. Review the live total and customer details carefully.", "The accepted option preserves the quoted price when the job is created."),
+        ["Custom Workflow Studio|Proposal Pipeline"] = new("Proposal Pipeline", "Track proposal follow-up work.", "Lists prepared, sent, follow-up due, accepted and converted proposals using the proposal tracking fields already recorded by the quote builder.", "Open the pipeline, filter to action needed or follow-up due, then open the exact quote or create a follow-up task from the selected row.", "Review the pipeline before starting new quote work so sent proposals do not go stale.", "The pipeline does not send email directly; use the quote builder send workflow to prepare and record proposal sending."),
         ["Custom Workflow Studio|Quote Register"] = new("Quote Register", "Review custom quotes already saved in OPALNOVA.", "Shows quote records so you can return to drafts or check workflow status.", "Open the register, locate the quote, then reopen it from Custom Quote Builder.", "Keep quote codes unique and descriptive.", "Use statuses to distinguish drafts, accepted proposals and converted jobs."),
         ["Custom Workflow Studio|Production Board"] = new("Production Board", "See every active job in its workshop stage.", "Shows customer, quote, due date, balance and production status in a visual pipeline.", "Select a card, then move it forward or back; double-click to edit the full job.", "Set realistic due dates so overdue highlighting is useful.", "Accepted quote jobs appear automatically because the board reads the existing Jobs register."),
         ["Custom Workflow Studio|Payment & Collection"] = new("Payment & Collection", "Complete the customer handover stage.", "Records deposits and progress payments, calculates balances, creates invoice/receipt paperwork, creates pickup reminders, marks jobs ready/collected/shipped and creates the final sale record.", "Select a job, record any payment, generate the receipt, then mark the handover status when the item is collected or shipped.", "Use this as the final checkpoint before closing a custom job.", "Check the balance and customer details before marking a job complete."),
         ["Production & Opal Studio|Production Board"] = new("Production Board", "Run the daily workshop from a visual job pipeline.", "Groups jobs by stage and highlights overdue work.", "Filter, select, move or edit job cards as work progresses.", "Move jobs only when the physical work has reached that stage.", "New setting, polishing and quality-check stages preserve existing job data."),
         ["Production & Opal Studio|Payment & Collection"] = new("Payment & Collection", "Finish jobs cleanly.", "Shows handover-stage jobs with total, paid and balance figures, then helps create receipts, sale records and complete statuses.", "Open it near the end of production, select the finished job, take payment, then mark collection or shipping.", "Do not complete the job until the item has physically left or is ready to archive.", "A remaining balance warning can be overridden, so read it carefully."),
-        ["Documents Studio|Custom Quote Builder"] = new("Custom Quote Builder", "Create a professional multi-option jewellery proposal.", "Builds connected quote options and customer-facing proposal output.", "Add costs and descriptions, save, then preview the proposal.", "Check all prices and terms before sending.", "Accepted options can become production jobs without retyping information."),        ["Documents Studio|Payment & Collection"] = new("Payment & Collection", "Payments, receipts and handover paperwork.", "Brings payment entry, invoice/receipt generation, sale creation and final collection/shipping status into one place.", "Select a job, enter payment details, generate paperwork, then mark the job ready, collected or shipped.", "Use it after quality check so the business record matches the customer handover.", "Make sure payment method and reference are correct before printing receipts."),
+        ["Documents Studio|Custom Quote Builder"] = new("Custom Quote Builder", "Create a professional multi-option jewellery proposal.", "Builds connected quote options and customer-facing proposal output.", "Add costs and descriptions, save, then preview the proposal.", "Check all prices and terms before sending.", "Accepted options can become production jobs without retyping information."),
+        ["Quotes & Proposals|Proposal Pipeline"] = new("Proposal Pipeline", "Keep proposal follow-ups visible.", "Turns prepared, sent, due, accepted and converted proposal states into a focused workspace queue.", "Filter to action needed, open the proposal file or email draft when available, then reopen the quote when customer feedback needs recording.", "Use it as the daily quote follow-up screen after checking Alert Centre.", "Creating a follow-up task does not mark the proposal as sent or accepted; record those milestones in the quote builder."),
+        ["Project Workbench|Proposal Pipeline"] = new("Proposal Pipeline", "Review proposal-specific next actions.", "Shows proposal rows separately from the broader project hub so quote follow-up work can be handled quickly.", "Open it from Project Workbench when quote/proposal actions need more detail than the alert list.", "Keep prepared-not-sent proposals moving into the send/record workflow.", "It only reads and updates proposal follow-up tasks; pricing and quote acceptance stay in the quote builder."),
+        ["Alert Centre|Proposal Pipeline"] = new("Proposal Pipeline", "Drill into quote proposal alerts.", "Provides a proposal-focused queue for alerts involving prepared proposals, overdue follow-ups and accepted quotes waiting for job conversion.", "Open it from Alert Centre, filter to action needed, then open the exact quote or create a follow-up.", "Clear overdue proposal follow-ups before they become cold leads.", "The pipeline depends on proposal dates being recorded when proposals are generated and sent."),
+        ["Reports|Proposal Pipeline"] = new("Proposal Pipeline", "Open the live proposal queue.", "Complements quote conversion reports with a working queue for proposal follow-up and quote reopening.", "Use reports for measurement and Proposal Pipeline for action.", "Review it after Quote Conversion when you need to act on specific proposal rows.", "It is not a historical report; it is a live workflow view."),
+        ["Documents Studio|Payment & Collection"] = new("Payment & Collection", "Payments, receipts and handover paperwork.", "Brings payment entry, invoice/receipt generation, sale creation and final collection/shipping status into one place.", "Select a job, enter payment details, generate paperwork, then mark the job ready, collected or shipped.", "Use it after quality check so the business record matches the customer handover.", "Make sure payment method and reference are correct before printing receipts."),
         ["Documents Studio|Invoice / Receipt"] = new("Invoice / Receipt", "Create sales paperwork.", "Generates an invoice or receipt from a sale or job-related payment.", "Select the job or sale, generate the document, preview it, then print or save.", "Create receipts as soon as payment is received.", "Make sure the paid amount and balance are correct before handing it to a customer."),
         ["Reports Studio|BI Command Report"] = new("BI Command Report", "One report for the whole business.", "Combines sales, profit, balances, quote conversion, inventory value, reserved inventory and open follow-ups into one command report.", "Open it weekly or before planning production, then use the highlighted sections to decide what needs action first.", "Use this report as your Monday morning business check.", "The report is only as accurate as the prices, costs, statuses and links entered in OPALNOVA."),
         ["Reports Studio|Visual Charts"] = new("Visual Charts", "See business snapshots quickly.", "Creates printable bar charts for sales, profit, quote conversion, inventory value, payments and outstanding balances using existing report data.", "Open it before weekly planning or stock decisions when a visual snapshot is faster than tables.", "Use charts to spot trends, then open the detailed report table before making financial decisions.", "Charts are only as accurate as the underlying records and may look flat when the dataset is small."),
@@ -4966,6 +4977,15 @@ public partial class MainWindow : Window
         tab = OpenWindowInWorkspaceTab("Alert Centre", window, "workflow:alert-centre", RefreshAfterWorkspaceTabClosed);
     }
 
+    private void ProposalPipeline_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new ProposalPipelineWindow { IsHostedInTab = true };
+        TabItem? tab = null;
+        window.OpenQuoteRequested += (_, quoteId) => OpenCustomQuoteBuilder(quoteId);
+        window.CloseRequested += (_, _) => CloseWorkspaceTab(tab);
+        tab = OpenWindowInWorkspaceTab("Proposal Pipeline", window, "workflow:proposal-pipeline", RefreshAfterWorkspaceTabClosed);
+    }
+
     private void OpenNextActionTarget(string target)
     {
         switch (target)
@@ -5033,8 +5053,22 @@ public partial class MainWindow : Window
 
     private void CustomQuoteBuilder_Click(object sender, RoutedEventArgs e)
     {
-        var window = new CustomQuoteBuilderWindow();
-        OpenWindowInWorkspaceTab("Custom Quotes", window, "workflow:custom-quotes", RefreshAfterWorkspaceTabClosed);
+        OpenCustomQuoteBuilder();
+    }
+
+    private void OpenCustomQuoteBuilder(int? quoteId = null)
+    {
+        var window = new CustomQuoteBuilderWindow(quoteId);
+        var title = quoteId.HasValue ? "Custom Quote" : "Custom Quotes";
+        if (quoteId.HasValue)
+        {
+            using var db = new AppDbContext();
+            var quoteCode = db.CustomQuotes.AsNoTracking().FirstOrDefault(x => x.Id == quoteId.Value)?.QuoteCode;
+            if (!string.IsNullOrWhiteSpace(quoteCode))
+                title = $"Quote {quoteCode}";
+        }
+        var key = quoteId.HasValue ? $"workflow:custom-quotes:{quoteId.Value}" : "workflow:custom-quotes";
+        OpenWindowInWorkspaceTab(title, window, key, RefreshAfterWorkspaceTabClosed);
     }
 
     private void DiamondSupplier_Click(object sender, RoutedEventArgs e)
