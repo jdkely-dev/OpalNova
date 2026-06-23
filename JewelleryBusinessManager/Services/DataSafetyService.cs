@@ -362,7 +362,7 @@ public static class DataSafetyService
     public static string RunDatabaseHealthCheck()
     {
         var sb = new StringBuilder();
-        sb.AppendLine("OPALNOVA — Database Health Check");
+        sb.AppendLine("OPALNOVA - Database Health Check");
         sb.AppendLine($"Checked: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
         sb.AppendLine($"Database path: {DatabaseBootstrapper.DatabasePath}");
         sb.AppendLine();
@@ -453,8 +453,8 @@ public static class DataSafetyService
 <html><head><meta charset="utf-8"><title>OPALNOVA User Guide</title>
 <style>body{font-family:Segoe UI,Arial,sans-serif;margin:32px;line-height:1.55;color:#1f2937;background:#f8fafc}h1,h2,h3{color:#111827}h1{margin-bottom:4px}.meta{color:#6b7280}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}.box{background:#fff;border:1px solid #d1d5db;padding:16px;margin:14px 0;border-radius:10px}.warn{border-left:5px solid #b45309;background:#fff7ed}.ok{border-left:5px solid #047857;background:#ecfdf5}code{background:#e5e7eb;padding:2px 4px;border-radius:3px}li{margin:4px 0}.toc a{display:block;margin:3px 0;color:#1f4f5f;text-decoration:none}.small{font-size:12px;color:#6b7280}@media print{body{background:#fff;margin:12mm}.box{break-inside:avoid}}</style></head>
 <body>
-<h1>OPALNOVA — User Guide</h1>
-<p class="meta">Generated locally by OPALNOVA. Manual version V1.62.0.</p>
+<h1>OPALNOVA User Guide</h1>
+<p class="meta">Generated locally by OPALNOVA. Manual version V1.63.0.</p>
 <div class="box toc"><h2>Contents</h2><a href="#setup">1. Setup and daily rhythm</a><a href="#quotes">2. Quotes and proposals</a><a href="#production">3. Production workflow</a><a href="#payments">4. Payments, invoices and handover</a><a href="#inventory">5. Inventory and supplier diamonds</a><a href="#reports">6. Reports and bookkeeping review</a><a href="#safety">7. Backups, restore and data safety</a><a href="#release">8. Release testing routine</a></div>
 <div class="box ok"><h2>Best starting point</h2><p>Use the main workflow homes first: Quotes & Proposals, Production, Payments & Sales, Inventory, Reports, and Settings & Backup. Specialist studios are for deeper work once the daily workflow is clear.</p></div>
 <div class="box" id="setup"><h2>1. Setup and daily rhythm</h2><ol><li>Open <b>Settings</b> and confirm business name, contact details, logo, document footer, tax/GST settings, printout folder and backup folder.</li><li>Add suppliers, customers, materials, stones and jewellery stock before relying on reports.</li><li>Use the dashboard setup-readiness card and Alert Centre to find missing setup, overdue work, low stock and follow-ups.</li><li>Run <b>Create Backup</b> before importing CSV files, restoring data, bulk cleanup, or major stock status changes.</li></ol><p class="small">Daily habit: open Alert Centre, review Project Workbench, process payments and follow-ups, then back up after important changes.</p></div>
@@ -467,7 +467,6 @@ public static class DataSafetyService
 <div class="box" id="release"><h2>8. Release testing routine</h2><ol><li>Open the latest version-specific testing checklist from the project folder.</li><li>Launch the published app and confirm the header and About version.</li><li>Run the new feature from both quick workspace and specialist studio entry points when both exist.</li><li>Confirm reports/documents open in preview and with Open HTML / Print where applicable.</li><li>Run a quick safety check: existing records still load, no unexpected records were added, and the app closes cleanly.</li></ol><p class="small">For development validation, each major build should pass debug build, release publish and published executable launch smoke before being committed and pushed.</p></div>
 </body></html>
 """;
-        html = html.Replace("OPALNOVA \u00e2\u20ac\u201d User Guide", "OPALNOVA User Guide");
         File.WriteAllText(path, html);
         return path;
     }
@@ -484,6 +483,7 @@ public static class DataSafetyService
 <body>
 <h1>OPALNOVA Release Notes</h1>
 <p class="meta">Generated from the installed app. These notes summarize the current major workflow builds.</p>
+<div class="card"><h2>V1.63.0 <span class="tag">Text Encoding and Copy Cleanup</span></h2><ul><li>Standardized generated document headings and support copy to avoid fragile typographic separators in exported text and HTML.</li><li>Cleaned up visible release/about/manual metadata so the installed app reports the V1.63 baseline consistently.</li></ul></div>
 <div class="card"><h2>V1.62.0 <span class="tag">Help Manual Refresh</span></h2><ul><li>Expanded the built-in User Guide into a practical OPALNOVA manual covering setup, quotes, production, payments, inventory, reports, backups and release testing.</li><li>Added clearer cautions for high-risk workflows such as restore, import, bulk status changes and supplier stock conversion.</li></ul></div>
 <div class="card"><h2>V1.61.0 <span class="tag">Visual Report Charts</span></h2><ul><li>Added printable visual chart reporting for sales, profit, quote conversion, inventory value, payments and outstanding balances.</li><li>Charts use local HTML/CSS and existing report data, with no internet or external chart library dependency.</li></ul></div>
 <div class="card"><h2>V1.60.0 <span class="tag">Tax and GST Summary</span></h2><ul><li>Added a read-only Tax / GST Summary report for current month, financial quarter, financial year and last-12-month review.</li><li>Added sales, estimated tax, net sales, payment method, outstanding balance and payment data-quality summaries.</li></ul></div>
@@ -507,7 +507,7 @@ public static class DataSafetyService
     public static string CreateAboutText()
     {
         var settings = BusinessSettingsService.Load();
-        return $"OPALNOVA\nVersion 1.62.0 - Built-In Help Manual Refresh\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
+        return $"OPALNOVA\nVersion 1.63.0 - Text Encoding and Copy Cleanup\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
     }
 
     public static void OpenTextReport(string title, string text)

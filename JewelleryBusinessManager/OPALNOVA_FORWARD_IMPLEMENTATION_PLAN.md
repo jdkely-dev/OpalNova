@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.62.0 Built-In Help Manual Refresh
+Current baseline: V1.63.0 Text Encoding and Copy Cleanup
 
 ## Purpose
 
@@ -62,6 +62,7 @@ Ease:
 | Area | Priority | Ease | Why | Recommended Build |
 | --- | --- | --- | --- | --- |
 | Keep build clean, release notes, git hygiene | P0 | S | Prevents future regressions and makes every build auditable. | Every build |
+| Text encoding and generated copy cleanup | P0 | S | Implemented in V1.63.0 to keep generated documents, trace reports, metadata and support copy consistent across Windows viewers. | V1.63 |
 | Backup health indicator before heavier data changes | P0 | S-M | Implemented in V1.55.0 as a dashboard data-safety card using existing backup services. | V1.55 |
 | Quote workspace two-panel polish | P1 | M | Quote workflow drives proposals, approvals, deposits, stock reservations, and jobs. Existing quote model supports most needs. | V1.49 |
 | Quote option comparison inside app | P1 | S-M | `QuoteOption` already has pricing fields and recommendation flag. Mostly UI and calculation presentation. | V1.49 |

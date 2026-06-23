@@ -658,7 +658,7 @@ public static class DocumentExportService
         var marketEvents = db.MarketEvents.AsEnumerable().ToDictionary(m => m.Id, m => m);
 
         var html = new StringBuilder();
-        html.Append(HtmlHeader(selectedBatch == null ? "Production Batch Report" : $"Batch Report — {selectedBatch.Name}"));
+        html.Append(HtmlHeader(selectedBatch == null ? "Production Batch Report" : $"Batch Report - {selectedBatch.Name}"));
         html.AppendLine("<section class='card'>");
         html.AppendLine("<h1>Production Batches & Collection Planning</h1>");
         html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}</p>");
@@ -1991,7 +1991,7 @@ public static class DocumentExportService
         AppendIfPresent(html, "Website", settings.Website);
         AppendIfPresent(html, "Address", settings.Address);
         if (settings.GstRegistered)
-            html.AppendLine($"<div>{Html(settings.TaxLabel)} registered — rate {settings.GstRatePercent:0.##}%</div>");
+            html.AppendLine($"<div>{Html(settings.TaxLabel)} registered - rate {settings.GstRatePercent:0.##}%</div>");
         html.AppendLine("</div>");
         html.AppendLine("</div>");
         html.AppendLine("</div>");

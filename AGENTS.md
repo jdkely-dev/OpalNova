@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.62.0 Built-In Help Manual Refresh
+- Current workspace version: V1.63.0 Text Encoding and Copy Cleanup
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,22 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.63.0 State
+
+V1.63.0 is a narrow text/copy cleanup checkpoint:
+
+- Bumped visible/project version metadata to 1.63.0.
+- Standardized high-visibility generated document headings and support copy to avoid fragile typographic separators in exported text and HTML.
+- Replaced the remaining old internal traceability report heading with OPALNOVA branding.
+- Updated the built-in guide metadata, release notes, About text, roadmap, forward plan, and V1.63 testing checklist.
+- Preserved database schema and business workflow logic.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.62.0 State
 

@@ -123,7 +123,7 @@ public static class OpalWorkflowService
         html.AppendLine("<style>");
         html.AppendLine("body{font-family:Segoe UI,Arial,sans-serif;margin:28px;color:#172033;background:#fff;}h1{margin-bottom:0;}h2{margin-top:28px;border-bottom:1px solid #d8dee9;padding-bottom:6px;}table{border-collapse:collapse;width:100%;margin-top:12px;}th,td{border:1px solid #d8dee9;padding:7px;text-align:left;}th{background:#f5f7fb;}.muted{color:#596579}.summary{background:#f8fafc;border:1px solid #d8dee9;padding:12px;margin:14px 0}.profit{font-weight:700}.warn{color:#a15c00}@media print{button{display:none}body{margin:14mm}}");
         html.AppendLine("</style></head><body>");
-        html.AppendLine($"<h1>{WebUtility.HtmlEncode(settings.BusinessName)} — Opal Parcel Yield Report</h1>");
+        html.AppendLine($"<h1>{WebUtility.HtmlEncode(settings.BusinessName)} - Opal Parcel Yield Report</h1>");
         html.AppendLine($"<p class='muted'>Created {DateTime.Now:g}</p>");
 
         if (parcels.Count == 0)
@@ -187,7 +187,7 @@ public static class OpalWorkflowService
         var html = new StringBuilder();
         html.AppendLine("<!doctype html><html><head><meta charset='utf-8'><title>Stone Workflow Report</title>");
         html.AppendLine("<style>body{font-family:Segoe UI,Arial,sans-serif;margin:28px;color:#172033;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #d8dee9;padding:7px;text-align:left;}th{background:#f5f7fb;}h2{margin-top:28px}.muted{color:#596579}@media print{body{margin:14mm}}</style></head><body>");
-        html.AppendLine($"<h1>{WebUtility.HtmlEncode(settings.BusinessName)} — Stone Workflow Report</h1><p class='muted'>Created {DateTime.Now:g}</p>");
+        html.AppendLine($"<h1>{WebUtility.HtmlEncode(settings.BusinessName)} - Stone Workflow Report</h1><p class='muted'>Created {DateTime.Now:g}</p>");
         foreach (var group in stones.GroupBy(s => s.Status).OrderBy(g => g.Key.ToString()))
         {
             html.AppendLine($"<h2>{H(group.Key.ToString())}</h2><table><thead><tr><th>Stone</th><th>Parcel</th><th>Weight</th><th>Shape</th><th>Colours</th><th>Est. Value</th><th>Notes</th></tr></thead><tbody>");

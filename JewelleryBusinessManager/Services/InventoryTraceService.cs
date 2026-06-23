@@ -17,7 +17,7 @@ public static class InventoryTraceService
         var id = (int)idProperty.GetValue(selected)!;
 
         var sb = new StringBuilder();
-        sb.AppendLine("JEWELLERY BUSINESS MANAGER — TRACEABILITY VIEW");
+        sb.AppendLine("OPALNOVA - TRACEABILITY VIEW");
         sb.AppendLine($"Created: {DateTime.Now:g}");
         sb.AppendLine(new string('=', 78));
 
@@ -68,7 +68,7 @@ public static class InventoryTraceService
         html.AppendLine("th { background: #f3f3f3; } .muted { color: #666; } .warn { color: #9a5b00; font-weight: bold; }");
         html.AppendLine("@media print { button { display: none; } body { margin: 8mm; } }");
         html.AppendLine("</style></head><body><button onclick='window.print()'>Print</button>");
-        html.AppendLine($"<h1>{Html(settings.BusinessName)} — Inventory Audit Report</h1>");
+        html.AppendLine($"<h1>{Html(settings.BusinessName)} - Inventory Audit Report</h1>");
         html.AppendLine($"<div class='muted'>Created {DateTime.Now:g}</div>");
         html.AppendLine("<div class='summary'>");
         Tile(html, "Low materials", lowMaterials.Count.ToString(CultureInfo.CurrentCulture));

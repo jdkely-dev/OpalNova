@@ -5409,11 +5409,11 @@ public partial class MainWindow : Window
 <style>
 body{font-family:Segoe UI,Arial,sans-serif;margin:32px;color:#111827;line-height:1.45} h1{color:#111827} h2{margin-top:28px;color:#7c5a13} .card{border:1px solid #ddd;border-radius:12px;padding:16px;margin:14px 0;background:#fafafa} code{background:#f3f4f6;padding:2px 5px;border-radius:4px}
 </style></head><body>
-<h1>OPALNOVA — Device Setup Notes</h1>
-<div class='card'><h2>DYMO / mini label printing</h2><p>Install DYMO Connect or the printer driver first. Use Hardware & POS Studio → DYMO Mini Label, then choose the DYMO printer in the Windows print dialog. The app uses Windows printing so it can also print to other small label printers.</p></div>
-<div class='card'><h2>Precision scales</h2><p>Serial/COM scales can be read through Hardware & POS Studio → Camera & Scale Capture. Choose the COM port and baud rate, then press the scale send/print button. Keyboard-wedge scales can type directly into the reading box. HID-only scales may need manufacturer software or wedge software to expose a keyboard/serial reading.</p></div>
+<h1>OPALNOVA - Device Setup Notes</h1>
+<div class='card'><h2>DYMO / mini label printing</h2><p>Install DYMO Connect or the printer driver first. Use Hardware & POS Studio > DYMO Mini Label, then choose the DYMO printer in the Windows print dialog. The app uses Windows printing so it can also print to other small label printers.</p></div>
+<div class='card'><h2>Precision scales</h2><p>Serial/COM scales can be read through Hardware & POS Studio > Camera & Scale Capture. Choose the COM port and baud rate, then press the scale send/print button. Keyboard-wedge scales can type directly into the reading box. HID-only scales may need manufacturer software or wedge software to expose a keyboard/serial reading.</p></div>
 <div class='card'><h2>USB camera workflow</h2><p>Use Open Windows Camera to capture a photo, then Import Latest Camera Roll Photo. You can also import a photo file directly and link it to the selected stock, stone, material, opal parcel or job.</p></div>
-<div class='card'><h2>Market multi-display mode</h2><p>Use Hardware & POS Studio → Market Operations Window. Keep that window on the operator screen, then open Customer Display on the second monitor. The main app can remain open for inventory or workshop operations separately.</p></div>
+<div class='card'><h2>Market multi-display mode</h2><p>Use Hardware & POS Studio > Market Operations Window. Keep that window on the operator screen, then open Customer Display on the second monitor. The main app can remain open for inventory or workshop operations separately.</p></div>
 </body></html>
 """;
             File.WriteAllText(path, html);
