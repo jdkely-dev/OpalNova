@@ -22,7 +22,7 @@
                                 <TextBlock Text="Command Centre" Style="{StaticResource PillTextStyle}" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Version 1.58.0 - stock ageing and slow-moving inventory" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
+                        <TextBlock Text="Version 1.59.0 - profitability reporting" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">

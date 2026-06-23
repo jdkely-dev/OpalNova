@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.58.0 Stock Ageing and Slow-Moving Inventory
+- Current workspace version: V1.59.0 Profitability Reporting
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,25 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.59.0 State
+
+V1.59.0 continues the reports and business intelligence pass:
+
+- Bumped visible/project version metadata to 1.59.0.
+- Added `DocumentExportService.CreateProfitabilityReport()`.
+- Added Profitability actions in Reports and Reports Studio.
+- Profitability reporting groups recorded sales by product/service category, including linked jewellery stock, linked job work, and unlinked sales.
+- Added recorded job-sales profit by job type and estimated job profit by job type.
+- Added profit-reporting data checks for unlinked sales, missing links, zero-cost sales, jobs without prices, and priced jobs without costs.
+- Added help text, release notes, and a V1.59 testing checklist.
+- Preserved database schema and kept the report read-only.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.58.0 State
 

@@ -793,6 +793,7 @@ public static class DocumentExportService
         AppendSalesSummaryTable(html, "Sales by channel this month", monthSales);
         AppendOutstandingBalancesTable(html, balances.OrderByDescending(j => j.BalanceOwing).Take(20).ToList());
         AppendQuoteConversionTable(html, quotes);
+        AppendProductCategoryProfitTable(html, "Profit by product/service category this month", monthSales, jewellery.ToDictionary(i => i.Id), jobs.ToDictionary(j => j.Id));
         AppendProfitableJobTypesTable(html, jobs);
         AppendInventoryValueTable(html, jewellery, stones, materials);
         AppendReservedInventoryTable(html, stoneLinks, materialLinks);
@@ -847,6 +848,44 @@ public static class DocumentExportService
         html.AppendLine(Row("Margin", Percent(PricingService.CalculateProfitMargin(sales.Sum(s => s.SaleAmount), sales.Sum(s => s.CostOfGoods)))));
         AppendSalesSummaryTable(html, "Sales by channel", sales);
         AppendRecentSalesTable(html, sales);
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
+    public static string CreateProfitabilityReport()
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+        var sales = db.Sales.AsEnumerable().OrderByDescending(s => s.SaleDate).ToList();
+        var jobs = db.Jobs.AsEnumerable().OrderBy(j => j.Type).ThenByDescending(JobPrice).ToList();
+        var jewelleryById = db.JewelleryItems.AsEnumerable().ToDictionary(i => i.Id);
+        var jobsById = jobs.ToDictionary(j => j.Id);
+        var reportJobs = jobs.Where(j => j.Status != JobStatus.Cancelled).ToList();
+        var jobLinkedSales = sales.Where(s => s.JobId.HasValue && jobsById.ContainsKey(s.JobId.Value)).ToList();
+        var stockLinkedSales = sales.Where(s => s.JewelleryItemId.HasValue && jewelleryById.ContainsKey(s.JewelleryItemId.Value)).ToList();
+        var unsoldStock = jewelleryById.Values.Where(i => i.Status != StockStatus.Sold).ToList();
+        var path = Path.Combine(PrintoutFolder, $"Profitability_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Profitability Report"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Profitability Report</h1>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}. This report is read-only and uses recorded sale amounts, cost of goods, jewellery categories and job types.</p>");
+        html.AppendLine(Row("Recorded sales", sales.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Recorded sales revenue", Money(sales.Sum(s => s.SaleAmount))));
+        html.AppendLine(Row("Recorded sales profit", Money(sales.Sum(s => s.Profit))));
+        html.AppendLine(Row("Recorded sales margin", Percent(PricingService.CalculateProfitMargin(sales.Sum(s => s.SaleAmount), sales.Sum(s => s.CostOfGoods)))));
+        html.AppendLine(Row("Linked stock sales", stockLinkedSales.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Linked job sales", jobLinkedSales.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Estimated job profit", Money(reportJobs.Sum(PricingService.CalculateJobProfit))));
+        html.AppendLine(Row("Potential unsold stock profit", Money(unsoldStock.Sum(PricingService.CalculateRetailProfit))));
+        AppendProductCategoryProfitTable(html, "Recorded Profit by Product / Service Category", sales, jewelleryById, jobsById);
+        AppendRealisedJobTypeProfitTable(html, jobLinkedSales, jobsById);
+        AppendEstimatedJobTypeProfitTable(html, reportJobs);
+        AppendProfitabilityDataQualityTable(html, sales, jobs, jewelleryById, jobsById);
+        AppendRecentProfitSalesTable(html, sales.Take(40).ToList(), jewelleryById, jobsById);
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
         File.WriteAllText(path, html.ToString());
@@ -1253,6 +1292,106 @@ public static class DocumentExportService
         html.AppendLine("</table>");
     }
 
+    private sealed record ProfitCategoryKey(string Category, string Source);
+
+    private static void AppendProductCategoryProfitTable(StringBuilder html, string title, List<Sale> sales, Dictionary<int, JewelleryItem> jewelleryById, Dictionary<int, Job> jobsById)
+    {
+        html.AppendLine($"<h2>{Html(title)}</h2>");
+        if (sales.Count == 0)
+        {
+            html.AppendLine("<p>No recorded sales are available for profitability grouping yet.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Category</th><th>Source</th><th>Sales</th><th>Revenue</th><th>Cost</th><th>Profit</th><th>Margin</th><th>Average Sale</th></tr>");
+        foreach (var group in sales.GroupBy(s => ClassifySaleCategory(s, jewelleryById, jobsById)).OrderByDescending(g => g.Sum(s => s.Profit)))
+        {
+            var revenue = group.Sum(s => s.SaleAmount);
+            var cost = group.Sum(s => s.CostOfGoods);
+            var count = group.Count();
+            html.AppendLine($"<tr><td>{Html(group.Key.Category)}</td><td>{Html(group.Key.Source)}</td><td>{count}</td><td>{Money(revenue)}</td><td>{Money(cost)}</td><td>{Money(revenue - cost)}</td><td>{Percent(PricingService.CalculateProfitMargin(revenue, cost))}</td><td>{Money(count == 0 ? 0 : revenue / count)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendRealisedJobTypeProfitTable(StringBuilder html, List<Sale> jobLinkedSales, Dictionary<int, Job> jobsById)
+    {
+        html.AppendLine("<h2>Recorded Profit by Job Type</h2>");
+        if (jobLinkedSales.Count == 0)
+        {
+            html.AppendLine("<p>No sales are currently linked to job records. Use Payment & Collection when handing over custom work so job-type profit can be measured.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Job Type</th><th>Sales</th><th>Revenue</th><th>Cost</th><th>Profit</th><th>Margin</th><th>Average Sale</th></tr>");
+        foreach (var group in jobLinkedSales.GroupBy(s => jobsById[s.JobId!.Value].Type).OrderByDescending(g => g.Sum(s => s.Profit)))
+        {
+            var revenue = group.Sum(s => s.SaleAmount);
+            var cost = group.Sum(s => s.CostOfGoods);
+            var count = group.Count();
+            html.AppendLine($"<tr><td>{Html(group.Key.ToString())}</td><td>{count}</td><td>{Money(revenue)}</td><td>{Money(cost)}</td><td>{Money(revenue - cost)}</td><td>{Percent(PricingService.CalculateProfitMargin(revenue, cost))}</td><td>{Money(count == 0 ? 0 : revenue / count)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendEstimatedJobTypeProfitTable(StringBuilder html, List<Job> jobs)
+    {
+        html.AppendLine("<h2>Estimated Job Profit by Job Type</h2>");
+        if (jobs.Count == 0)
+        {
+            html.AppendLine("<p>No non-cancelled jobs are available for estimated job profitability yet.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Job Type</th><th>Jobs</th><th>Completed</th><th>Open</th><th>Quoted / Final Revenue</th><th>Estimated Cost</th><th>Estimated Profit</th><th>Margin</th><th>Average Profit</th></tr>");
+        foreach (var group in jobs.GroupBy(j => j.Type).OrderByDescending(g => g.Sum(PricingService.CalculateJobProfit)))
+        {
+            var revenue = group.Sum(JobPrice);
+            var cost = group.Sum(PricingService.CalculateJobCost);
+            var profit = revenue - cost;
+            var count = group.Count();
+            html.AppendLine($"<tr><td>{Html(group.Key.ToString())}</td><td>{count}</td><td>{group.Count(j => j.Status == JobStatus.Completed)}</td><td>{group.Count(j => j.Status != JobStatus.Completed)}</td><td>{Money(revenue)}</td><td>{Money(cost)}</td><td>{Money(profit)}</td><td>{Percent(PricingService.CalculateProfitMargin(revenue, cost))}</td><td>{Money(count == 0 ? 0 : profit / count)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendProfitabilityDataQualityTable(StringBuilder html, List<Sale> sales, List<Job> jobs, Dictionary<int, JewelleryItem> jewelleryById, Dictionary<int, Job> jobsById)
+    {
+        var rows = new (string Check, int Count, string Reason)[]
+        {
+            ("Unlinked sales", sales.Count(s => !s.JobId.HasValue && !s.JewelleryItemId.HasValue), "These cannot be assigned to a stock category or job type."),
+            ("Missing stock links", sales.Count(s => s.JewelleryItemId.HasValue && !jewelleryById.ContainsKey(s.JewelleryItemId.Value)), "These sales point to stock records that are no longer found."),
+            ("Missing job links", sales.Count(s => s.JobId.HasValue && !jobsById.ContainsKey(s.JobId.Value)), "These sales point to job records that are no longer found."),
+            ("Sales with no cost of goods", sales.Count(s => s.SaleAmount > 0 && s.CostOfGoods <= 0), "Profit is overstated if material, stock or job cost is missing."),
+            ("Jobs with no price", jobs.Count(j => j.Status != JobStatus.Cancelled && JobPrice(j) <= 0), "Estimated job profit needs a quote amount or final price."),
+            ("Priced jobs with no recorded cost", jobs.Count(j => j.Status != JobStatus.Cancelled && JobPrice(j) > 0 && PricingService.CalculateJobCost(j) <= 0), "Estimated job profit is unreliable if labour/material costs are missing.")
+        };
+
+        html.AppendLine("<h2>Profit Reporting Data Checks</h2>");
+        html.AppendLine("<table><tr><th>Check</th><th>Count</th><th>Why It Matters</th></tr>");
+        foreach (var row in rows)
+            html.AppendLine($"<tr><td>{Html(row.Check)}</td><td>{row.Count}</td><td>{Html(row.Reason)}</td></tr>");
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendRecentProfitSalesTable(StringBuilder html, List<Sale> recentSales, Dictionary<int, JewelleryItem> jewelleryById, Dictionary<int, Job> jobsById)
+    {
+        html.AppendLine("<h2>Recent Sales Profit Detail</h2>");
+        if (recentSales.Count == 0)
+        {
+            html.AppendLine("<p>No recent sales have been recorded yet.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Date</th><th>Sale</th><th>Category</th><th>Source</th><th>Revenue</th><th>Cost</th><th>Profit</th><th>Margin</th></tr>");
+        foreach (var sale in recentSales)
+        {
+            var category = ClassifySaleCategory(sale, jewelleryById, jobsById);
+            html.AppendLine($"<tr><td>{Html(sale.SaleDate.ToShortDateString())}</td><td>{Html(DescribeSaleSource(sale, jewelleryById, jobsById))}</td><td>{Html(category.Category)}</td><td>{Html(category.Source)}</td><td>{Money(sale.SaleAmount)}</td><td>{Money(sale.CostOfGoods)}</td><td>{Money(sale.Profit)}</td><td>{Percent(PricingService.CalculateProfitMargin(sale.SaleAmount, sale.CostOfGoods))}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
     private static void AppendProfitableJobTypesTable(StringBuilder html, List<Job> jobs)
     {
         html.AppendLine("<h2>Most Profitable Job Types</h2>");
@@ -1323,6 +1462,32 @@ public static class DocumentExportService
         if (date > today)
             date = today;
         return (today - date).Days;
+    }
+
+    private static decimal JobPrice(Job job) => job.FinalPrice > 0 ? job.FinalPrice : job.QuoteAmount;
+
+    private static ProfitCategoryKey ClassifySaleCategory(Sale sale, Dictionary<int, JewelleryItem> jewelleryById, Dictionary<int, Job> jobsById)
+    {
+        if (sale.JewelleryItemId.HasValue && jewelleryById.TryGetValue(sale.JewelleryItemId.Value, out var item))
+            return new ProfitCategoryKey(item.Type.ToString(), "Jewellery stock");
+        if (sale.JobId.HasValue && jobsById.TryGetValue(sale.JobId.Value, out var job))
+            return new ProfitCategoryKey(job.Type.ToString(), "Job work");
+        if (sale.JewelleryItemId.HasValue)
+            return new ProfitCategoryKey("Missing stock link", "Needs cleanup");
+        if (sale.JobId.HasValue)
+            return new ProfitCategoryKey("Missing job link", "Needs cleanup");
+        return new ProfitCategoryKey(sale.SaleLocation.ToString(), "Unlinked sale");
+    }
+
+    private static string DescribeSaleSource(Sale sale, Dictionary<int, JewelleryItem> jewelleryById, Dictionary<int, Job> jobsById)
+    {
+        if (sale.JewelleryItemId.HasValue && jewelleryById.TryGetValue(sale.JewelleryItemId.Value, out var item))
+            return item.ToString();
+        if (sale.JobId.HasValue && jobsById.TryGetValue(sale.JobId.Value, out var job))
+            return job.ToString();
+        if (!string.IsNullOrWhiteSpace(sale.Notes))
+            return sale.Notes;
+        return $"Sale #{sale.Id}";
     }
 
     private static void AppendReservedInventoryTable(StringBuilder html, List<QuoteOptionStoneLink> stoneLinks, List<QuoteOptionMaterialLink> materialLinks)

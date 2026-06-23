@@ -886,7 +886,7 @@ public partial class MainWindow : Window
         "Tasks Studio" => "Daily work queue, follow-ups, task completion and reminder reports.",
         "Codes & Labels Studio" => "Barcode labels, scan lookup, label sheets and missing-code assignment.",
         "Documents Studio" => "Customer-facing documents, job cards, stock labels and sales paperwork.",
-        "Reports Studio" => "Business intelligence, sales summaries, quote conversion, outstanding balances, inventory value, reservations and classic reports.",
+        "Reports Studio" => "Business intelligence, sales summaries, profitability, quote conversion, outstanding balances, inventory value, reservations and classic reports.",
         "Safety & Data Studio" => "Backups, restore, health checks, data bundles, imports and error logs.",
         "Hardware & POS Studio" => "DYMO mini labels, USB camera/photo capture, precision scale capture and market POS display tools.",
         "Customer Relationship Studio" => "Customer summary cards, follow-up creation, history and relationship overview reports.",
@@ -965,6 +965,7 @@ public partial class MainWindow : Window
             new("BI Command Report", "Preview the full business intelligence report.", BusinessIntelligenceReport_Click),
             new("Weekly Sales", "Preview sales, profit and channels for the last 7 days.", WeeklySalesReport_Click),
             new("Monthly Sales", "Preview current month sales, profit and channels.", MonthlySalesReport_Click),
+            new("Profitability", "Preview profit by product, service category and job type.", ProfitabilityReport_Click),
             new("Outstanding Balances", "Preview jobs with customer balances owing.", OutstandingBalancesReport_Click),
             new("Quote Conversion", "Preview quote status, acceptance and conversion performance.", QuoteConversionReport_Click),
             new("Inventory Value", "Preview stock, stone and material value tied up in inventory.", InventoryValueReport_Click),
@@ -1089,6 +1090,7 @@ public partial class MainWindow : Window
             new("BI Command Report", "Preview the full business intelligence dashboard report: sales, profit, quotes, balances, inventory value, reservations and follow-ups.", BusinessIntelligenceReport_Click),
             new("Weekly Sales", "Preview sales, profit, margin and channel performance for the last 7 days.", WeeklySalesReport_Click),
             new("Monthly Sales", "Preview sales, profit, margin and channel performance for the current month.", MonthlySalesReport_Click),
+            new("Profitability", "Preview profit by product/service category and job type, with data quality checks.", ProfitabilityReport_Click),
             new("Outstanding Balances", "Preview jobs with balances owing and handover/payment priorities.", OutstandingBalancesReport_Click),
             new("Quote Conversion", "Preview quote status, acceptance and conversion performance.", QuoteConversionReport_Click),
             new("Inventory Value", "Preview finished jewellery, loose stone and material value tied up in stock.", InventoryValueReport_Click),
@@ -1509,6 +1511,7 @@ public partial class MainWindow : Window
         ["Reports Studio|BI Command Report"] = new("BI Command Report", "One report for the whole business.", "Combines sales, profit, balances, quote conversion, inventory value, reserved inventory and open follow-ups into one command report.", "Open it weekly or before planning production, then use the highlighted sections to decide what needs action first.", "Use this report as your Monday morning business check.", "The report is only as accurate as the prices, costs, statuses and links entered in OPALNOVA."),
         ["Reports Studio|Weekly Sales"] = new("Weekly Sales", "Review the last 7 days.", "Shows weekly sales, cost of goods, profit, margin and channel performance.", "Run it after markets, online drops or custom-job handovers.", "Compare weekly sales to the jobs and listings that created them.", "Sales without cost-of-goods entries can make profit look higher than reality."),
         ["Reports Studio|Monthly Sales"] = new("Monthly Sales", "Review the current month.", "Shows month-to-date sales, cost of goods, profit, margin and channel performance.", "Use it before ordering materials, paying bills or planning new stock.", "Look for channels with strong profit, not just high turnover.", "Incomplete sale records or missing costs will affect the result."),
+        ["Reports Studio|Profitability"] = new("Profitability", "Review what actually makes money.", "Shows recorded sales profit by product/service category, recorded job-sales profit by job type, estimated job profit by job type, and data-quality checks for missing links or costs.", "Run it before deciding what to make, quote, discount or promote next.", "Use profit, margin and average sale together; high turnover does not always mean strong profit.", "Unlinked sales and zero-cost sales can make categories look wrong until the records are cleaned up."),
         ["Reports Studio|Outstanding Balances"] = new("Outstanding Balances", "Find money still owed.", "Lists jobs with balances owing so collection, shipping and completion are not missed.", "Check it before marking jobs complete and before customer pickup days.", "Use Payment & Collection to record payments and clear balances.", "A balance may be wrong if payments were not linked to the job."),
         ["Reports Studio|Quote Conversion"] = new("Quote Conversion", "Measure quote performance.", "Shows quote statuses, accepted options, linked jobs and the overall conversion rate.", "Use it to follow up draft or sent quotes and improve pricing or proposal wording.", "A quote only counts as converted when it is marked accepted, has an accepted option or is linked to a job.", "Old draft quotes can lower the conversion rate unless they are cancelled or closed."),
         ["Reports Studio|Inventory Value"] = new("Inventory Value", "See money tied up in stock.", "Summarises finished jewellery, loose stones and materials by cost, value and retail potential.", "Use it before buying more stock or preparing for a market.", "This helps prevent cash being trapped in slow-moving inventory.", "Estimated values depend on the values you recorded for stones, materials and finished pieces."),
@@ -3967,6 +3970,20 @@ public partial class MainWindow : Window
         {
             ErrorLogService.Log(ex, "Create monthly sales report");
             MessageBox.Show($"Could not create the monthly sales report.\n\n{ex.Message}", "Monthly Sales error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void ProfitabilityReport_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DocumentExportService.CreateProfitabilityReport();
+            OpenReportInApp(path, "Profitability Report");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create profitability report");
+            MessageBox.Show($"Could not create the profitability report.\n\n{ex.Message}", "Profitability error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

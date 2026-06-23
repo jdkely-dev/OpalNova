@@ -477,6 +477,7 @@ public static class DataSafetyService
 <body>
 <h1>OPALNOVA Release Notes</h1>
 <p class="meta">Generated from the installed app. These notes summarize the current major workflow builds.</p>
+<div class="card"><h2>V1.59.0 <span class="tag">Profitability Reporting</span></h2><ul><li>Added a read-only profitability report for product/service categories and job types.</li><li>Added profit-reporting data checks for unlinked sales, missing links, zero-cost sales and jobs with incomplete price/cost inputs.</li></ul></div>
 <div class="card"><h2>V1.58.0 <span class="tag">Stock Ageing</span></h2><ul><li>Added stock ageing and slow-moving inventory reporting for unsold jewellery and loose stones.</li><li>Added age bands, slow-moving value and report actions in Reports and Reports Studio.</li></ul></div>
 <div class="card"><h2>V1.57.0 <span class="tag">Invoice and Receipt Polish</span></h2><ul><li>Refreshed customer invoice, receipt, deposit receipt and payment receipt output.</li><li>Added clearer financial summaries, payment ledgers and handover/payment notes.</li></ul></div>
 <div class="card"><h2>V1.56.0 <span class="tag">Customer Timeline</span></h2><ul><li>Added a customer timeline report for quotes, proposals, jobs, sales, payments and follow-ups.</li><li>Improved customer summary cards with quote context and recent timeline events.</li></ul></div>
@@ -496,7 +497,7 @@ public static class DataSafetyService
     public static string CreateAboutText()
     {
         var settings = BusinessSettingsService.Load();
-        return $"OPALNOVA\nVersion 1.58.0 - Stock Ageing and Slow-Moving Inventory\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
+        return $"OPALNOVA\nVersion 1.59.0 - Profitability Reporting\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
     }
 
     public static void OpenTextReport(string title, string text)

@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.58.0 Stock Ageing and Slow-Moving Inventory
+Current baseline: V1.59.0 Profitability Reporting
 
 ## Purpose
 
@@ -86,7 +86,7 @@ Ease:
 | Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
-| Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; charts remain later work. | V1.54, V1.58 |
+| Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; profitability reporting is implemented in V1.59.0; charts remain later work. | V1.54, V1.58, V1.59 |
 | Customer profile dashboard and timeline | P3 | M | Customer timeline implemented in V1.56.0 using existing quote, proposal, job, sale, payment and task records; fuller dashboard remains later polish. | V1.56 |
 | Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |
 | Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
@@ -369,25 +369,25 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start V1.59 with this ticket:
+Start V1.60 with this ticket:
 
-Title: V1.59 Profit by Category and Job Type - clearer margins
+Title: V1.60 Tax/GST Summary - bookkeeping-ready totals
 
 Tasks:
 
-- Add report sections for profit by job type using existing job prices/costs.
-- Add report sections for profit by product category using existing sale/stock links where available.
-- Keep calculations aligned with existing pricing services.
+- Add a read-only tax/GST summary using existing sales, payments, settings and invoice/receipt assumptions.
+- Show month-to-date and selectable-style fixed periods first, such as current month, current quarter and financial year to date.
+- Include sales totals, GST/tax estimate where registered, payment totals, outstanding balances and data checks for missing sale/payment links.
 - Add the report to Reports / Reports Studio.
-- Avoid changing sale, job or inventory records.
+- Avoid changing sale, payment, job or settings records.
 
 Validation:
 
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual profit reporting smoke:
+- manual tax/GST reporting smoke:
   - open Reports.
-  - generate profit by category/job type report.
-  - compare several totals against known jobs/sales.
+  - generate tax/GST summary report.
+  - compare several totals against known sales, payments and outstanding balances.
   - confirm no business records are changed.
