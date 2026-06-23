@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.67.0 Quote Customer Preference Fill
+Current baseline: V1.68.0 Balance Reminder Workflow
 
 ## Purpose
 
@@ -83,6 +83,7 @@ Ease:
 | Unsaved-change warnings for tab close | P2 | M-L | Started in V1.66.0 with a reusable close-guard interface and Custom Quote Builder dirty tracking. Broader editor adoption can follow once patterns are proven. | V1.66 |
 | Payment schedule tracking | P2 | M | Supports quote approvals and handover. Should follow proposal/action changes. | V1.50-V1.51 |
 | Polished invoice/receipt templates | P2 | M | Implemented in V1.57.0 for job invoices/receipts, sale receipts, deposit receipts and payment receipts. | V1.57 |
+| Balance reminder messages | P2 | S | Implemented in V1.68.0 through Payment & Collection copy-ready reminder text and duplicate-safe follow-up task creation. | V1.68 |
 | Job completion checklist and stock consume/release wizard | P2 | L | Implemented in V1.52.0 as an explicit completion checklist that consumes reserved materials, marks reserved stones set, releases unconsumed reservations, and writes material movement audit entries. | V1.52 |
 | Production stage checklist, waiting flags, and job files | P2 | M-L | The transcript shows these as central after proposal acceptance. Do this around the safe job-completion work. | V1.52 |
 | Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |

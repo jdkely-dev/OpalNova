@@ -142,11 +142,13 @@
                             </Grid>
                         </GroupBox>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <WrapPanel Margin="0,8,0,0">
                             <Button Content="Record Payment" Click="RecordPayment_Click" />
                             <Button Content="Generate Invoice / Receipt" Click="GenerateInvoice_Click" />
+                            <Button Content="Copy Balance Reminder" Click="CopyBalanceReminder_Click" />
+                            <Button Content="Create Balance Follow-Up" Click="CreateBalanceFollowUp_Click" />
                             <Button Content="Create Pickup Reminder" Click="CreatePickupReminder_Click" />
-                        </StackPanel>
+                        </WrapPanel>
 
                         <GroupBox Header="Handover Actions">
                             <WrapPanel>

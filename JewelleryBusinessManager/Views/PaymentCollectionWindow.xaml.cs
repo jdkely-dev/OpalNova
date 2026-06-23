@@ -109,7 +109,7 @@ public partial class PaymentCollectionWindow : Window
         var balance = Math.Max(0, total - paid);
 
         SelectedJobTitle.Text = $"{job.JobCode} {job.JobTitle}".Trim();
-        SelectedJobDetails.Text = $"Customer: {customer?.FullName ?? "No customer linked"}  ·  Due: {(job.DueDate.HasValue ? job.DueDate.Value.ToString("d MMM yyyy") : "Not set")}  ·  Sale created: {(db.Sales.AsNoTracking().Any(x => x.JobId == job.Id) ? "Yes" : "No")}";
+        SelectedJobDetails.Text = $"Customer: {customer?.FullName ?? "No customer linked"} - Due: {(job.DueDate.HasValue ? job.DueDate.Value.ToString("d MMM yyyy") : "Not set")} - Sale created: {(db.Sales.AsNoTracking().Any(x => x.JobId == job.Id) ? "Yes" : "No")}";
         TotalAmountText.Text = total.ToString("C", CultureInfo.CurrentCulture);
         PaidAmountText.Text = paid.ToString("C", CultureInfo.CurrentCulture);
         BalanceAmountText.Text = balance.ToString("C", CultureInfo.CurrentCulture);
@@ -193,6 +193,105 @@ public partial class PaymentCollectionWindow : Window
         {
             MessageBox.Show(ex.Message, "Invoice / Receipt", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private void CopyBalanceReminder_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using var db = new AppDbContext();
+            var job = GetSelectedJob(db);
+            if (job == null) return;
+
+            var customer = job.CustomerId.HasValue ? db.Customers.AsNoTracking().FirstOrDefault(x => x.Id == job.CustomerId.Value) : null;
+            var balance = CalculateCurrentBalance(db, job, out var total, out var paid);
+            if (balance <= 0m)
+            {
+                MessageBox.Show("This job does not currently show a balance owing.", "Balance reminder", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var message = BuildBalanceReminderMessage(job, customer, total, paid, balance);
+            Clipboard.SetText(message);
+            StatusMessageText.Text = $"Copied balance reminder for {job.JobCode}.";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Balance reminder", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void CreateBalanceFollowUp_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using var db = new AppDbContext();
+            var job = GetSelectedJob(db);
+            if (job == null) return;
+
+            var balance = CalculateCurrentBalance(db, job, out var total, out var paid);
+            if (balance <= 0m)
+            {
+                MessageBox.Show("This job does not currently show a balance owing.", "Balance follow-up", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var title = $"Balance reminder {job.JobCode}";
+            var duplicate = db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t =>
+                t.IsOpen &&
+                t.JobId == job.Id &&
+                string.Equals(t.Title, title, StringComparison.OrdinalIgnoreCase));
+            if (duplicate)
+            {
+                MessageBox.Show("An open balance follow-up already exists for this job.", "Balance follow-up", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var customer = job.CustomerId.HasValue ? db.Customers.AsNoTracking().FirstOrDefault(x => x.Id == job.CustomerId.Value) : null;
+            var dueDate = DateTime.Today.AddDays(1);
+            var task = new BusinessTask
+            {
+                TaskCode = TaskWorkflowService.GenerateTaskCode(),
+                Title = title,
+                Category = BusinessTaskCategory.CustomerFollowUp,
+                Priority = job.Status is JobStatus.ReadyForPickup or JobStatus.ReadyToShip ? BusinessTaskPriority.High : BusinessTaskPriority.Normal,
+                Status = BusinessTaskStatus.ToDo,
+                DueDate = dueDate,
+                ReminderDate = DateTime.Today,
+                CustomerId = job.CustomerId,
+                JobId = job.Id,
+                Description = $"Send balance reminder for {job.JobCode} {job.JobTitle}. Balance owing: {balance:C}. Total: {total:C}. Paid: {paid:C}.",
+                FollowUpNotes = BuildBalanceReminderMessage(job, customer, total, paid, balance),
+                ShowOnDashboard = true
+            };
+            db.BusinessTasks.Add(task);
+            db.SaveChanges();
+            StatusMessageText.Text = $"Created balance follow-up {task.TaskCode}.";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Balance follow-up", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private static decimal CalculateCurrentBalance(AppDbContext db, Job job, out decimal total, out decimal paid)
+    {
+        total = GetJobTotal(job);
+        var payments = db.Payments.AsNoTracking().Where(x => x.JobId == job.Id).Select(x => x.Amount).ToList().Sum();
+        paid = Math.Max(job.DepositPaid, payments);
+        return Math.Max(Math.Max(0, total - paid), Math.Max(0, job.BalanceOwing));
+    }
+
+    private static string BuildBalanceReminderMessage(Job job, Customer? customer, decimal total, decimal paid, decimal balance)
+    {
+        var name = string.IsNullOrWhiteSpace(customer?.FullName) ? "there" : customer.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? customer.FullName;
+        var dueLine = job.DueDate.HasValue ? $" The current due/handover date is {job.DueDate.Value:dd MMM yyyy}." : string.Empty;
+        return
+            $"Hi {name},\n\n" +
+            $"Just a quick note about {job.JobCode} {job.JobTitle}.\n\n" +
+            $"The total is {total:C}, with {paid:C} recorded as paid. The remaining balance is {balance:C}.{dueLine}\n\n" +
+            "Please let me know if you would like the payment details resent or if you have already paid and would like me to check the record.\n\n" +
+            "Kind regards";
     }
 
     private void CreatePickupReminder_Click(object sender, RoutedEventArgs e)
