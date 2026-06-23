@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.61.0 Visual Report Charts
+Current baseline: V1.62.0 Built-In Help Manual Refresh
 
 ## Purpose
 
@@ -92,7 +92,7 @@ Ease:
 | Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
 | Automated backup schedule | P3 | L | Health indicator is easy; true scheduling is OS/app lifecycle work. | V1.55 |
 | Installer, shortcut, version check, user guide | P3 | L-XL | Release notes viewer implemented in V1.55.0; installer/shortcut/version check remain later release work. | V1.55+ |
-| Built-in help/searchable guide | P3 | M-L | Reference app has searchable help articles; useful after core workflow surfaces stabilize. | V1.55+ |
+| Built-in help/searchable guide | P3 | M-L | The built-in user guide was refreshed in V1.62.0 into a practical local manual; searchable/paginated help remains later. | V1.62+ |
 | Command palette/global command bar | P4 | M-L | Useful, but not as important as fixing workflow surfaces first. | Later |
 | Complex capacity/calendar view | P4 | L-XL | Needs better production stage/checklist data first. | Later |
 | Scheduled reports | P4 | XL | Requires background scheduling and report stability. | Later |
@@ -334,7 +334,7 @@ Scope:
 - Restore preview improvements. Done in V1.55.0.
 - Full business archive export.
 - Release notes viewer inside app. Done in V1.55.0.
-- User guide/help manual.
+- User guide/help manual. Done in V1.62.0 as an expanded built-in HTML manual.
 - Installer and desktop shortcut creation.
 - Version/update check.
 
@@ -369,26 +369,25 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start V1.62 with this ticket:
+Start V1.63 with this ticket:
 
-Title: V1.62 Built-In Help Manual Refresh - clearer user guidance
+Title: V1.63 Text Encoding and Document Copy Cleanup - remove stale artifacts
 
 Tasks:
 
-- Expand the built-in user guide from a short routine page into a practical OPALNOVA manual.
-- Cover setup, quotes/proposals, production, payments, inventory, reports, backups and release/testing routines.
-- Keep the guide generated locally as HTML and available from the existing User Guide action.
-- Add clear cautions for destructive workflows such as restore/import/status changes.
-- Avoid changing business records or requiring internet access.
+- Scan generated documents, release notes, guide text and visible UI strings for stale mojibake or unclear legacy labels.
+- Replace corrupted punctuation with plain ASCII-safe text or existing project style.
+- Keep the cleanup limited to user-facing text and generated HTML copy.
+- Avoid changing business logic, database schema or workflow behavior.
+- Rebuild and smoke test after cleanup because encoded text can sit inside raw string literals.
 
 Validation:
 
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual user guide smoke:
-  - open Reports.
-  - open User Guide from Settings & Backup or Safety & Data Studio.
-  - confirm the guide opens in the default browser/app.
-  - confirm the major workflow sections are present and readable.
+- manual text cleanup smoke:
+  - open User Guide and Release Notes.
+  - generate at least one common document and one report.
+  - confirm no corrupted punctuation is visible in touched outputs.
   - confirm no business records are changed.

@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.61.0 Visual Report Charts
+- Current workspace version: V1.62.0 Built-In Help Manual Refresh
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,23 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.62.0 State
+
+V1.62.0 continues the release-readiness and user guidance pass:
+
+- Bumped visible/project version metadata to 1.62.0.
+- Expanded `DataSafetyService.CreateUserGuide()` from a short routine page into a practical OPALNOVA manual.
+- The guide now covers setup, quotes/proposals, production, payments, inventory, supplier diamonds, reports, backups, restore/import cautions, and release testing.
+- The guide remains generated locally as HTML from the existing User Guide action.
+- Added release notes and a V1.62 testing checklist.
+- Preserved database schema and kept the guide read-only.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.61.0 State
 
