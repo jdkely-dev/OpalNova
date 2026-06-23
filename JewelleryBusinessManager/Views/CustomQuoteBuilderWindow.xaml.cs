@@ -10,7 +10,7 @@ using JewelleryBusinessManager.Services;
 
 namespace JewelleryBusinessManager.Views;
 
-public partial class CustomQuoteBuilderWindow : Window
+public partial class CustomQuoteBuilderWindow : Window, IWorkspaceCloseGuard
 {
     private CustomQuote _quote = new();
     private readonly List<QuoteOption> _options = new();
@@ -22,6 +22,7 @@ public partial class CustomQuoteBuilderWindow : Window
     private List<ExternalDiamond> _externalDiamonds = new();
     private bool _loading;
     private bool _refreshingComparison;
+    private bool _hasUnsavedChanges;
 
     public CustomQuoteBuilderWindow(int? initialQuoteId = null)
     {
@@ -85,6 +86,43 @@ public partial class CustomQuoteBuilderWindow : Window
         BindQuote();
         _loading = false;
         OptionsList.SelectedIndex = 0;
+        _hasUnsavedChanges = false;
+    }
+
+    public bool CanCloseWorkspace() => ConfirmUnsavedQuoteAction("closing this quote workspace");
+
+    private bool ConfirmUnsavedQuoteAction(string actionText)
+    {
+        if (!_hasUnsavedChanges)
+            return true;
+
+        var result = MessageBox.Show(
+            $"This quote has unsaved changes. Save before {actionText}?",
+            "Unsaved quote changes",
+            MessageBoxButton.YesNoCancel,
+            MessageBoxImage.Warning);
+
+        if (result == MessageBoxResult.Cancel)
+            return false;
+        if (result == MessageBoxResult.No)
+            return true;
+
+        try
+        {
+            SaveQuote();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Save quote", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
+        }
+    }
+
+    private void MarkDirty()
+    {
+        if (!_loading && IsLoaded)
+            _hasUnsavedChanges = true;
     }
 
     private static QuoteOption NewOption(string name, BusinessSettings settings) => new()
@@ -480,6 +518,7 @@ public partial class CustomQuoteBuilderWindow : Window
             ?? CustomerCombo.Items.Cast<Customer>().FirstOrDefault(x => x.Id == 0);
         WorkflowStatusText.Text = $"Saved {_quote.QuoteCode}";
         RefreshQuoteOverview();
+        _hasUnsavedChanges = false;
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -488,7 +527,11 @@ public partial class CustomQuoteBuilderWindow : Window
         catch (Exception ex) { MessageBox.Show(ex.Message, "Save quote", MessageBoxButton.OK, MessageBoxImage.Warning); }
     }
 
-    private void NewQuote_Click(object sender, RoutedEventArgs e) => StartNewQuote();
+    private void NewQuote_Click(object sender, RoutedEventArgs e)
+    {
+        if (ConfirmUnsavedQuoteAction("starting a new quote"))
+            StartNewQuote();
+    }
 
     private void AddOption_Click(object sender, RoutedEventArgs e)
     {
@@ -499,6 +542,7 @@ public partial class CustomQuoteBuilderWindow : Window
         OptionsList.Items.Refresh();
         OptionsList.SelectedItem = option;
         RefreshQuoteOverview();
+        MarkDirty();
     }
 
     private void DuplicateOption_Click(object sender, RoutedEventArgs e)
@@ -534,6 +578,7 @@ public partial class CustomQuoteBuilderWindow : Window
         OptionsList.Items.Refresh();
         OptionsList.SelectedItem = option;
         RefreshQuoteOverview();
+        MarkDirty();
     }
 
     private void RemoveOption_Click(object sender, RoutedEventArgs e)
@@ -552,12 +597,15 @@ public partial class CustomQuoteBuilderWindow : Window
             OptionsList.Items.Refresh();
             OptionsList.SelectedIndex = 0;
             RefreshQuoteOverview();
+            MarkDirty();
         }
     }
 
     private void OptionsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) => ShowOption(OptionsList.SelectedItem as QuoteOption);
-    private void OptionText_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) { if (!_loading && IsLoaded) { PullOptionFields(); OptionsList.Items.Refresh(); } }
-    private void CostField_TextChanged(object sender, RoutedEventArgs e) { if (!_loading && IsLoaded) { _quote.DepositPercent = D(DepositPercentBox.Text); PullOptionFields(); } }
+    private void QuoteField_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) { if (!_loading && IsLoaded) { MarkDirty(); PullQuoteFields(); } }
+    private void QuoteField_Changed(object sender, RoutedEventArgs e) { if (!_loading && IsLoaded) { MarkDirty(); PullQuoteFields(); } }
+    private void OptionText_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) { if (!_loading && IsLoaded) { MarkDirty(); PullOptionFields(); OptionsList.Items.Refresh(); } }
+    private void CostField_TextChanged(object sender, RoutedEventArgs e) { if (!_loading && IsLoaded) { MarkDirty(); _quote.DepositPercent = D(DepositPercentBox.Text); PullOptionFields(); } }
 
     private void RecommendOption_Click(object sender, RoutedEventArgs e)
     {
@@ -572,6 +620,7 @@ public partial class CustomQuoteBuilderWindow : Window
         OptionsList.Items.Refresh();
         WorkflowStatusText.Text = $"Recommended: {selectedOption.OptionName}";
         RefreshQuoteOverview();
+        MarkDirty();
     }
 
     private void OptionComparisonGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -611,6 +660,7 @@ public partial class CustomQuoteBuilderWindow : Window
             RefreshOptionImage(option);
             RefreshQuoteOverview();
             WorkflowStatusText.Text = $"Attached image to {option.OptionName}";
+            MarkDirty();
         }
         catch (Exception ex)
         {
@@ -628,6 +678,7 @@ public partial class CustomQuoteBuilderWindow : Window
         RefreshOptionImage(option);
         RefreshQuoteOverview();
         WorkflowStatusText.Text = $"Removed image from {option.OptionName}";
+        MarkDirty();
     }
 
     private void OpenOptionImage_Click(object sender, RoutedEventArgs e)
@@ -719,6 +770,7 @@ public partial class CustomQuoteBuilderWindow : Window
         _loading = false;
         OptionsList.SelectedIndex = _options.Count > 0 ? 0 : -1;
         RefreshQuoteOverview();
+        _hasUnsavedChanges = false;
         return true;
     }
 
@@ -766,6 +818,7 @@ public partial class CustomQuoteBuilderWindow : Window
             ReservationStatus = "Proposed"
         });
         SynchroniseLinkedCosts(option);
+        MarkDirty();
     }
 
     private void RemoveLinkedStone_Click(object sender, RoutedEventArgs e)
@@ -778,6 +831,7 @@ public partial class CustomQuoteBuilderWindow : Window
         }
         _stoneLinks[option].Remove(link);
         SynchroniseLinkedCosts(option);
+        MarkDirty();
     }
 
     private void LinkMaterial_Click(object sender, RoutedEventArgs e)
@@ -811,6 +865,7 @@ public partial class CustomQuoteBuilderWindow : Window
         }
         SynchroniseLinkedCosts(option);
         UpdateMaterialAvailability(material);
+        MarkDirty();
     }
 
     private void RemoveLinkedMaterial_Click(object sender, RoutedEventArgs e)
@@ -823,6 +878,7 @@ public partial class CustomQuoteBuilderWindow : Window
         }
         _materialLinks[option].Remove(link);
         SynchroniseLinkedCosts(option);
+        MarkDirty();
     }
 
 
@@ -872,6 +928,7 @@ public partial class CustomQuoteBuilderWindow : Window
             LinkStatus = ExternalDiamondStatusCombo.SelectedItem?.ToString() ?? "Proposed"
         });
         SynchroniseLinkedCosts(option);
+        MarkDirty();
     }
 
     private void RemoveExternalDiamond_Click(object sender, RoutedEventArgs e)
@@ -884,6 +941,7 @@ public partial class CustomQuoteBuilderWindow : Window
         }
         _externalDiamondLinks[option].Remove(link);
         SynchroniseLinkedCosts(option);
+        MarkDirty();
     }
 
     private void UpdateExternalDiamondStatus_Click(object sender, RoutedEventArgs e)
@@ -892,6 +950,7 @@ public partial class CustomQuoteBuilderWindow : Window
         link.LinkStatus = ExternalDiamondStatusCombo.SelectedItem?.ToString() ?? "Proposed";
         RefreshLinkedInventory(option);
         RefreshQuoteOverview();
+        MarkDirty();
     }
 
     private void Preview_Click(object sender, RoutedEventArgs e)
@@ -948,6 +1007,7 @@ public partial class CustomQuoteBuilderWindow : Window
 
             WorkflowStatusText.Text = $"Proposal recorded as sent to {window.EmailTo}";
             RefreshQuoteOverview();
+            _hasUnsavedChanges = false;
             MessageBox.Show("Proposal recorded as sent. The email draft can be sent from your mail app, and the follow-up is ready on the dashboard.", "Send proposal", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
@@ -980,6 +1040,7 @@ public partial class CustomQuoteBuilderWindow : Window
         db.CustomQuotes.Update(_quote);
         db.SaveChanges();
         RefreshQuoteOverview();
+        _hasUnsavedChanges = false;
         return path;
     }
 
@@ -1101,6 +1162,7 @@ public partial class CustomQuoteBuilderWindow : Window
             ReloadCurrentQuoteLinks(db);
             WorkflowStatusText.Text = $"Accepted and reserved: {selectedOption.OptionName}";
             RefreshQuoteOverview();
+            _hasUnsavedChanges = false;
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "Accept option", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
@@ -1127,6 +1189,7 @@ public partial class CustomQuoteBuilderWindow : Window
             ReloadCurrentQuoteLinks(db);
             WorkflowStatusText.Text = "Reservations released";
             RefreshQuoteOverview();
+            _hasUnsavedChanges = false;
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "Release reservations", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
@@ -1194,6 +1257,7 @@ public partial class CustomQuoteBuilderWindow : Window
             db.SaveChanges();
             WorkflowStatusText.Text = $"Created {job.JobCode}";
             RefreshQuoteOverview();
+            _hasUnsavedChanges = false;
             MessageBox.Show($"Production job {job.JobCode} is ready in Jobs. Linked inventory remains reserved.", "Workflow complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex) { MessageBox.Show(ex.Message, "Create job", MessageBoxButton.OK, MessageBoxImage.Error); }

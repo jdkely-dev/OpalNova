@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.65.0 Quote Context Fields
+Current baseline: V1.66.0 Quote Unsaved Change Guard
 
 ## Purpose
 
@@ -79,7 +79,7 @@ Ease:
 | Universal next-action service | P2 | M-L | Implemented in V1.51.0 as a shared runtime service for Alert Centre and dashboard counts; Project Hub can be refactored to share it more deeply later. | V1.51 |
 | Alert centre | P2 | M | Implemented in V1.51.0 as a workspace-hosted alert list with filters, search, counts, details, and workflow actions. | V1.51 |
 | Recently opened tabs/items | P2 | S-M | Useful once tab lifecycle is stable. Can be local settings-backed first. | V1.51 |
-| Unsaved-change warnings for tab close | P2 | M-L | Important, but must be designed across hosted editors to avoid false prompts. | V1.51 |
+| Unsaved-change warnings for tab close | P2 | M-L | Started in V1.66.0 with a reusable close-guard interface and Custom Quote Builder dirty tracking. Broader editor adoption can follow once patterns are proven. | V1.66 |
 | Payment schedule tracking | P2 | M | Supports quote approvals and handover. Should follow proposal/action changes. | V1.50-V1.51 |
 | Polished invoice/receipt templates | P2 | M | Implemented in V1.57.0 for job invoices/receipts, sale receipts, deposit receipts and payment receipts. | V1.57 |
 | Job completion checklist and stock consume/release wizard | P2 | L | Implemented in V1.52.0 as an explicit completion checklist that consumes reserved materials, marks reserved stones set, releases unconsumed reservations, and writes material movement audit entries. | V1.52 |

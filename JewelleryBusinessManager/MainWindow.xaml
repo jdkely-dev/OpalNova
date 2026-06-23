@@ -22,7 +22,7 @@
                                 <TextBlock Text="Command Centre" Style="{StaticResource PillTextStyle}" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Version 1.65.0 - quote context fields" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
+                        <TextBlock Text="Version 1.66.0 - quote unsaved change guard" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
