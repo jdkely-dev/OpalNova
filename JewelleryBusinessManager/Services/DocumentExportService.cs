@@ -935,6 +935,90 @@ public static class DocumentExportService
         return path;
     }
 
+    public static string CreateVisualReportCharts()
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+        var today = DateTime.Today;
+        var months = RecentMonthStarts(today, 6);
+        var sales = db.Sales.AsEnumerable().ToList();
+        var payments = db.Payments.AsEnumerable().ToList();
+        var jobs = db.Jobs.AsEnumerable().ToList();
+        var quotes = db.CustomQuotes.AsEnumerable().ToList();
+        var jewellery = db.JewelleryItems.AsEnumerable().ToList();
+        var stones = db.Stones.AsEnumerable().ToList();
+        var materials = db.Materials.AsEnumerable().ToList();
+        var stoneLinks = db.QuoteOptionStoneLinks.AsEnumerable().ToList();
+        var materialLinks = db.QuoteOptionMaterialLinks.AsEnumerable().ToList();
+        var recentSales = sales.Where(s => s.SaleDate.Date >= months.First()).ToList();
+        var recentPayments = payments.Where(p => p.PaymentDate.Date >= months.First()).ToList();
+        var recentQuotes = quotes.Where(q => q.QuoteDate.Date >= months.First()).ToList();
+        var unsoldJewellery = jewellery.Where(i => i.Status != StockStatus.Sold).ToList();
+        var looseStones = stones.Where(s => s.Status != StoneStatus.Sold && s.Status != StoneStatus.SetInJewellery).ToList();
+        var materialValue = materials.Sum(m => m.CurrentQuantity * m.PurchaseCost);
+        var reservedValue = stoneLinks.Where(l => l.ReservationStatus.Equals("Reserved", StringComparison.OrdinalIgnoreCase)).Sum(l => l.UnitCost)
+            + materialLinks.Where(l => l.ReservationStatus.Equals("Reserved", StringComparison.OrdinalIgnoreCase)).Sum(l => l.LineCost);
+        var outstandingJobs = jobs.Where(j => j.BalanceOwing > 0 && j.Status != JobStatus.Cancelled).ToList();
+        var path = Path.Combine(PrintoutFolder, $"VisualCharts_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Visual Report Charts"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Visual Report Charts</h1>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}. Charts are built from local OPALNOVA records and do not require internet access.</p>");
+        html.AppendLine(Row("Recent sales", Money(recentSales.Sum(s => s.SaleAmount))));
+        html.AppendLine(Row("Recent profit", Money(recentSales.Sum(s => s.Profit))));
+        html.AppendLine(Row("Recent payments", Money(recentPayments.Sum(p => p.Amount))));
+        html.AppendLine(Row("Quote conversion", Percent(recentQuotes.Count == 0 ? 0 : recentQuotes.Count(IsQuoteConverted) / (decimal)recentQuotes.Count)));
+        html.AppendLine(Row("Inventory value", Money(unsoldJewellery.Sum(i => i.RetailPrice) + looseStones.Sum(s => s.EstimatedValue) + materialValue)));
+        html.AppendLine(Row("Outstanding balances", Money(outstandingJobs.Sum(j => j.BalanceOwing))));
+
+        AppendHorizontalBarChart(html, "Sales by Month", months.Select(month =>
+        {
+            var rows = sales.Where(s => s.SaleDate.Year == month.Year && s.SaleDate.Month == month.Month).ToList();
+            return new ChartRow(MonthLabel(month), rows.Sum(s => s.SaleAmount), Money(rows.Sum(s => s.SaleAmount)), $"{rows.Count} sale(s), profit {Money(rows.Sum(s => s.Profit))}");
+        }).ToList());
+
+        AppendHorizontalBarChart(html, "Profit by Month", months.Select(month =>
+        {
+            var rows = sales.Where(s => s.SaleDate.Year == month.Year && s.SaleDate.Month == month.Month).ToList();
+            return new ChartRow(MonthLabel(month), Math.Max(0, rows.Sum(s => s.Profit)), Money(rows.Sum(s => s.Profit)), $"{rows.Count} sale(s), cost {Money(rows.Sum(s => s.CostOfGoods))}");
+        }).ToList());
+
+        AppendHorizontalBarChart(html, "Quote Conversion by Month", months.Select(month =>
+        {
+            var rows = quotes.Where(q => q.QuoteDate.Year == month.Year && q.QuoteDate.Month == month.Month).ToList();
+            var converted = rows.Count(IsQuoteConverted);
+            var rate = rows.Count == 0 ? 0 : converted / (decimal)rows.Count;
+            return new ChartRow(MonthLabel(month), rate * 100m, Percent(rate), $"{converted} converted from {rows.Count} quote(s)");
+        }).ToList());
+
+        AppendHorizontalBarChart(html, "Inventory Value Snapshot", new List<ChartRow>
+        {
+            new("Finished jewellery retail", unsoldJewellery.Sum(i => i.RetailPrice), Money(unsoldJewellery.Sum(i => i.RetailPrice)), $"{unsoldJewellery.Count} unsold jewellery item(s)"),
+            new("Finished jewellery cost", unsoldJewellery.Sum(PricingService.CalculateJewelleryCost), Money(unsoldJewellery.Sum(PricingService.CalculateJewelleryCost)), "Recorded material, labour and other cost"),
+            new("Loose stones / opals", looseStones.Sum(s => s.EstimatedValue), Money(looseStones.Sum(s => s.EstimatedValue)), $"{looseStones.Count} available stone record(s)"),
+            new("Materials", materialValue, Money(materialValue), $"{materials.Count} material record(s)"),
+            new("Reserved inventory", reservedValue, Money(reservedValue), "Reserved quote-linked stones and materials")
+        });
+
+        AppendHorizontalBarChart(html, "Payments Received by Month", months.Select(month =>
+        {
+            var rows = payments.Where(p => p.PaymentDate.Year == month.Year && p.PaymentDate.Month == month.Month).ToList();
+            return new ChartRow(MonthLabel(month), rows.Sum(p => p.Amount), Money(rows.Sum(p => p.Amount)), $"{rows.Count} payment(s)");
+        }).ToList());
+
+        AppendHorizontalBarChart(html, "Outstanding Balances by Job Status", outstandingJobs.GroupBy(j => j.Status)
+            .Select(group => new ChartRow(group.Key.ToString(), group.Sum(j => j.BalanceOwing), Money(group.Sum(j => j.BalanceOwing)), $"{group.Count()} job(s)"))
+            .OrderByDescending(row => row.Value)
+            .ToList());
+
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
     public static string CreateOutstandingBalancesReport()
     {
         Directory.CreateDirectory(PrintoutFolder);
@@ -1529,6 +1613,37 @@ public static class DocumentExportService
             html.AppendLine("<p class='small'>Showing the latest 80 financial-year sales.</p>");
     }
 
+    private sealed record ChartRow(string Label, decimal Value, string DisplayValue, string Detail);
+
+    private static void AppendHorizontalBarChart(StringBuilder html, string title, List<ChartRow> rows)
+    {
+        html.AppendLine($"<h2>{Html(title)}</h2>");
+        if (rows.Count == 0)
+        {
+            html.AppendLine("<p>No data is available for this chart yet.</p>");
+            return;
+        }
+
+        var maxValue = rows.Max(r => r.Value);
+        if (maxValue <= 0)
+            maxValue = 1m;
+
+        html.AppendLine("<div class='chart-table'>");
+        foreach (var row in rows)
+        {
+            var width = Math.Clamp(row.Value / maxValue * 100m, 0m, 100m);
+            html.AppendLine("<div class='chart-row'>");
+            html.AppendLine($"<div class='chart-label'>{Html(row.Label)}</div>");
+            html.AppendLine("<div class='chart-track'>");
+            html.AppendLine($"<div class='chart-fill' style='width:{width.ToString("0.##", CultureInfo.InvariantCulture)}%'></div>");
+            html.AppendLine("</div>");
+            html.AppendLine($"<div class='chart-value'>{Html(row.DisplayValue)}</div>");
+            html.AppendLine($"<div class='chart-detail'>{Html(row.Detail)}</div>");
+            html.AppendLine("</div>");
+        }
+        html.AppendLine("</div>");
+    }
+
     private static void AppendProfitableJobTypesTable(StringBuilder html, List<Job> jobs)
     {
         html.AppendLine("<h2>Most Profitable Job Types</h2>");
@@ -1626,6 +1741,23 @@ public static class DocumentExportService
             return 0m;
         return Math.Round(grossAmount * settings.GstRatePercent / (100m + settings.GstRatePercent), 2);
     }
+
+    private static List<DateTime> RecentMonthStarts(DateTime today, int monthCount)
+    {
+        var currentMonth = new DateTime(today.Year, today.Month, 1);
+        return Enumerable.Range(0, monthCount)
+            .Select(offset => currentMonth.AddMonths(offset - monthCount + 1))
+            .ToList();
+    }
+
+    private static string MonthLabel(DateTime month)
+        => month.ToString("MMM yy", CultureInfo.CurrentCulture);
+
+    private static bool IsQuoteConverted(CustomQuote quote)
+        => quote.AcceptedOptionId.HasValue
+            || quote.LinkedJobId.HasValue
+            || quote.Status.Contains("Accepted", StringComparison.OrdinalIgnoreCase)
+            || quote.Status.Contains("Converted", StringComparison.OrdinalIgnoreCase);
 
     private static ProfitCategoryKey ClassifySaleCategory(Sale sale, Dictionary<int, JewelleryItem> jewelleryById, Dictionary<int, Job> jobsById)
     {
@@ -1816,6 +1948,13 @@ public static class DocumentExportService
         html.AppendLine(".notice { border: 1px solid #ddd; background: #f8fafc; border-left: 4px solid #d5c49a; padding: 10px 12px; margin: 12px 0; color: #333; }");
         html.AppendLine(".notice p { margin: 6px 0 0 0; }");
         html.AppendLine(".payment-ledger td:nth-child(2), .payment-ledger th:nth-child(2) { text-align: right; }");
+        html.AppendLine(".chart-table { margin: 8px 0 22px 0; display: grid; gap: 8px; }");
+        html.AppendLine(".chart-row { display: grid; grid-template-columns: 170px minmax(160px, 1fr) 110px minmax(160px, 1fr); gap: 10px; align-items: center; font-size: 12px; }");
+        html.AppendLine(".chart-label { font-weight: bold; color: #1f2937; }");
+        html.AppendLine(".chart-track { height: 16px; background: #eef2f7; border: 1px solid #d1d5db; border-radius: 999px; overflow: hidden; }");
+        html.AppendLine(".chart-fill { height: 100%; background: #1f4f5f; }");
+        html.AppendLine(".chart-value { font-weight: bold; text-align: right; white-space: nowrap; }");
+        html.AppendLine(".chart-detail { color: #555; }");
         html.AppendLine(".label { width: 360px; border: 1px solid #222; padding: 16px; }");
         html.AppendLine("h1 { margin: 0 0 12px 0; }");
         html.AppendLine("h2 { margin: 18px 0 8px 0; }");

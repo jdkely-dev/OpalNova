@@ -886,7 +886,7 @@ public partial class MainWindow : Window
         "Tasks Studio" => "Daily work queue, follow-ups, task completion and reminder reports.",
         "Codes & Labels Studio" => "Barcode labels, scan lookup, label sheets and missing-code assignment.",
         "Documents Studio" => "Customer-facing documents, job cards, stock labels and sales paperwork.",
-        "Reports Studio" => "Business intelligence, sales summaries, profitability, tax summaries, quote conversion, outstanding balances, inventory value, reservations and classic reports.",
+        "Reports Studio" => "Business intelligence, visual charts, sales summaries, profitability, tax summaries, quote conversion, outstanding balances, inventory value, reservations and classic reports.",
         "Safety & Data Studio" => "Backups, restore, health checks, data bundles, imports and error logs.",
         "Hardware & POS Studio" => "DYMO mini labels, USB camera/photo capture, precision scale capture and market POS display tools.",
         "Customer Relationship Studio" => "Customer summary cards, follow-up creation, history and relationship overview reports.",
@@ -963,6 +963,7 @@ public partial class MainWindow : Window
         "Reports" => new ToolAction[]
         {
             new("BI Command Report", "Preview the full business intelligence report.", BusinessIntelligenceReport_Click),
+            new("Visual Charts", "Preview sales, quote, inventory and cashflow charts.", VisualChartsReport_Click),
             new("Weekly Sales", "Preview sales, profit and channels for the last 7 days.", WeeklySalesReport_Click),
             new("Monthly Sales", "Preview current month sales, profit and channels.", MonthlySalesReport_Click),
             new("Profitability", "Preview profit by product, service category and job type.", ProfitabilityReport_Click),
@@ -1089,6 +1090,7 @@ public partial class MainWindow : Window
         "Reports Studio" => new ToolAction[]
         {
             new("BI Command Report", "Preview the full business intelligence dashboard report: sales, profit, quotes, balances, inventory value, reservations and follow-ups.", BusinessIntelligenceReport_Click),
+            new("Visual Charts", "Preview printable sales, quote conversion, inventory and cashflow charts.", VisualChartsReport_Click),
             new("Weekly Sales", "Preview sales, profit, margin and channel performance for the last 7 days.", WeeklySalesReport_Click),
             new("Monthly Sales", "Preview sales, profit, margin and channel performance for the current month.", MonthlySalesReport_Click),
             new("Profitability", "Preview profit by product/service category and job type, with data quality checks.", ProfitabilityReport_Click),
@@ -1511,6 +1513,7 @@ public partial class MainWindow : Window
         ["Documents Studio|Custom Quote Builder"] = new("Custom Quote Builder", "Create a professional multi-option jewellery proposal.", "Builds connected quote options and customer-facing proposal output.", "Add costs and descriptions, save, then preview the proposal.", "Check all prices and terms before sending.", "Accepted options can become production jobs without retyping information."),        ["Documents Studio|Payment & Collection"] = new("Payment & Collection", "Payments, receipts and handover paperwork.", "Brings payment entry, invoice/receipt generation, sale creation and final collection/shipping status into one place.", "Select a job, enter payment details, generate paperwork, then mark the job ready, collected or shipped.", "Use it after quality check so the business record matches the customer handover.", "Make sure payment method and reference are correct before printing receipts."),
         ["Documents Studio|Invoice / Receipt"] = new("Invoice / Receipt", "Create sales paperwork.", "Generates an invoice or receipt from a sale or job-related payment.", "Select the job or sale, generate the document, preview it, then print or save.", "Create receipts as soon as payment is received.", "Make sure the paid amount and balance are correct before handing it to a customer."),
         ["Reports Studio|BI Command Report"] = new("BI Command Report", "One report for the whole business.", "Combines sales, profit, balances, quote conversion, inventory value, reserved inventory and open follow-ups into one command report.", "Open it weekly or before planning production, then use the highlighted sections to decide what needs action first.", "Use this report as your Monday morning business check.", "The report is only as accurate as the prices, costs, statuses and links entered in OPALNOVA."),
+        ["Reports Studio|Visual Charts"] = new("Visual Charts", "See business snapshots quickly.", "Creates printable bar charts for sales, profit, quote conversion, inventory value, payments and outstanding balances using existing report data.", "Open it before weekly planning or stock decisions when a visual snapshot is faster than tables.", "Use charts to spot trends, then open the detailed report table before making financial decisions.", "Charts are only as accurate as the underlying records and may look flat when the dataset is small."),
         ["Reports Studio|Weekly Sales"] = new("Weekly Sales", "Review the last 7 days.", "Shows weekly sales, cost of goods, profit, margin and channel performance.", "Run it after markets, online drops or custom-job handovers.", "Compare weekly sales to the jobs and listings that created them.", "Sales without cost-of-goods entries can make profit look higher than reality."),
         ["Reports Studio|Monthly Sales"] = new("Monthly Sales", "Review the current month.", "Shows month-to-date sales, cost of goods, profit, margin and channel performance.", "Use it before ordering materials, paying bills or planning new stock.", "Look for channels with strong profit, not just high turnover.", "Incomplete sale records or missing costs will affect the result."),
         ["Reports Studio|Profitability"] = new("Profitability", "Review what actually makes money.", "Shows recorded sales profit by product/service category, recorded job-sales profit by job type, estimated job profit by job type, and data-quality checks for missing links or costs.", "Run it before deciding what to make, quote, discount or promote next.", "Use profit, margin and average sale together; high turnover does not always mean strong profit.", "Unlinked sales and zero-cost sales can make categories look wrong until the records are cleaned up."),
@@ -3945,6 +3948,20 @@ public partial class MainWindow : Window
         {
             ErrorLogService.Log(ex, "Create business intelligence report");
             MessageBox.Show($"Could not create the business intelligence report.\n\n{ex.Message}", "Business Intelligence error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void VisualChartsReport_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DocumentExportService.CreateVisualReportCharts();
+            OpenReportInApp(path, "Visual Report Charts");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create visual report charts");
+            MessageBox.Show($"Could not create the visual chart report.\n\n{ex.Message}", "Visual Charts error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

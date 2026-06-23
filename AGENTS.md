@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.60.0 Tax and GST Summary
+- Current workspace version: V1.61.0 Visual Report Charts
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,24 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.61.0 State
+
+V1.61.0 continues the reports and decision-support pass:
+
+- Bumped visible/project version metadata to 1.61.0.
+- Added `DocumentExportService.CreateVisualReportCharts()`.
+- Added Visual Charts actions in Reports and Reports Studio.
+- The report renders printable HTML/CSS bar charts for sales, profit, quote conversion, inventory value, payments and outstanding balances.
+- Charts reuse existing OPALNOVA records and calculations without internet access or external chart libraries.
+- Added help text, release notes, and a V1.61 testing checklist.
+- Preserved database schema and kept the report read-only.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.60.0 State
 

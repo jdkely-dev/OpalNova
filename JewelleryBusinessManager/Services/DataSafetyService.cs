@@ -477,6 +477,7 @@ public static class DataSafetyService
 <body>
 <h1>OPALNOVA Release Notes</h1>
 <p class="meta">Generated from the installed app. These notes summarize the current major workflow builds.</p>
+<div class="card"><h2>V1.61.0 <span class="tag">Visual Report Charts</span></h2><ul><li>Added printable visual chart reporting for sales, profit, quote conversion, inventory value, payments and outstanding balances.</li><li>Charts use local HTML/CSS and existing report data, with no internet or external chart library dependency.</li></ul></div>
 <div class="card"><h2>V1.60.0 <span class="tag">Tax and GST Summary</span></h2><ul><li>Added a read-only Tax / GST Summary report for current month, financial quarter, financial year and last-12-month review.</li><li>Added sales, estimated tax, net sales, payment method, outstanding balance and payment data-quality summaries.</li></ul></div>
 <div class="card"><h2>V1.59.0 <span class="tag">Profitability Reporting</span></h2><ul><li>Added a read-only profitability report for product/service categories and job types.</li><li>Added profit-reporting data checks for unlinked sales, missing links, zero-cost sales and jobs with incomplete price/cost inputs.</li></ul></div>
 <div class="card"><h2>V1.58.0 <span class="tag">Stock Ageing</span></h2><ul><li>Added stock ageing and slow-moving inventory reporting for unsold jewellery and loose stones.</li><li>Added age bands, slow-moving value and report actions in Reports and Reports Studio.</li></ul></div>
@@ -498,7 +499,7 @@ public static class DataSafetyService
     public static string CreateAboutText()
     {
         var settings = BusinessSettingsService.Load();
-        return $"OPALNOVA\nVersion 1.60.0 - Tax and GST Summary\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
+        return $"OPALNOVA\nVersion 1.61.0 - Visual Report Charts\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
     }
 
     public static void OpenTextReport(string title, string text)

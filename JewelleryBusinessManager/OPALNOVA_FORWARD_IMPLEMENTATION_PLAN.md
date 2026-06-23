@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.60.0 Tax and GST Summary
+Current baseline: V1.61.0 Visual Report Charts
 
 ## Purpose
 
@@ -86,7 +86,7 @@ Ease:
 | Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
-| Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; profitability reporting is implemented in V1.59.0; tax/GST summary is implemented in V1.60.0; charts remain later work. | V1.54, V1.58, V1.59, V1.60 |
+| Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; profitability reporting is implemented in V1.59.0; tax/GST summary is implemented in V1.60.0; visual charts are implemented in V1.61.0. | V1.54, V1.58, V1.59, V1.60, V1.61 |
 | Customer profile dashboard and timeline | P3 | M | Customer timeline implemented in V1.56.0 using existing quote, proposal, job, sale, payment and task records; fuller dashboard remains later polish. | V1.56 |
 | Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |
 | Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
@@ -310,8 +310,8 @@ Goal: improve business visibility after workflows produce better data.
 
 Scope:
 
-- Visual quote conversion report.
-- Sales and cashflow charts.
+- Visual quote conversion report. Done in V1.61.0 through the visual chart report.
+- Sales and cashflow charts. Done in V1.61.0 through printable HTML/CSS charts.
 - Inventory valuation and ageing.
 - Slow-moving stock report.
 - Profit by job type/category.
@@ -369,16 +369,16 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start V1.61 with this ticket:
+Start V1.62 with this ticket:
 
-Title: V1.61 Visual Report Charts - readable business snapshots
+Title: V1.62 Built-In Help Manual Refresh - clearer user guidance
 
 Tasks:
 
-- Add lightweight HTML/CSS charts for sales, quote conversion, inventory value and cashflow snapshots.
-- Reuse existing reporting datasets and calculations from BI, sales, inventory, quote conversion and tax/payment reports.
-- Keep charts printable, readable in the in-app preview, and independent of external JavaScript libraries.
-- Add the chart report to Reports / Reports Studio.
+- Expand the built-in user guide from a short routine page into a practical OPALNOVA manual.
+- Cover setup, quotes/proposals, production, payments, inventory, reports, backups and release/testing routines.
+- Keep the guide generated locally as HTML and available from the existing User Guide action.
+- Add clear cautions for destructive workflows such as restore/import/status changes.
 - Avoid changing business records or requiring internet access.
 
 Validation:
@@ -386,9 +386,9 @@ Validation:
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual visual chart reporting smoke:
+- manual user guide smoke:
   - open Reports.
-  - generate visual chart report.
-  - confirm chart sections render for sales, quotes, inventory and cashflow even when datasets are small or empty.
-  - compare several chart totals against the matching table/report values.
+  - open User Guide from Settings & Backup or Safety & Data Studio.
+  - confirm the guide opens in the default browser/app.
+  - confirm the major workflow sections are present and readable.
   - confirm no business records are changed.
