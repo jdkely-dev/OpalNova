@@ -920,6 +920,54 @@ public static class DocumentExportService
         return path;
     }
 
+    public static string CreateStockAgeingReport()
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+        var today = DateTime.Today;
+        var jewelleryRows = db.JewelleryItems.AsEnumerable()
+            .Where(i => i.Status != StockStatus.Sold)
+            .Select(i => new StockAgeRow(
+                "Jewellery",
+                i.StockCode,
+                i.Name,
+                i.Status.ToString(),
+                InventoryAgeDays(i.CreatedAt, today),
+                i.RetailPrice,
+                i.CreatedAt,
+                i.UpdatedAt));
+        var stoneRows = db.Stones.AsEnumerable()
+            .Where(s => s.Status != StoneStatus.Sold && s.Status != StoneStatus.SetInJewellery)
+            .Select(s => new StockAgeRow(
+                "Stone",
+                s.StoneCode,
+                s.StoneType,
+                s.Status.ToString(),
+                InventoryAgeDays(s.CreatedAt, today),
+                s.EstimatedValue,
+                s.CreatedAt,
+                s.UpdatedAt));
+        var rows = jewelleryRows.Concat(stoneRows).OrderByDescending(r => r.AgeDays).ThenBy(r => r.Type).ThenBy(r => r.Code).ToList();
+        var slowMoving = rows.Where(r => r.AgeDays >= 180).ToList();
+        var path = Path.Combine(PrintoutFolder, $"StockAgeing_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Stock Ageing and Slow-Moving Inventory"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Stock Ageing and Slow-Moving Inventory</h1>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}. This report is read-only and does not change stock status.</p>");
+        html.AppendLine(Row("Available stock records", rows.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Available stock value", Money(rows.Sum(r => r.Value))));
+        html.AppendLine(Row("Slow-moving records (180+ days)", slowMoving.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Slow-moving value", Money(slowMoving.Sum(r => r.Value))));
+        AppendStockAgeBucketTable(html, rows);
+        AppendSlowMovingInventoryTable(html, slowMoving);
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
     public static string CreateReservedInventoryReport()
     {
         Directory.CreateDirectory(PrintoutFolder);
@@ -1227,6 +1275,54 @@ public static class DocumentExportService
         html.AppendLine($"<tr><td>Loose stones / opals</td><td>{stones.Count(s => s.Status != StoneStatus.Sold && s.Status != StoneStatus.SetInJewellery)}</td><td>{Money(stones.Where(s => s.Status != StoneStatus.Sold && s.Status != StoneStatus.SetInJewellery).Sum(s => s.EstimatedValue))}</td><td>{Money(stones.Where(s => s.Status != StoneStatus.Sold && s.Status != StoneStatus.SetInJewellery).Sum(s => s.EstimatedValue))}</td></tr>");
         html.AppendLine($"<tr><td>Materials</td><td>{materials.Count}</td><td>{Money(materials.Sum(m => m.CurrentQuantity * m.PurchaseCost))}</td><td>{Money(materials.Sum(m => m.CurrentQuantity * m.PurchaseCost))}</td></tr>");
         html.AppendLine("</table>");
+    }
+
+    private sealed record StockAgeRow(string Type, string Code, string Name, string Status, int AgeDays, decimal Value, DateTime CreatedAt, DateTime UpdatedAt);
+
+    private static void AppendStockAgeBucketTable(StringBuilder html, List<StockAgeRow> rows)
+    {
+        var buckets = new[]
+        {
+            ("0-30 days", 0, 30),
+            ("31-90 days", 31, 90),
+            ("91-180 days", 91, 180),
+            ("181-365 days", 181, 365),
+            ("365+ days", 366, int.MaxValue)
+        };
+
+        html.AppendLine("<h2>Age Bands</h2>");
+        html.AppendLine("<table><tr><th>Age Band</th><th>Records</th><th>Jewellery</th><th>Stones</th><th>Estimated Value</th></tr>");
+        foreach (var bucket in buckets)
+        {
+            var bucketRows = rows.Where(r => r.AgeDays >= bucket.Item2 && r.AgeDays <= bucket.Item3).ToList();
+            html.AppendLine($"<tr><td>{Html(bucket.Item1)}</td><td>{bucketRows.Count}</td><td>{bucketRows.Count(r => r.Type == "Jewellery")}</td><td>{bucketRows.Count(r => r.Type == "Stone")}</td><td>{Money(bucketRows.Sum(r => r.Value))}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendSlowMovingInventoryTable(StringBuilder html, List<StockAgeRow> rows)
+    {
+        html.AppendLine("<h2>Slow-Moving Inventory (180+ Days)</h2>");
+        if (rows.Count == 0)
+        {
+            html.AppendLine("<p>No jewellery or loose stones are currently older than 180 days.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Type</th><th>Code</th><th>Name</th><th>Status</th><th>Age</th><th>Value</th><th>Created</th><th>Updated</th></tr>");
+        foreach (var row in rows.OrderByDescending(r => r.AgeDays).ThenByDescending(r => r.Value).Take(120))
+            html.AppendLine($"<tr><td>{Html(row.Type)}</td><td>{Html(row.Code)}</td><td>{Html(row.Name)}</td><td>{Html(row.Status)}</td><td>{row.AgeDays} days</td><td>{Money(row.Value)}</td><td>{Html(row.CreatedAt.ToShortDateString())}</td><td>{Html(row.UpdatedAt.ToShortDateString())}</td></tr>");
+        html.AppendLine("</table>");
+        if (rows.Count > 120)
+            html.AppendLine($"<p class='small'>Showing the 120 oldest records from {rows.Count} slow-moving items.</p>");
+    }
+
+    private static int InventoryAgeDays(DateTime createdAt, DateTime today)
+    {
+        var date = createdAt == default ? today : createdAt.Date;
+        if (date > today)
+            date = today;
+        return (today - date).Days;
     }
 
     private static void AppendReservedInventoryTable(StringBuilder html, List<QuoteOptionStoneLink> stoneLinks, List<QuoteOptionMaterialLink> materialLinks)

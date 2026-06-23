@@ -968,6 +968,7 @@ public partial class MainWindow : Window
             new("Outstanding Balances", "Preview jobs with customer balances owing.", OutstandingBalancesReport_Click),
             new("Quote Conversion", "Preview quote status, acceptance and conversion performance.", QuoteConversionReport_Click),
             new("Inventory Value", "Preview stock, stone and material value tied up in inventory.", InventoryValueReport_Click),
+            new("Stock Ageing", "Preview older unsold stock and slow-moving inventory value.", StockAgeingReport_Click),
             new("Export BI CSV", "Export spreadsheet-ready reporting data.", ExportBusinessIntelligenceCsv_Click),
             new("Export BI Excel", "Export one Excel-compatible workbook for business review.", ExportBusinessIntelligenceExcel_Click),
             new("Classic Reports Studio", "Open the full specialist reports list.", (_, _) => SelectNavigationSection("Reports Studio")),
@@ -1091,6 +1092,7 @@ public partial class MainWindow : Window
             new("Outstanding Balances", "Preview jobs with balances owing and handover/payment priorities.", OutstandingBalancesReport_Click),
             new("Quote Conversion", "Preview quote status, acceptance and conversion performance.", QuoteConversionReport_Click),
             new("Inventory Value", "Preview finished jewellery, loose stone and material value tied up in stock.", InventoryValueReport_Click),
+            new("Stock Ageing", "Preview unsold jewellery and loose stones by age band and slow-moving value.", StockAgeingReport_Click),
             new("Reserved Inventory", "Preview stones and materials reserved against accepted quote options.", ReservedInventoryReport_Click),
             new("Customer Follow-Ups", "Preview open follow-ups and tasks by priority and due date.", CustomerFollowUpInsightReport_Click),
             new("Opal / Stone Stock", "Preview stone inventory, opal values, weights and statuses.", OpalStoneStockReport_Click),
@@ -1510,6 +1512,7 @@ public partial class MainWindow : Window
         ["Reports Studio|Outstanding Balances"] = new("Outstanding Balances", "Find money still owed.", "Lists jobs with balances owing so collection, shipping and completion are not missed.", "Check it before marking jobs complete and before customer pickup days.", "Use Payment & Collection to record payments and clear balances.", "A balance may be wrong if payments were not linked to the job."),
         ["Reports Studio|Quote Conversion"] = new("Quote Conversion", "Measure quote performance.", "Shows quote statuses, accepted options, linked jobs and the overall conversion rate.", "Use it to follow up draft or sent quotes and improve pricing or proposal wording.", "A quote only counts as converted when it is marked accepted, has an accepted option or is linked to a job.", "Old draft quotes can lower the conversion rate unless they are cancelled or closed."),
         ["Reports Studio|Inventory Value"] = new("Inventory Value", "See money tied up in stock.", "Summarises finished jewellery, loose stones and materials by cost, value and retail potential.", "Use it before buying more stock or preparing for a market.", "This helps prevent cash being trapped in slow-moving inventory.", "Estimated values depend on the values you recorded for stones, materials and finished pieces."),
+        ["Reports Studio|Stock Ageing"] = new("Stock Ageing", "Find slow-moving stock.", "Groups unsold jewellery and available loose stones by age band and lists records older than 180 days.", "Use it before buying more stock, planning sales, or choosing pieces for markets and online listing.", "Ageing is read-only and does not change inventory status.", "Age is based on the record creation date, so imported legacy records may need manual interpretation."),
         ["Reports Studio|Reserved Inventory"] = new("Reserved Inventory", "See committed stones and materials.", "Lists inventory reserved against accepted quote options so the same stone or material is not accidentally promised twice.", "Run it before starting production or changing an accepted custom job.", "Release reservations when a quote is cancelled or redesigned.", "This is reservation value, not physical stock consumption."),
         ["Reports Studio|Customer Follow-Ups"] = new("Customer Follow-Ups", "Keep customer actions visible.", "Lists open tasks and reminders by due date, priority, customer and job link.", "Use it daily to decide who needs a message, pickup reminder, approval request or after-sale follow-up.", "Good follow-ups turn quotes into jobs and customers into repeat customers.", "Sensitive notes should be kept professional and necessary."),
         ["Reports Studio|Opal / Stone Stock"] = new("Opal / Stone Stock", "Audit loose stones and opals.", "Shows stone codes, types, statuses, weights, dimensions, brightness, colour notes, values and parcel links.", "Use it when selecting stones for new designs or checking what can be listed or set.", "Keep weights, values and statuses up to date as stones are cut, reserved, set or sold.", "The report cannot judge stone quality; it reflects recorded information."),
@@ -4006,6 +4009,20 @@ public partial class MainWindow : Window
         {
             ErrorLogService.Log(ex, "Create inventory value report");
             MessageBox.Show($"Could not create the inventory value report.\n\n{ex.Message}", "Inventory Value error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void StockAgeingReport_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DocumentExportService.CreateStockAgeingReport();
+            OpenReportInApp(path, "Stock Ageing Report");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create stock ageing report");
+            MessageBox.Show($"Could not create the stock ageing report.\n\n{ex.Message}", "Stock Ageing error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

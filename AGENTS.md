@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.57.0 Invoice and Receipt Polish
+- Current workspace version: V1.58.0 Stock Ageing and Slow-Moving Inventory
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,24 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.58.0 State
+
+V1.58.0 continues the reports and inventory decision-making pass:
+
+- Bumped visible/project version metadata to 1.58.0.
+- Added `DocumentExportService.CreateStockAgeingReport()`.
+- Added Stock Ageing actions in Reports and Reports Studio.
+- Stock ageing groups unsold jewellery and available loose stones into age bands.
+- Slow-moving inventory lists jewellery and stones older than 180 days with status, age, value, created date and updated date.
+- Added help text, release notes, and a V1.58 testing checklist.
+- Preserved database schema and kept the report read-only.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.57.0 State
 

@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.57.0 Invoice and Receipt Polish
+Current baseline: V1.58.0 Stock Ageing and Slow-Moving Inventory
 
 ## Purpose
 
@@ -86,7 +86,7 @@ Ease:
 | Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
-| Visual reports and Excel export | P3 | M-L | Existing report services and CSV exports help. Excel-compatible workbook export is implemented in V1.54.0; charts remain later work. | V1.54 |
+| Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; charts remain later work. | V1.54, V1.58 |
 | Customer profile dashboard and timeline | P3 | M | Customer timeline implemented in V1.56.0 using existing quote, proposal, job, sale, payment and task records; fuller dashboard remains later polish. | V1.56 |
 | Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |
 | Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
@@ -369,26 +369,25 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start V1.58 with this ticket:
+Start V1.59 with this ticket:
 
-Title: V1.58 Stock Ageing and Slow-Moving Inventory - better purchasing decisions
+Title: V1.59 Profit by Category and Job Type - clearer margins
 
 Tasks:
 
-- Add a stock ageing report using existing stock dates, statuses and sale links.
-- Add a slow-moving inventory report for older unsold jewellery and stones.
-- Surface stock age bands and estimated value tied up.
-- Keep calculations read-only and avoid inventory status changes.
+- Add report sections for profit by job type using existing job prices/costs.
+- Add report sections for profit by product category using existing sale/stock links where available.
+- Keep calculations aligned with existing pricing services.
 - Add the report to Reports / Reports Studio.
+- Avoid changing sale, job or inventory records.
 
 Validation:
 
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual inventory reporting smoke:
+- manual profit reporting smoke:
   - open Reports.
-  - generate stock ageing / slow-moving inventory report.
-  - confirm older unsold records appear.
-  - confirm sold/archived records are not treated as available stock.
-  - confirm no inventory records are changed.
+  - generate profit by category/job type report.
+  - compare several totals against known jobs/sales.
+  - confirm no business records are changed.
