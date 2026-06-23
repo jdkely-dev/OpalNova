@@ -26,7 +26,8 @@
                             </StackPanel>
                         </Border>
                         <TextBlock Text="Existing quote"/><ComboBox x:Name="QuoteCombo" SelectionChanged="QuoteCombo_SelectionChanged" Margin="0,4,0,8"/>
-                        <TextBlock Text="Customer"/><ComboBox x:Name="CustomerCombo" SelectionChanged="QuoteField_Changed" Margin="0,4,0,8"/>
+                        <TextBlock Text="Customer"/><ComboBox x:Name="CustomerCombo" SelectionChanged="QuoteField_Changed" Margin="0,4,0,6"/>
+                        <Button Content="Use Customer Preferences" Click="UseCustomerPreferences_Click" Style="{StaticResource ToolbarButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" ToolTip="Fill blank ring size, preferred metal and preferred stone fields from the selected customer profile."/>
                         <TextBlock Text="Quote code"/><TextBox x:Name="QuoteCodeBox" TextChanged="QuoteField_TextChanged" Margin="0,4,0,8"/>
                         <TextBlock Text="Title / project"/><TextBox x:Name="TitleBox" TextChanged="QuoteField_TextChanged" Margin="0,4,0,8"/>
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="8"/><ColumnDefinition/></Grid.ColumnDefinitions>

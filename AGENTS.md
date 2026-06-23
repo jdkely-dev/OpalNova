@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.66.0 Quote Unsaved Change Guard
+- Current workspace version: V1.67.0 Quote Customer Preference Fill
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,23 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.67.0 State
+
+V1.67.0 continues quote context workflow polish:
+
+- Bumped visible/project version metadata to 1.67.0.
+- Added a `Use Customer Preferences` action in Custom Quote Builder after customer selection.
+- The action fills blank quote ring size, preferred metal and preferred stone fields from the selected customer profile.
+- Existing quote-specific field values are not overwritten.
+- The action marks the quote dirty so V1.66 unsaved-change protection still applies.
+- Preserved database schema and proposal generation behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.66.0 State
 

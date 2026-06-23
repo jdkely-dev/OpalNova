@@ -533,6 +533,39 @@ public partial class CustomQuoteBuilderWindow : Window, IWorkspaceCloseGuard
             StartNewQuote();
     }
 
+    private void UseCustomerPreferences_Click(object sender, RoutedEventArgs e)
+    {
+        if (CustomerCombo.SelectedItem is not Customer customer || customer.Id <= 0)
+        {
+            MessageBox.Show("Select a customer first.", "Customer preferences", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var applied = new List<string>();
+        ApplyPreferenceIfBlank(RingSizeBox, customer.RingSizes, "ring size", applied);
+        ApplyPreferenceIfBlank(PreferredMetalBox, customer.PreferredMetals, "preferred metal", applied);
+        ApplyPreferenceIfBlank(PreferredStoneBox, customer.PreferredStones, "preferred stone", applied);
+
+        if (applied.Count == 0)
+        {
+            MessageBox.Show("No blank quote preference fields could be filled from this customer profile.", "Customer preferences", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        MarkDirty();
+        PullQuoteFields();
+        WorkflowStatusText.Text = $"Applied customer preferences: {string.Join(", ", applied)}.";
+    }
+
+    private static void ApplyPreferenceIfBlank(System.Windows.Controls.TextBox target, string? value, string label, List<string> applied)
+    {
+        if (!string.IsNullOrWhiteSpace(target.Text) || string.IsNullOrWhiteSpace(value))
+            return;
+
+        target.Text = value.Trim();
+        applied.Add(label);
+    }
+
     private void AddOption_Click(object sender, RoutedEventArgs e)
     {
         PullOptionFields();
