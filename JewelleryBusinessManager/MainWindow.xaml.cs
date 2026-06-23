@@ -1057,6 +1057,7 @@ public partial class MainWindow : Window
         "Customer Relationship Studio" => new ToolAction[]
         {
             new("Customer Summary Card", "Preview one customer with contact details, preferences, jobs, sales, payments and next follow-up.", CustomerSummaryCardSetup_Click),
+            new("Customer Timeline", "Preview one customer's quotes, proposals, jobs, sales, payments and follow-ups in date order.", CustomerTimelineSetup_Click),
             new("Create Customer Follow-Up", "Create a linked follow-up task for the selected customer.", CustomerFollowUpSetup_Click),
             new("Customer History", "Preview the existing detailed customer purchase/job history report.", CustomerHistorySetup_Click),
             new("Relationship Report", "Preview all customers with sales, active jobs, open follow-ups and last activity.", CustomerRelationshipReport_Click),
@@ -1480,6 +1481,7 @@ public partial class MainWindow : Window
         ["Safety & Data Studio"] = new("Safety & Data Studio", "Backups, exports and recovery.", "Creates backups, restores from validated files, checks database health, exports bundles, imports CSV and opens logs/help.", "Create Backup before risky work. Use Health Check when something looks wrong. Use Export Bundle when moving or archiving data.", "Keep a backup outside the computer, such as an external drive or cloud folder.", "Restore and import tools can change data. Read prompts carefully and avoid using them while another copy of OPALNOVA is running."),
         ["Hardware & POS Studio"] = new("Hardware & POS Studio", "Printers, camera/scale capture and market POS.", "Supports DYMO-style labels, camera/photo capture, scale notes and a market operations display.", "Set up devices in Windows first, then use OPALNOVA to print labels, capture photos or open market operations tools.", "Test printers and labels before a market day.", "Hardware behaviour depends on Windows drivers, printer setup and connected device compatibility."),
         ["Customer Relationship Studio"] = new("Customer Relationship Studio", "Customer history and follow-up tools.", "Shows customer summaries, history, open follow-ups, jobs, sales, payments and relationship reports.", "Select a customer, open the summary or history, then create a follow-up task when action is needed.", "Record preferences like ring sizes, favourite stones and budget notes to improve repeat customer service.", "Customer reports are only as useful as the linked jobs, sales and payments entered."),
+        ["Customer Relationship Studio|Customer Timeline"] = new("Customer Timeline", "See one customer's activity trail.", "Combines existing quotes, proposal sent events, jobs, sales, payments and customer tasks into one dated report.", "Use it before contacting a repeat customer so you can see recent work and open actions in one place.", "Create a follow-up from the same studio when the timeline shows a next step.", "The timeline reflects linked records only; unlinked payments or jobs will not appear."),
         ["Data Cleanup Studio"] = new("Data Cleanup Studio", "Data quality and safe cleanup.", "Finds duplicates, missing information and selected records that need status or market cleanup.", "Run reports first, review the affected records, then apply selected bulk actions only when you are confident.", "Backup before data cleanup or bulk updates.", "Cleanup actions can change many records at once. Avoid rushing these tools."),
     };
 
@@ -3787,6 +3789,29 @@ public partial class MainWindow : Window
         }
     }
 
+    private void CustomerTimeline_Click(object sender, RoutedEventArgs e)
+    {
+        if (RecordsGrid.SelectedItem is not Customer selectedCustomer)
+        {
+            MessageBox.Show("Select a customer first, then click Customer Timeline.", "Customer Timeline", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            using var db = new AppDbContext();
+            var customer = db.Customers.Find(selectedCustomer.Id);
+            if (customer == null) return;
+            var path = CustomerRelationshipService.CreateCustomerTimeline(customer);
+            OpenReportInApp(path, "Customer Timeline");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create customer timeline");
+            MessageBox.Show($"Could not create the customer timeline.\n\n{ex.Message}", "Customer Timeline", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void CustomerFollowUp_Click(object sender, RoutedEventArgs e)
     {
         if (RecordsGrid.SelectedItem is not Customer selectedCustomer)
@@ -5009,6 +5034,9 @@ public partial class MainWindow : Window
 
     private void CustomerSummaryCardSetup_Click(object sender, RoutedEventArgs e) =>
         ShowSingleRecordToolPanel("Customer Summary Card", "Choose a customer to preview their contact details, preferences, work history, sales and next follow-up.", new[] { "Customers" }, CustomerSummaryCard_Click, "Generate Customer Summary Card");
+
+    private void CustomerTimelineSetup_Click(object sender, RoutedEventArgs e) =>
+        ShowSingleRecordToolPanel("Customer Timeline", "Choose a customer to preview quotes, proposal events, jobs, sales, payments and follow-ups in date order.", new[] { "Customers" }, CustomerTimeline_Click, "Generate Customer Timeline");
 
     private void CustomerFollowUpSetup_Click(object sender, RoutedEventArgs e) =>
         ShowSingleRecordToolPanel("Create Customer Follow-Up", "Choose a customer and create a linked follow-up task. You can edit the due date, reason and notes before saving.", new[] { "Customers" }, CustomerFollowUp_Click, "Create Customer Follow-Up");

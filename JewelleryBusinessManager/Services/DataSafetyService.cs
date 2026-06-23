@@ -477,6 +477,7 @@ public static class DataSafetyService
 <body>
 <h1>OPALNOVA Release Notes</h1>
 <p class="meta">Generated from the installed app. These notes summarize the current major workflow builds.</p>
+<div class="card"><h2>V1.56.0 <span class="tag">Customer Timeline</span></h2><ul><li>Added a customer timeline report for quotes, proposals, jobs, sales, payments and follow-ups.</li><li>Improved customer summary cards with quote context and recent timeline events.</li></ul></div>
 <div class="card"><h2>V1.55.0 <span class="tag">Release Readiness</span></h2><ul><li>Added dashboard data-safety status for backup freshness, database path and pending restore state.</li><li>Added restore preview before staging a selected backup.</li><li>Added in-app release notes access from admin workflows.</li></ul></div>
 <div class="card"><h2>V1.54.0 <span class="tag">BI Excel Export</span></h2><ul><li>Added an Excel-compatible business intelligence workbook export.</li><li>Workbook sheets cover summary, sales, balances, quotes, inventory, reservations, tasks and external diamonds.</li></ul></div>
 <div class="card"><h2>V1.53.0 <span class="tag">External Diamond Conversion</span></h2><ul><li>Converted received supplier diamonds into owned loose-stone inventory through an explicit workflow.</li><li>Added duplicate-safe conversion markers and owned stone codes in supplier diamond workflow.</li></ul></div>
@@ -493,7 +494,7 @@ public static class DataSafetyService
     public static string CreateAboutText()
     {
         var settings = BusinessSettingsService.Load();
-        return $"OPALNOVA\nVersion 1.55.0 - Backup Health and Release Readiness\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
+        return $"OPALNOVA\nVersion 1.56.0 - Customer Timeline and Profile Polish\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
     }
 
     public static void OpenTextReport(string title, string text)

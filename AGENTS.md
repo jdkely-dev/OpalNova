@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.55.0 Backup Health and Release Readiness
+- Current workspace version: V1.56.0 Customer Timeline and Profile Polish
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,24 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.56.0 State
+
+V1.56.0 begins the customer relationship polish pass:
+
+- Bumped visible/project version metadata to 1.56.0.
+- Added `CustomerRelationshipService.CreateCustomerTimeline()` for a single customer activity timeline.
+- Timeline combines existing quotes, proposal-sent events, jobs, sales, payments, and customer tasks.
+- Added a Customer Timeline action in Customer Relationship Studio with the same selector workflow as summary/history reports.
+- Improved customer summary cards with quote counts, recent quote context, and recent timeline events.
+- Updated release notes and About text to V1.56.0.
+- Preserved database schema and existing customer workflow behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.55.0 State
 

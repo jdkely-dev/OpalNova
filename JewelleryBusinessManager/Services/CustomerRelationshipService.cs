@@ -18,11 +18,16 @@ public static class CustomerRelationshipService
         using var db = new AppDbContext();
 
         var jobs = db.Jobs.AsNoTracking().AsEnumerable().Where(j => j.CustomerId == customer.Id).OrderByDescending(j => j.DateReceived).ToList();
+        var quotes = db.CustomQuotes.AsNoTracking().AsEnumerable().Where(q => q.CustomerId == customer.Id).OrderByDescending(q => q.QuoteDate).ToList();
+        var quoteIds = quotes.Select(q => q.Id).ToHashSet();
+        var quoteOptions = db.QuoteOptions.AsNoTracking().AsEnumerable().Where(o => quoteIds.Contains(o.CustomQuoteId)).ToList();
         var sales = db.Sales.AsNoTracking().AsEnumerable().Where(s => s.CustomerId == customer.Id).OrderByDescending(s => s.SaleDate).ToList();
         var payments = db.Payments.AsNoTracking().AsEnumerable().Where(p => p.CustomerId == customer.Id || jobs.Any(j => p.JobId == j.Id) || sales.Any(s => p.SaleId == s.Id)).OrderByDescending(p => p.PaymentDate).ToList();
         var tasks = db.BusinessTasks.AsNoTracking().AsEnumerable().Where(t => t.CustomerId == customer.Id).OrderBy(t => t.DueDate ?? DateTime.MaxValue).ToList();
         var openTasks = tasks.Where(t => t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled).ToList();
         var activeJobs = jobs.Where(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled).ToList();
+        var openQuotes = quotes.Where(q => !q.AcceptedOptionId.HasValue && !q.LinkedJobId.HasValue && !q.Status.Contains("Cancelled", StringComparison.OrdinalIgnoreCase)).ToList();
+        var timeline = BuildCustomerTimelineEvents(quotes, quoteOptions, jobs, sales, payments, tasks);
         var lastSale = sales.FirstOrDefault();
         var lastJob = jobs.FirstOrDefault();
         var lastPayment = payments.FirstOrDefault();
@@ -46,6 +51,7 @@ public static class CustomerRelationshipService
         html.AppendLine("<h2>Relationship Snapshot</h2>");
         html.AppendLine("<div class='summary-grid'>");
         html.AppendLine(Tile("Jobs", jobs.Count.ToString(CultureInfo.InvariantCulture), $"{activeJobs.Count} active"));
+        html.AppendLine(Tile("Quotes", quotes.Count.ToString(CultureInfo.InvariantCulture), $"{openQuotes.Count} open"));
         html.AppendLine(Tile("Sales", sales.Count.ToString(CultureInfo.InvariantCulture), Money(lifetimeSales)));
         html.AppendLine(Tile("Payments", payments.Count.ToString(CultureInfo.InvariantCulture), lastPayment == null ? "No payments" : $"Last: {lastPayment.PaymentDate:d}"));
         html.AppendLine(Tile("Open Follow-ups", openTasks.Count.ToString(CultureInfo.InvariantCulture), nextFollowUp?.DueDate?.ToShortDateString() ?? "None due"));
@@ -61,9 +67,54 @@ public static class CustomerRelationshipService
         html.AppendLine(nextFollowUp == null
             ? "<p>No open customer follow-up task is currently linked to this customer.</p>"
             : $"<p><strong>{Html(nextFollowUp.Title)}</strong><br>Due: {Html(nextFollowUp.DueDate?.ToShortDateString() ?? "No due date")}<br>{Html(nextFollowUp.Description ?? string.Empty)}</p>");
+        AppendQuotesTable(html, quotes.Take(8).ToList(), quoteOptions);
         AppendJobsTable(html, jobs.Take(8).ToList());
         AppendSalesTable(html, sales.Take(8).ToList());
         AppendTasksTable(html, openTasks.Take(8).ToList());
+        AppendTimelineTable(html, timeline.Take(10).ToList(), "Recent Timeline");
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
+    public static string CreateCustomerTimeline(Customer customer)
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+
+        var quotes = db.CustomQuotes.AsNoTracking().AsEnumerable().Where(q => q.CustomerId == customer.Id).OrderByDescending(q => q.QuoteDate).ToList();
+        var quoteIds = quotes.Select(q => q.Id).ToHashSet();
+        var quoteOptions = db.QuoteOptions.AsNoTracking().AsEnumerable().Where(o => quoteIds.Contains(o.CustomQuoteId)).ToList();
+        var jobs = db.Jobs.AsNoTracking().AsEnumerable().Where(j => j.CustomerId == customer.Id).OrderByDescending(j => j.DateReceived).ToList();
+        var sales = db.Sales.AsNoTracking().AsEnumerable().Where(s => s.CustomerId == customer.Id).OrderByDescending(s => s.SaleDate).ToList();
+        var payments = db.Payments.AsNoTracking().AsEnumerable().Where(p => p.CustomerId == customer.Id || jobs.Any(j => p.JobId == j.Id) || sales.Any(s => p.SaleId == s.Id)).OrderByDescending(p => p.PaymentDate).ToList();
+        var tasks = db.BusinessTasks.AsNoTracking().AsEnumerable().Where(t => t.CustomerId == customer.Id).ToList();
+        var timeline = BuildCustomerTimelineEvents(quotes, quoteOptions, jobs, sales, payments, tasks);
+        var activeJobs = jobs.Where(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled).ToList();
+        var openTasks = tasks.Where(t => t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled).ToList();
+        var outstandingBalance = activeJobs.Sum(j => Math.Max(0, j.BalanceOwing));
+
+        var fileName = SafeFileName($"CustomerTimeline_{customer.FullName}_{customer.Id}.html");
+        var path = Path.Combine(PrintoutFolder, fileName);
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Customer Timeline"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Customer Timeline</h1>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}</p>");
+        html.AppendLine(Row("Customer", customer.FullName));
+        html.AppendLine(Row("Contact", CompactContact(customer)));
+        html.AppendLine("<div class='summary-grid'>");
+        html.AppendLine(Tile("Timeline Events", timeline.Count.ToString(CultureInfo.InvariantCulture), "quotes, jobs, sales, payments, tasks"));
+        html.AppendLine(Tile("Active Jobs", activeJobs.Count.ToString(CultureInfo.InvariantCulture), Money(outstandingBalance)));
+        html.AppendLine(Tile("Open Follow-ups", openTasks.Count.ToString(CultureInfo.InvariantCulture), openTasks.OrderBy(t => t.DueDate ?? DateTime.MaxValue).FirstOrDefault()?.DueDate?.ToShortDateString() ?? "None due"));
+        html.AppendLine("</div>");
+        html.AppendLine("<h2>Preferences</h2>");
+        html.AppendLine(Row("Ring Sizes", customer.RingSizes ?? string.Empty));
+        html.AppendLine(Row("Preferred Metals", customer.PreferredMetals ?? string.Empty));
+        html.AppendLine(Row("Preferred Stones", customer.PreferredStones ?? string.Empty));
+        AppendTimelineTable(html, timeline, "Full Customer Timeline");
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
         File.WriteAllText(path, html.ToString());
@@ -126,6 +177,113 @@ public static class CustomerRelationshipService
         };
     }
 
+    private sealed record CustomerTimelineEvent(DateTime Date, string Type, string Title, string Detail, string Status, decimal? Amount);
+
+    private static List<CustomerTimelineEvent> BuildCustomerTimelineEvents(
+        List<CustomQuote> quotes,
+        List<QuoteOption> quoteOptions,
+        List<Job> jobs,
+        List<Sale> sales,
+        List<Payment> payments,
+        List<BusinessTask> tasks)
+    {
+        var events = new List<CustomerTimelineEvent>();
+
+        foreach (var quote in quotes)
+        {
+            var options = quoteOptions.Where(o => o.CustomQuoteId == quote.Id).ToList();
+            var acceptedOption = quote.AcceptedOptionId.HasValue
+                ? options.FirstOrDefault(o => o.Id == quote.AcceptedOptionId.Value)
+                : null;
+            var amount = acceptedOption?.TotalPrice ?? options.OrderByDescending(o => o.TotalPrice).FirstOrDefault()?.TotalPrice;
+            events.Add(new CustomerTimelineEvent(
+                quote.QuoteDate,
+                "Quote",
+                quote.ToString(),
+                $"Proposal: {quote.ProposalStatus}. Valid until: {quote.ValidUntil?.ToShortDateString() ?? "not set"}. Options: {options.Count}.",
+                quote.Status,
+                amount));
+
+            if (quote.ProposalSentAt.HasValue)
+            {
+                events.Add(new CustomerTimelineEvent(
+                    quote.ProposalSentAt.Value,
+                    "Proposal",
+                    $"Proposal sent: {quote.ToString()}",
+                    quote.ProposalEmailSubject ?? "Proposal recorded as sent.",
+                    quote.ProposalStatus,
+                    amount));
+            }
+        }
+
+        foreach (var job in jobs)
+        {
+            var price = job.FinalPrice > 0 ? job.FinalPrice : job.QuoteAmount;
+            events.Add(new CustomerTimelineEvent(
+                job.DateReceived,
+                "Job",
+                job.ToString(),
+                $"Type: {job.Type}. Due: {job.DueDate?.ToShortDateString() ?? "not set"}. Balance: {Money(job.BalanceOwing)}.",
+                job.Status.ToString(),
+                price));
+        }
+
+        foreach (var sale in sales)
+        {
+            events.Add(new CustomerTimelineEvent(
+                sale.SaleDate,
+                "Sale",
+                sale.ToString(),
+                $"Location: {sale.SaleLocation}. Method: {sale.PaymentMethod}. {sale.Notes ?? string.Empty}".Trim(),
+                "Completed",
+                sale.SaleAmount));
+        }
+
+        foreach (var payment in payments)
+        {
+            events.Add(new CustomerTimelineEvent(
+                payment.PaymentDate,
+                "Payment",
+                $"Payment #{payment.Id}",
+                $"Method: {payment.Method}. Reference: {payment.Reference ?? string.Empty}. {payment.Notes ?? string.Empty}".Trim(),
+                "Recorded",
+                payment.Amount));
+        }
+
+        foreach (var task in tasks)
+        {
+            var taskDate = task.CompletedAt ?? task.DueDate ?? task.ReminderDate ?? task.CreatedAt;
+            events.Add(new CustomerTimelineEvent(
+                taskDate,
+                "Task",
+                task.Title,
+                task.FollowUpNotes ?? task.Description ?? string.Empty,
+                task.Status.ToString(),
+                null));
+        }
+
+        return events
+            .OrderByDescending(e => e.Date)
+            .ThenBy(e => e.Type)
+            .ToList();
+    }
+
+    private static void AppendQuotesTable(StringBuilder html, List<CustomQuote> quotes, List<QuoteOption> quoteOptions)
+    {
+        html.AppendLine("<h2>Recent Quotes</h2>");
+        html.AppendLine("<table><tr><th>Quote</th><th>Status</th><th>Proposal</th><th>Date</th><th>Valid Until</th><th>Options</th><th>Accepted / High Option</th></tr>");
+        foreach (var quote in quotes)
+        {
+            var options = quoteOptions.Where(o => o.CustomQuoteId == quote.Id).ToList();
+            var acceptedOption = quote.AcceptedOptionId.HasValue
+                ? options.FirstOrDefault(o => o.Id == quote.AcceptedOptionId.Value)
+                : null;
+            var displayOption = acceptedOption ?? options.OrderByDescending(o => o.TotalPrice).FirstOrDefault();
+            html.AppendLine($"<tr><td>{Html(quote.ToString())}</td><td>{Html(quote.Status)}</td><td>{Html(quote.ProposalStatus)}</td><td>{Html(quote.QuoteDate.ToShortDateString())}</td><td>{Html(quote.ValidUntil?.ToShortDateString() ?? string.Empty)}</td><td>{options.Count}</td><td>{Html(displayOption == null ? string.Empty : $"{displayOption.OptionName} {Money(displayOption.TotalPrice)}")}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
     private static void AppendJobsTable(StringBuilder html, List<Job> jobs)
     {
         html.AppendLine("<h2>Recent Jobs</h2>");
@@ -153,6 +311,17 @@ public static class CustomerRelationshipService
         html.AppendLine("<table><tr><th>Task</th><th>Priority</th><th>Due</th><th>Status</th><th>Notes</th></tr>");
         foreach (var task in tasks)
             html.AppendLine($"<tr><td>{Html(task.Title)}</td><td>{Html(task.Priority.ToString())}</td><td>{Html(task.DueDate?.ToShortDateString() ?? string.Empty)}</td><td>{Html(task.Status.ToString())}</td><td>{Html(task.FollowUpNotes ?? task.Description ?? string.Empty)}</td></tr>");
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendTimelineTable(StringBuilder html, List<CustomerTimelineEvent> events, string title)
+    {
+        html.AppendLine($"<h2>{Html(title)}</h2>");
+        html.AppendLine("<table><tr><th>Date</th><th>Type</th><th>Title</th><th>Status</th><th>Amount</th><th>Detail</th></tr>");
+        foreach (var item in events)
+        {
+            html.AppendLine($"<tr><td>{Html(item.Date.ToShortDateString())}</td><td>{Html(item.Type)}</td><td>{Html(item.Title)}</td><td>{Html(item.Status)}</td><td>{Html(item.Amount.HasValue ? Money(item.Amount.Value) : string.Empty)}</td><td>{Html(item.Detail)}</td></tr>");
+        }
         html.AppendLine("</table>");
     }
 

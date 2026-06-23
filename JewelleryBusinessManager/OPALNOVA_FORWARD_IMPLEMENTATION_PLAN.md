@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.55.0 Backup Health and Release Readiness
+Current baseline: V1.56.0 Customer Timeline and Profile Polish
 
 ## Purpose
 
@@ -87,7 +87,7 @@ Ease:
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
 | Visual reports and Excel export | P3 | M-L | Existing report services and CSV exports help. Excel-compatible workbook export is implemented in V1.54.0; charts remain later work. | V1.54 |
-| Customer profile dashboard and timeline | P3 | M | Customer relationship service exists. Best after quote/payment/job event flows are stronger. | V1.54-V1.55 |
+| Customer profile dashboard and timeline | P3 | M | Customer timeline implemented in V1.56.0 using existing quote, proposal, job, sale, payment and task records; fuller dashboard remains later polish. | V1.56 |
 | Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |
 | Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
 | Automated backup schedule | P3 | L | Health indicator is easy; true scheduling is OS/app lifecycle work. | V1.55 |
@@ -369,26 +369,26 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start V1.56 with this ticket:
+Start V1.57 with this ticket:
 
-Title: V1.56 Customer Timeline And Profile Polish - relationship context at a glance
+Title: V1.57 Invoice And Receipt Polish - cleaner customer handover documents
 
 Tasks:
 
-- Add a richer customer profile summary using existing customer, quote, job, sale, payment and task data.
-- Add a customer timeline report/surface ordered by activity date.
-- Show open follow-ups, active jobs, unpaid balances and recent purchases together.
-- Add an action to create a customer follow-up from the profile context.
-- Avoid new schema unless a small additive preference field is clearly needed.
+- Refresh invoice and receipt HTML templates using the current OPALNOVA document styling direction.
+- Keep amounts, balances, payment references and linked job/sale context clear.
+- Add clearer handover notes for pickup, shipping and final payment state.
+- Preserve existing payment and sale creation logic.
+- Avoid direct accounting/tax assumptions beyond existing recorded values.
 
 Validation:
 
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual customer workflow smoke:
-  - select a customer with quote/job/payment history.
-  - open the customer summary.
-  - open the customer timeline.
-  - create a follow-up.
-  - confirm no unrelated records are changed.
+- manual document smoke:
+  - select a job with payments.
+  - generate invoice/receipt.
+  - select a sale and generate invoice/receipt.
+  - confirm balances and payment references display correctly.
+  - confirm existing payment collection workflow still completes.
