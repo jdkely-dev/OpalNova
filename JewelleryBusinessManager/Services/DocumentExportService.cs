@@ -892,6 +892,49 @@ public static class DocumentExportService
         return path;
     }
 
+    public static string CreateTaxSummaryReport()
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+        var settings = BusinessSettingsService.Load();
+        var today = DateTime.Today;
+        var sales = db.Sales.AsEnumerable().OrderByDescending(s => s.SaleDate).ToList();
+        var payments = db.Payments.AsEnumerable().OrderByDescending(p => p.PaymentDate).ToList();
+        var jobs = db.Jobs.AsEnumerable().ToList();
+        var salesById = sales.ToDictionary(s => s.Id);
+        var jobsById = jobs.ToDictionary(j => j.Id);
+        var periods = new[]
+        {
+            new TaxPeriod("Current month", new DateTime(today.Year, today.Month, 1), today),
+            new TaxPeriod("Financial quarter to date", StartOfFinancialQuarter(today), today),
+            new TaxPeriod("Financial year to date", StartOfFinancialYear(today), today),
+            new TaxPeriod("Last 12 months", today.AddYears(-1).AddDays(1), today)
+        };
+        var financialYear = periods[2];
+        var financialYearSales = SalesInPeriod(sales, financialYear).ToList();
+        var financialYearPayments = PaymentsInPeriod(payments, financialYear).ToList();
+        var path = Path.Combine(PrintoutFolder, $"TaxSummary_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Tax and GST Summary"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Tax and GST Summary</h1>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}. This is a read-only bookkeeping summary, not formal tax advice.</p>");
+        html.AppendLine(Row("Tax setting", settings.GstRegistered ? $"{settings.TaxLabel} registered at {settings.GstRatePercent:0.##}%" : $"{settings.TaxLabel} not registered / not enabled"));
+        html.AppendLine(Row("Estimate method", settings.GstRegistered ? $"{settings.TaxLabel} is estimated as the tax-inclusive component of recorded sale totals." : $"No {settings.TaxLabel} component is calculated while the business is not marked registered."));
+        html.AppendLine(Row("Financial year to date", $"{financialYear.Start:d} to {financialYear.End:d}"));
+        html.AppendLine(Row("Current outstanding job balances", Money(jobs.Where(j => j.BalanceOwing > 0 && j.Status != JobStatus.Cancelled).Sum(j => j.BalanceOwing))));
+        AppendTaxPeriodSummaryTable(html, periods, sales, payments, jobs, settings);
+        AppendTaxSalesLocationTable(html, "Financial Year Sales by Location", financialYearSales, settings);
+        AppendTaxPaymentMethodTable(html, "Financial Year Payments by Method", financialYearPayments);
+        AppendTaxDataQualityTable(html, sales, payments, jobs, salesById, jobsById);
+        AppendRecentTaxSalesTable(html, financialYearSales.Take(80).ToList(), settings);
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
     public static string CreateOutstandingBalancesReport()
     {
         Directory.CreateDirectory(PrintoutFolder);
@@ -1392,6 +1435,100 @@ public static class DocumentExportService
         html.AppendLine("</table>");
     }
 
+    private sealed record TaxPeriod(string Name, DateTime Start, DateTime End);
+
+    private static void AppendTaxPeriodSummaryTable(StringBuilder html, TaxPeriod[] periods, List<Sale> sales, List<Payment> payments, List<Job> jobs, BusinessSettings settings)
+    {
+        html.AppendLine("<h2>Tax Period Summary</h2>");
+        html.AppendLine("<table><tr><th>Period</th><th>Date Range</th><th>Sales</th><th>Estimated Tax</th><th>Net Sales Ex Tax</th><th>Cost</th><th>Profit</th><th>Payments Received</th><th>Current Job Balances</th><th>Sales Count</th><th>Payment Count</th></tr>");
+        foreach (var period in periods)
+        {
+            var periodSales = SalesInPeriod(sales, period).ToList();
+            var periodPayments = PaymentsInPeriod(payments, period).ToList();
+            var periodJobs = jobs.Where(j => j.DateReceived.Date >= period.Start.Date && j.DateReceived.Date <= period.End.Date && j.Status != JobStatus.Cancelled).ToList();
+            var salesTotal = periodSales.Sum(s => s.SaleAmount);
+            var tax = periodSales.Sum(s => TaxComponent(s.SaleAmount, settings));
+            var cost = periodSales.Sum(s => s.CostOfGoods);
+            html.AppendLine($"<tr><td>{Html(period.Name)}</td><td>{Html($"{period.Start:d} to {period.End:d}")}</td><td>{Money(salesTotal)}</td><td>{Money(tax)}</td><td>{Money(salesTotal - tax)}</td><td>{Money(cost)}</td><td>{Money(periodSales.Sum(s => s.Profit))}</td><td>{Money(periodPayments.Sum(p => p.Amount))}</td><td>{Money(periodJobs.Sum(j => j.BalanceOwing))}</td><td>{periodSales.Count}</td><td>{periodPayments.Count}</td></tr>");
+        }
+        html.AppendLine("</table>");
+        html.AppendLine("<p class='small'>Current job balances are the balances currently recorded on jobs received inside each period; OPALNOVA does not reconstruct historical balances.</p>");
+    }
+
+    private static void AppendTaxSalesLocationTable(StringBuilder html, string title, List<Sale> sales, BusinessSettings settings)
+    {
+        html.AppendLine($"<h2>{Html(title)}</h2>");
+        if (sales.Count == 0)
+        {
+            html.AppendLine("<p>No sales are available for this period.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Location</th><th>Sales</th><th>Estimated Tax</th><th>Net Sales Ex Tax</th><th>Cost</th><th>Profit</th><th>Count</th></tr>");
+        foreach (var group in sales.GroupBy(s => s.SaleLocation).OrderByDescending(g => g.Sum(s => s.SaleAmount)))
+        {
+            var salesTotal = group.Sum(s => s.SaleAmount);
+            var tax = group.Sum(s => TaxComponent(s.SaleAmount, settings));
+            var cost = group.Sum(s => s.CostOfGoods);
+            html.AppendLine($"<tr><td>{Html(group.Key.ToString())}</td><td>{Money(salesTotal)}</td><td>{Money(tax)}</td><td>{Money(salesTotal - tax)}</td><td>{Money(cost)}</td><td>{Money(salesTotal - cost)}</td><td>{group.Count()}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendTaxPaymentMethodTable(StringBuilder html, string title, List<Payment> payments)
+    {
+        html.AppendLine($"<h2>{Html(title)}</h2>");
+        if (payments.Count == 0)
+        {
+            html.AppendLine("<p>No payments are available for this period.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Method</th><th>Payments</th><th>Total Received</th><th>Linked to Sales</th><th>Linked to Jobs</th><th>Unlinked</th></tr>");
+        foreach (var group in payments.GroupBy(p => p.Method).OrderByDescending(g => g.Sum(p => p.Amount)))
+            html.AppendLine($"<tr><td>{Html(group.Key.ToString())}</td><td>{group.Count()}</td><td>{Money(group.Sum(p => p.Amount))}</td><td>{group.Count(p => p.SaleId.HasValue)}</td><td>{group.Count(p => p.JobId.HasValue)}</td><td>{group.Count(p => !p.SaleId.HasValue && !p.JobId.HasValue)}</td></tr>");
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendTaxDataQualityTable(StringBuilder html, List<Sale> sales, List<Payment> payments, List<Job> jobs, Dictionary<int, Sale> salesById, Dictionary<int, Job> jobsById)
+    {
+        var rows = new (string Check, int Count, string Reason)[]
+        {
+            ("Sales with zero amount", sales.Count(s => s.SaleAmount <= 0), "Tax and revenue summaries depend on positive sale totals."),
+            ("Sales with no customer", sales.Count(s => !s.CustomerId.HasValue), "Customer linkage is useful for invoice, receipt and bookkeeping review."),
+            ("Payments with no sale or job link", payments.Count(p => !p.SaleId.HasValue && !p.JobId.HasValue), "Unlinked payments can be hard to reconcile to sales, invoices or deposits."),
+            ("Payments linked to missing sale", payments.Count(p => p.SaleId.HasValue && !salesById.ContainsKey(p.SaleId.Value)), "These payments point to sale records that are no longer found."),
+            ("Payments linked to missing job", payments.Count(p => p.JobId.HasValue && !jobsById.ContainsKey(p.JobId.Value)), "These payments point to job records that are no longer found."),
+            ("Open balances on active jobs", jobs.Count(j => j.BalanceOwing > 0 && j.Status != JobStatus.Cancelled), "Outstanding balances may need collection before final handover or bookkeeping close.")
+        };
+
+        html.AppendLine("<h2>Tax / Payment Data Checks</h2>");
+        html.AppendLine("<table><tr><th>Check</th><th>Count</th><th>Why It Matters</th></tr>");
+        foreach (var row in rows)
+            html.AppendLine($"<tr><td>{Html(row.Check)}</td><td>{row.Count}</td><td>{Html(row.Reason)}</td></tr>");
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendRecentTaxSalesTable(StringBuilder html, List<Sale> sales, BusinessSettings settings)
+    {
+        html.AppendLine("<h2>Financial Year Sales Detail</h2>");
+        if (sales.Count == 0)
+        {
+            html.AppendLine("<p>No sales are available for the financial year to date.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Date</th><th>Sale</th><th>Location</th><th>Payment Method</th><th>Gross Sales</th><th>Estimated Tax</th><th>Net Ex Tax</th><th>Cost</th><th>Profit</th></tr>");
+        foreach (var sale in sales)
+        {
+            var tax = TaxComponent(sale.SaleAmount, settings);
+            html.AppendLine($"<tr><td>{Html(sale.SaleDate.ToShortDateString())}</td><td>{Html($"Sale #{sale.Id}")}</td><td>{Html(sale.SaleLocation.ToString())}</td><td>{Html(sale.PaymentMethod.ToString())}</td><td>{Money(sale.SaleAmount)}</td><td>{Money(tax)}</td><td>{Money(sale.SaleAmount - tax)}</td><td>{Money(sale.CostOfGoods)}</td><td>{Money(sale.Profit)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+        if (sales.Count >= 80)
+            html.AppendLine("<p class='small'>Showing the latest 80 financial-year sales.</p>");
+    }
+
     private static void AppendProfitableJobTypesTable(StringBuilder html, List<Job> jobs)
     {
         html.AppendLine("<h2>Most Profitable Job Types</h2>");
@@ -1465,6 +1602,30 @@ public static class DocumentExportService
     }
 
     private static decimal JobPrice(Job job) => job.FinalPrice > 0 ? job.FinalPrice : job.QuoteAmount;
+
+    private static DateTime StartOfFinancialYear(DateTime date)
+        => date.Month >= 7 ? new DateTime(date.Year, 7, 1) : new DateTime(date.Year - 1, 7, 1);
+
+    private static DateTime StartOfFinancialQuarter(DateTime date)
+    {
+        var financialYearStart = StartOfFinancialYear(date);
+        var monthsIntoFinancialYear = ((date.Year - financialYearStart.Year) * 12) + date.Month - financialYearStart.Month;
+        var quarterStartOffset = Math.Max(0, monthsIntoFinancialYear / 3 * 3);
+        return financialYearStart.AddMonths(quarterStartOffset);
+    }
+
+    private static IEnumerable<Sale> SalesInPeriod(IEnumerable<Sale> sales, TaxPeriod period)
+        => sales.Where(s => s.SaleDate.Date >= period.Start.Date && s.SaleDate.Date <= period.End.Date);
+
+    private static IEnumerable<Payment> PaymentsInPeriod(IEnumerable<Payment> payments, TaxPeriod period)
+        => payments.Where(p => p.PaymentDate.Date >= period.Start.Date && p.PaymentDate.Date <= period.End.Date);
+
+    private static decimal TaxComponent(decimal grossAmount, BusinessSettings settings)
+    {
+        if (!settings.GstRegistered || settings.GstRatePercent <= 0 || grossAmount <= 0)
+            return 0m;
+        return Math.Round(grossAmount * settings.GstRatePercent / (100m + settings.GstRatePercent), 2);
+    }
 
     private static ProfitCategoryKey ClassifySaleCategory(Sale sale, Dictionary<int, JewelleryItem> jewelleryById, Dictionary<int, Job> jobsById)
     {

@@ -886,7 +886,7 @@ public partial class MainWindow : Window
         "Tasks Studio" => "Daily work queue, follow-ups, task completion and reminder reports.",
         "Codes & Labels Studio" => "Barcode labels, scan lookup, label sheets and missing-code assignment.",
         "Documents Studio" => "Customer-facing documents, job cards, stock labels and sales paperwork.",
-        "Reports Studio" => "Business intelligence, sales summaries, profitability, quote conversion, outstanding balances, inventory value, reservations and classic reports.",
+        "Reports Studio" => "Business intelligence, sales summaries, profitability, tax summaries, quote conversion, outstanding balances, inventory value, reservations and classic reports.",
         "Safety & Data Studio" => "Backups, restore, health checks, data bundles, imports and error logs.",
         "Hardware & POS Studio" => "DYMO mini labels, USB camera/photo capture, precision scale capture and market POS display tools.",
         "Customer Relationship Studio" => "Customer summary cards, follow-up creation, history and relationship overview reports.",
@@ -966,6 +966,7 @@ public partial class MainWindow : Window
             new("Weekly Sales", "Preview sales, profit and channels for the last 7 days.", WeeklySalesReport_Click),
             new("Monthly Sales", "Preview current month sales, profit and channels.", MonthlySalesReport_Click),
             new("Profitability", "Preview profit by product, service category and job type.", ProfitabilityReport_Click),
+            new("Tax / GST Summary", "Preview tax-inclusive sales, estimated GST, payments and balances.", TaxSummaryReport_Click),
             new("Outstanding Balances", "Preview jobs with customer balances owing.", OutstandingBalancesReport_Click),
             new("Quote Conversion", "Preview quote status, acceptance and conversion performance.", QuoteConversionReport_Click),
             new("Inventory Value", "Preview stock, stone and material value tied up in inventory.", InventoryValueReport_Click),
@@ -1091,6 +1092,7 @@ public partial class MainWindow : Window
             new("Weekly Sales", "Preview sales, profit, margin and channel performance for the last 7 days.", WeeklySalesReport_Click),
             new("Monthly Sales", "Preview sales, profit, margin and channel performance for the current month.", MonthlySalesReport_Click),
             new("Profitability", "Preview profit by product/service category and job type, with data quality checks.", ProfitabilityReport_Click),
+            new("Tax / GST Summary", "Preview current month, quarter and financial-year sales, estimated tax, payments and balances.", TaxSummaryReport_Click),
             new("Outstanding Balances", "Preview jobs with balances owing and handover/payment priorities.", OutstandingBalancesReport_Click),
             new("Quote Conversion", "Preview quote status, acceptance and conversion performance.", QuoteConversionReport_Click),
             new("Inventory Value", "Preview finished jewellery, loose stone and material value tied up in stock.", InventoryValueReport_Click),
@@ -1512,6 +1514,7 @@ public partial class MainWindow : Window
         ["Reports Studio|Weekly Sales"] = new("Weekly Sales", "Review the last 7 days.", "Shows weekly sales, cost of goods, profit, margin and channel performance.", "Run it after markets, online drops or custom-job handovers.", "Compare weekly sales to the jobs and listings that created them.", "Sales without cost-of-goods entries can make profit look higher than reality."),
         ["Reports Studio|Monthly Sales"] = new("Monthly Sales", "Review the current month.", "Shows month-to-date sales, cost of goods, profit, margin and channel performance.", "Use it before ordering materials, paying bills or planning new stock.", "Look for channels with strong profit, not just high turnover.", "Incomplete sale records or missing costs will affect the result."),
         ["Reports Studio|Profitability"] = new("Profitability", "Review what actually makes money.", "Shows recorded sales profit by product/service category, recorded job-sales profit by job type, estimated job profit by job type, and data-quality checks for missing links or costs.", "Run it before deciding what to make, quote, discount or promote next.", "Use profit, margin and average sale together; high turnover does not always mean strong profit.", "Unlinked sales and zero-cost sales can make categories look wrong until the records are cleaned up."),
+        ["Reports Studio|Tax / GST Summary"] = new("Tax / GST Summary", "Review sales and tax estimates.", "Shows current month, financial quarter, financial year and last-12-month summaries for sales, estimated tax, net sales, costs, payments and current job balances.", "Run it before bookkeeping, BAS/GST preparation, or checking payment reconciliation.", "Keep GST registration, tax label and rate updated in Settings before relying on this report.", "The report estimates tax from recorded sales totals and is not formal accounting advice."),
         ["Reports Studio|Outstanding Balances"] = new("Outstanding Balances", "Find money still owed.", "Lists jobs with balances owing so collection, shipping and completion are not missed.", "Check it before marking jobs complete and before customer pickup days.", "Use Payment & Collection to record payments and clear balances.", "A balance may be wrong if payments were not linked to the job."),
         ["Reports Studio|Quote Conversion"] = new("Quote Conversion", "Measure quote performance.", "Shows quote statuses, accepted options, linked jobs and the overall conversion rate.", "Use it to follow up draft or sent quotes and improve pricing or proposal wording.", "A quote only counts as converted when it is marked accepted, has an accepted option or is linked to a job.", "Old draft quotes can lower the conversion rate unless they are cancelled or closed."),
         ["Reports Studio|Inventory Value"] = new("Inventory Value", "See money tied up in stock.", "Summarises finished jewellery, loose stones and materials by cost, value and retail potential.", "Use it before buying more stock or preparing for a market.", "This helps prevent cash being trapped in slow-moving inventory.", "Estimated values depend on the values you recorded for stones, materials and finished pieces."),
@@ -3984,6 +3987,20 @@ public partial class MainWindow : Window
         {
             ErrorLogService.Log(ex, "Create profitability report");
             MessageBox.Show($"Could not create the profitability report.\n\n{ex.Message}", "Profitability error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void TaxSummaryReport_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DocumentExportService.CreateTaxSummaryReport();
+            OpenReportInApp(path, "Tax / GST Summary");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create tax summary report");
+            MessageBox.Show($"Could not create the tax summary report.\n\n{ex.Message}", "Tax / GST Summary error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

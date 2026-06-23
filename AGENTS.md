@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.59.0 Profitability Reporting
+- Current workspace version: V1.60.0 Tax and GST Summary
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,25 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.60.0 State
+
+V1.60.0 continues the reports and bookkeeping-readiness pass:
+
+- Bumped visible/project version metadata to 1.60.0.
+- Added `DocumentExportService.CreateTaxSummaryReport()`.
+- Added Tax / GST Summary actions in Reports and Reports Studio.
+- The report summarizes current month, financial quarter to date, financial year to date, and last 12 months.
+- Tax is estimated from recorded sale totals using the configured business tax label, registration state, and rate.
+- Added payment method totals, financial-year sales by location, current job balances, and tax/payment data checks.
+- Added help text, release notes, and a V1.60 testing checklist.
+- Preserved database schema and kept the report read-only.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.59.0 State
 

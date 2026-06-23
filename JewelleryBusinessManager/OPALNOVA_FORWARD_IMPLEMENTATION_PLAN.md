@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.59.0 Profitability Reporting
+Current baseline: V1.60.0 Tax and GST Summary
 
 ## Purpose
 
@@ -86,7 +86,7 @@ Ease:
 | Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
-| Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; profitability reporting is implemented in V1.59.0; charts remain later work. | V1.54, V1.58, V1.59 |
+| Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; profitability reporting is implemented in V1.59.0; tax/GST summary is implemented in V1.60.0; charts remain later work. | V1.54, V1.58, V1.59, V1.60 |
 | Customer profile dashboard and timeline | P3 | M | Customer timeline implemented in V1.56.0 using existing quote, proposal, job, sale, payment and task records; fuller dashboard remains later polish. | V1.56 |
 | Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |
 | Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
@@ -315,7 +315,7 @@ Scope:
 - Inventory valuation and ageing.
 - Slow-moving stock report.
 - Profit by job type/category.
-- Tax/GST summary.
+- Tax/GST summary. Done in V1.60.0 as a read-only tax/payment summary using existing sales, payments and settings.
 - Excel export after datasets are stable. Done in V1.54.0 as a workbook with summary, sales, balances, quotes, inventory, reservation, task and supplier diamond sheets.
 
 Definition of done:
@@ -369,25 +369,26 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start V1.60 with this ticket:
+Start V1.61 with this ticket:
 
-Title: V1.60 Tax/GST Summary - bookkeeping-ready totals
+Title: V1.61 Visual Report Charts - readable business snapshots
 
 Tasks:
 
-- Add a read-only tax/GST summary using existing sales, payments, settings and invoice/receipt assumptions.
-- Show month-to-date and selectable-style fixed periods first, such as current month, current quarter and financial year to date.
-- Include sales totals, GST/tax estimate where registered, payment totals, outstanding balances and data checks for missing sale/payment links.
-- Add the report to Reports / Reports Studio.
-- Avoid changing sale, payment, job or settings records.
+- Add lightweight HTML/CSS charts for sales, quote conversion, inventory value and cashflow snapshots.
+- Reuse existing reporting datasets and calculations from BI, sales, inventory, quote conversion and tax/payment reports.
+- Keep charts printable, readable in the in-app preview, and independent of external JavaScript libraries.
+- Add the chart report to Reports / Reports Studio.
+- Avoid changing business records or requiring internet access.
 
 Validation:
 
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual tax/GST reporting smoke:
+- manual visual chart reporting smoke:
   - open Reports.
-  - generate tax/GST summary report.
-  - compare several totals against known sales, payments and outstanding balances.
+  - generate visual chart report.
+  - confirm chart sections render for sales, quotes, inventory and cashflow even when datasets are small or empty.
+  - compare several chart totals against the matching table/report values.
   - confirm no business records are changed.
