@@ -732,11 +732,7 @@ public partial class CustomQuoteBuilderWindow : Window, IWorkspaceCloseGuard
             SaveQuote();
             using var db = new AppDbContext();
             var title = $"Follow up quote {_quote.QuoteCode}";
-            var duplicate = db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t =>
-                t.IsOpen &&
-                string.Equals(t.Title, title, StringComparison.OrdinalIgnoreCase) &&
-                t.CustomerId == _quote.CustomerId);
-            if (duplicate)
+            if (TaskWorkflowService.OpenTaskExists(db, exactTitle: title, customerId: _quote.CustomerId))
             {
                 MessageBox.Show("An open follow-up already exists for this quote.", "Quote follow-up", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -1115,11 +1111,7 @@ public partial class CustomQuoteBuilderWindow : Window, IWorkspaceCloseGuard
     private void CreateSentProposalFollowUp(AppDbContext db, DateTime dueDate)
     {
         var title = $"Follow up sent proposal {_quote.QuoteCode}";
-        var duplicate = db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t =>
-            t.IsOpen &&
-            string.Equals(t.Title, title, StringComparison.OrdinalIgnoreCase) &&
-            t.CustomerId == _quote.CustomerId);
-        if (duplicate)
+        if (TaskWorkflowService.OpenTaskExists(db, exactTitle: title, customerId: _quote.CustomerId))
             return;
 
         db.BusinessTasks.Add(new BusinessTask

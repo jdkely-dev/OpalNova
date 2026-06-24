@@ -237,11 +237,7 @@ public partial class PaymentCollectionWindow : Window
             }
 
             var title = $"Balance reminder {job.JobCode}";
-            var duplicate = db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t =>
-                t.IsOpen &&
-                t.JobId == job.Id &&
-                string.Equals(t.Title, title, StringComparison.OrdinalIgnoreCase));
-            if (duplicate)
+            if (TaskWorkflowService.OpenTaskExists(db, exactTitle: title, jobId: job.Id))
             {
                 MessageBox.Show("An open balance follow-up already exists for this job.", "Balance follow-up", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -301,10 +297,18 @@ public partial class PaymentCollectionWindow : Window
             using var db = new AppDbContext();
             var job = GetSelectedJob(db);
             if (job == null) return;
+
+            const string titlePrefix = "Pickup / handover reminder";
+            if (TaskWorkflowService.OpenTaskExists(db, titleStartsWith: titlePrefix, jobId: job.Id))
+            {
+                MessageBox.Show("An open pickup / handover reminder already exists for this job.", "Pickup reminder", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             var task = new BusinessTask
             {
-                TaskCode = $"TASK-{DateTime.Now:yyyyMMdd-HHmmss}",
-                Title = $"Pickup / handover reminder — {job.JobCode}",
+                TaskCode = TaskWorkflowService.GenerateTaskCode(),
+                Title = $"{titlePrefix} - {job.JobCode}",
                 Category = BusinessTaskCategory.CustomerFollowUp,
                 Priority = BusinessTaskPriority.High,
                 Status = BusinessTaskStatus.ToDo,
@@ -313,7 +317,8 @@ public partial class PaymentCollectionWindow : Window
                 CustomerId = job.CustomerId,
                 JobId = job.Id,
                 Description = $"Contact customer about collection/shipping and outstanding balance for {job.JobTitle}.",
-                FollowUpNotes = HandoverNotesBox.Text.Trim()
+                FollowUpNotes = HandoverNotesBox.Text.Trim(),
+                ShowOnDashboard = true
             };
             db.BusinessTasks.Add(task);
             db.SaveChanges();

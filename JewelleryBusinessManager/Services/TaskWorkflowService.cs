@@ -98,6 +98,44 @@ public static class TaskWorkflowService
 
     public static string GenerateTaskCode() => $"TASK-{DateTime.Today:yyyyMMdd}-{DateTime.Now:HHmmss}";
 
+    public static bool OpenTaskExists(
+        AppDbContext db,
+        string? exactTitle = null,
+        string? titleStartsWith = null,
+        int? customerId = null,
+        int? jobId = null,
+        int? jewelleryItemId = null,
+        int? stoneId = null,
+        int? marketEventId = null,
+        int? productionBatchId = null,
+        int? purchaseOrderId = null)
+    {
+        if (string.IsNullOrWhiteSpace(exactTitle) &&
+            string.IsNullOrWhiteSpace(titleStartsWith) &&
+            !customerId.HasValue &&
+            !jobId.HasValue &&
+            !jewelleryItemId.HasValue &&
+            !stoneId.HasValue &&
+            !marketEventId.HasValue &&
+            !productionBatchId.HasValue &&
+            !purchaseOrderId.HasValue)
+        {
+            return false;
+        }
+
+        return db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t =>
+            t.IsOpen &&
+            (!customerId.HasValue || t.CustomerId == customerId.Value) &&
+            (!jobId.HasValue || t.JobId == jobId.Value) &&
+            (!jewelleryItemId.HasValue || t.JewelleryItemId == jewelleryItemId.Value) &&
+            (!stoneId.HasValue || t.StoneId == stoneId.Value) &&
+            (!marketEventId.HasValue || t.MarketEventId == marketEventId.Value) &&
+            (!productionBatchId.HasValue || t.ProductionBatchId == productionBatchId.Value) &&
+            (!purchaseOrderId.HasValue || t.PurchaseOrderId == purchaseOrderId.Value) &&
+            (string.IsNullOrWhiteSpace(exactTitle) || string.Equals(t.Title, exactTitle, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(titleStartsWith) || t.Title.StartsWith(titleStartsWith, StringComparison.OrdinalIgnoreCase)));
+    }
+
     public static int CreateSuggestedTasks()
     {
         using var db = new AppDbContext();
@@ -122,7 +160,7 @@ public static class TaskWorkflowService
             .ToList();
         foreach (var job in jobs)
         {
-            if (TaskExists(db, jobId: job.Id, titleStartsWith: "Overdue job")) continue;
+            if (OpenTaskExists(db, jobId: job.Id, titleStartsWith: "Overdue job")) continue;
             db.BusinessTasks.Add(new BusinessTask
             {
                 TaskCode = GenerateTaskCode(),
@@ -151,7 +189,7 @@ public static class TaskWorkflowService
             .ToList();
         foreach (var job in jobs)
         {
-            if (TaskExists(db, jobId: job.Id, titleStartsWith: "Job due soon")) continue;
+            if (OpenTaskExists(db, jobId: job.Id, titleStartsWith: "Job due soon")) continue;
             db.BusinessTasks.Add(new BusinessTask
             {
                 TaskCode = GenerateTaskCode(),
@@ -180,7 +218,7 @@ public static class TaskWorkflowService
         foreach (var material in materials)
         {
             var title = $"Reorder {material.Name}";
-            if (db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t => t.IsOpen && t.Title == title)) continue;
+            if (OpenTaskExists(db, exactTitle: title)) continue;
             db.BusinessTasks.Add(new BusinessTask
             {
                 TaskCode = GenerateTaskCode(),
@@ -206,7 +244,7 @@ public static class TaskWorkflowService
             .ToList();
         foreach (var market in markets)
         {
-            if (TaskExists(db, marketEventId: market.Id, titleStartsWith: "Prepare for market")) continue;
+            if (OpenTaskExists(db, marketEventId: market.Id, titleStartsWith: "Prepare for market")) continue;
             db.BusinessTasks.Add(new BusinessTask
             {
                 TaskCode = GenerateTaskCode(),
@@ -237,7 +275,7 @@ public static class TaskWorkflowService
             var title = listing.Status == OnlineListingStatus.ReadyToList
                 ? $"Publish online listing #{listing.Id}"
                 : $"Finish online listing #{listing.Id}";
-            if (db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t => t.IsOpen && t.Title == title)) continue;
+            if (OpenTaskExists(db, exactTitle: title)) continue;
             db.BusinessTasks.Add(new BusinessTask
             {
                 TaskCode = GenerateTaskCode(),
@@ -264,7 +302,7 @@ public static class TaskWorkflowService
             .ToList();
         foreach (var order in orders)
         {
-            if (TaskExists(db, purchaseOrderId: order.Id, titleStartsWith: "Follow up purchase order")) continue;
+            if (OpenTaskExists(db, purchaseOrderId: order.Id, titleStartsWith: "Follow up purchase order")) continue;
             db.BusinessTasks.Add(new BusinessTask
             {
                 TaskCode = GenerateTaskCode(),
@@ -281,16 +319,6 @@ public static class TaskWorkflowService
             created++;
         }
         return created;
-    }
-
-    private static bool TaskExists(AppDbContext db, int? jobId = null, int? marketEventId = null, int? purchaseOrderId = null, string titleStartsWith = "")
-    {
-        return db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t =>
-            t.IsOpen &&
-            (!jobId.HasValue || t.JobId == jobId) &&
-            (!marketEventId.HasValue || t.MarketEventId == marketEventId) &&
-            (!purchaseOrderId.HasValue || t.PurchaseOrderId == purchaseOrderId) &&
-            (string.IsNullOrWhiteSpace(titleStartsWith) || t.Title.StartsWith(titleStartsWith, StringComparison.OrdinalIgnoreCase)));
     }
 
     public static string CreateWorkQueueReport()

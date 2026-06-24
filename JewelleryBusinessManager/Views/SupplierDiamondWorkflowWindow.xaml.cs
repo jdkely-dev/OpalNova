@@ -294,10 +294,17 @@ public partial class SupplierDiamondWorkflowWindow : Window
         }
 
         using var db = new AppDbContext();
+        var title = $"Supplier diamond follow-up - {row.DiamondSummary}";
+        if (TaskWorkflowService.OpenTaskExists(db, exactTitle: title))
+        {
+            MessageBox.Show("An open supplier diamond follow-up already exists for this diamond.", "Supplier Diamond Workflow", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
         var task = new BusinessTask
         {
-            TaskCode = $"DIA-{DateTime.Now:yyyyMMdd-HHmm}",
-            Title = $"Supplier diamond follow-up — {row.DiamondSummary}",
+            TaskCode = TaskWorkflowService.GenerateTaskCode(),
+            Title = title,
             Category = BusinessTaskCategory.Purchasing,
             Priority = row.Status is "Expired" or "Hold Expiring" or "Customer Interested" ? BusinessTaskPriority.High : BusinessTaskPriority.Normal,
             Status = BusinessTaskStatus.ToDo,

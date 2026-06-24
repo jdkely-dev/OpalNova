@@ -9,10 +9,10 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>OPALNOVA</AssemblyName>
     <RootNamespace>JewelleryBusinessManager</RootNamespace>
-    <Version>1.68.0</Version>
-    <AssemblyVersion>1.68.0.0</AssemblyVersion>
-    <FileVersion>1.68.0.0</FileVersion>
-    <InformationalVersion>1.68.0 OPALNOVA Balance Reminder Workflow</InformationalVersion>
+    <Version>1.69.0</Version>
+    <AssemblyVersion>1.69.0.0</AssemblyVersion>
+    <FileVersion>1.69.0.0</FileVersion>
+    <InformationalVersion>1.69.0 OPALNOVA Reminder Task Consistency</InformationalVersion>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <Authors>Jack The Jeweller</Authors>
     <Company>Jack The Jeweller</Company>

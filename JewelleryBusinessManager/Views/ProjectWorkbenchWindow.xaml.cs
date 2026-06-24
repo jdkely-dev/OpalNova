@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
 using JewelleryBusinessManager.Data;
 using JewelleryBusinessManager.Models;
+using JewelleryBusinessManager.Services;
 
 namespace JewelleryBusinessManager.Views;
 
@@ -443,11 +444,18 @@ public partial class ProjectWorkbenchWindow : Window
             return;
         }
         using var db = new AppDbContext();
-        var code = $"TASK-{DateTime.Now:yyyyMMdd-HHmmss}";
+        var title = $"Follow up: {_selectedRow.Subject}";
+        if (TaskWorkflowService.OpenTaskExists(db, exactTitle: title, customerId: _selectedRow.CustomerId, jobId: _selectedRow.JobId))
+        {
+            MessageBox.Show("An open follow-up task already exists for this project item.", "Project Workbench", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var code = TaskWorkflowService.GenerateTaskCode();
         var task = new BusinessTask
         {
             TaskCode = code,
-            Title = $"Follow up: {_selectedRow.Subject}",
+            Title = title,
             Category = BusinessTaskCategory.CustomerFollowUp,
             Priority = _selectedRow.Priority <= 1 ? BusinessTaskPriority.High : BusinessTaskPriority.Normal,
             Status = BusinessTaskStatus.ToDo,

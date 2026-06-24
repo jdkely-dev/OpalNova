@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.68.0 Balance Reminder Workflow
+- Current workspace version: V1.69.0 Reminder Task Consistency
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,23 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.69.0 State
+
+V1.69.0 continues workflow consistency cleanup after the V1.68 payment reminder pass:
+
+- Bumped visible/project version metadata to 1.69.0.
+- Added shared duplicate-safe open-task detection in `TaskWorkflowService`.
+- Routed quote, proposal, project workbench, payment, pickup/handover, and supplier diamond reminder creation through the shared duplicate-check pattern.
+- Replaced remaining ad-hoc task-code generation in active workflow screens with `TaskWorkflowService.GenerateTaskCode()`.
+- Made pickup/handover reminders duplicate-safe for the selected job and visible on the dashboard.
+- Preserved database schema and existing task/reminder records.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.68.0 State
 

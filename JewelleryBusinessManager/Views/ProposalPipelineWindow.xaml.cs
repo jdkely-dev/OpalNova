@@ -342,11 +342,7 @@ public partial class ProposalPipelineWindow : Window
         var title = quote.ProposalSentAt.HasValue || quote.ProposalStatus.Contains("Sent", StringComparison.OrdinalIgnoreCase)
             ? $"Follow up sent proposal {quote.QuoteCode}"
             : $"Send proposal {quote.QuoteCode}";
-        var duplicate = db.BusinessTasks.AsNoTracking().AsEnumerable().Any(t =>
-            t.IsOpen &&
-            string.Equals(t.Title, title, StringComparison.OrdinalIgnoreCase) &&
-            t.CustomerId == quote.CustomerId);
-        if (duplicate)
+        if (TaskWorkflowService.OpenTaskExists(db, exactTitle: title, customerId: quote.CustomerId))
         {
             MessageBox.Show("An open proposal follow-up already exists for this quote.", "Proposal Pipeline", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
