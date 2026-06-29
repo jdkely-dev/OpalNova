@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.69.0 Reminder Task Consistency
+- Current workspace version: V1.70.0 Handover Confirmation Document
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,22 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.70.0 State
+
+V1.70.0 continues payment and handover workflow polish:
+
+- Bumped visible/project version metadata to 1.70.0.
+- Added `DocumentExportService.CreateHandoverConfirmationFromJob(...)`.
+- Added `Generate Handover Confirmation` to Payment & Collection handover actions.
+- Handover confirmation output includes customer/job details, payment summary, linked payment ledger, collection/shipping checklist, handover notes, handover status guidance and signature lines.
+- Preserved database schema and existing payment, sale, invoice/receipt and job completion behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.69.0 State
 

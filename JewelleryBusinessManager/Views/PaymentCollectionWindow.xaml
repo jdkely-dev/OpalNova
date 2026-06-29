@@ -155,6 +155,7 @@
                                 <Button Content="Mark Ready For Collection" Click="MarkReadyForCollection_Click" />
                                 <Button Content="Mark Ready To Ship" Click="MarkReadyToShip_Click" />
                                 <Button Content="Create Sale From Job" Click="CreateSale_Click" />
+                                <Button Content="Generate Handover Confirmation" Click="GenerateHandoverConfirmation_Click" />
                                 <Button Content="Mark Collected / Complete" Click="MarkCollected_Click" />
                                 <Button Content="Mark Shipped / Complete" Click="MarkShipped_Click" />
                             </WrapPanel>

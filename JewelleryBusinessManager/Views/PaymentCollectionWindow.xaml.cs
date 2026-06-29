@@ -333,6 +333,24 @@ public partial class PaymentCollectionWindow : Window
     private void MarkReadyForCollection_Click(object sender, RoutedEventArgs e) => UpdateJobStatus(JobStatus.ReadyForPickup, "Marked ready for collection.");
     private void MarkReadyToShip_Click(object sender, RoutedEventArgs e) => UpdateJobStatus(JobStatus.ReadyToShip, "Marked ready to ship.");
 
+    private void GenerateHandoverConfirmation_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using var db = new AppDbContext();
+            var job = GetSelectedJob(db);
+            if (job == null) return;
+
+            var path = DocumentExportService.CreateHandoverConfirmationFromJob(job, HandoverNotesBox.Text.Trim());
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            StatusMessageText.Text = "Handover confirmation generated.";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Handover confirmation", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void MarkCollected_Click(object sender, RoutedEventArgs e)
     {
         var allowBalance = ConfirmBalanceBeforeComplete();

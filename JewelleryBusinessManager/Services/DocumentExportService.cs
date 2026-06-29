@@ -159,6 +159,63 @@ public static class DocumentExportService
         return path;
     }
 
+    public static string CreateHandoverConfirmationFromJob(Job job, string? handoverNotes = null)
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+        var customer = job.CustomerId.HasValue ? db.Customers.Find(job.CustomerId.Value) : null;
+        var payments = db.Payments.AsEnumerable().Where(p => p.JobId == job.Id).OrderBy(p => p.PaymentDate).ToList();
+        var amount = job.FinalPrice > 0 ? job.FinalPrice : job.QuoteAmount;
+        var paid = Math.Max(job.DepositPaid, payments.Sum(p => p.Amount));
+        var balance = Math.Max(Math.Max(0, amount - paid), Math.Max(0, job.BalanceOwing));
+        var handoverMode = BuildHandoverMode(job);
+        var fileName = SafeFileName($"HandoverConfirmation_{job.JobCode}_{job.Id}.html");
+        var path = Path.Combine(PrintoutFolder, fileName);
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Handover Confirmation"));
+        html.AppendLine("<section class='card premium-document'>");
+        AppendDocumentHero(html, "Handover Confirmation", $"{job.JobCode} {job.JobTitle}".Trim(), $"{handoverMode} record");
+        AppendFinancialSummary(html,
+            ("Total amount", Money(amount), "Job total"),
+            ("Payments recorded", Money(paid), "Linked payments"),
+            ("Balance due", Money(balance), balance <= 0 ? "No balance owing" : "Check before release"));
+
+        html.AppendLine("<div class='document-columns'>");
+        html.AppendLine("<div>");
+        html.AppendLine("<h2>Customer</h2>");
+        html.AppendLine(Row("Name", customer?.FullName ?? "Not linked"));
+        html.AppendLine(Row("Phone", customer?.Phone ?? string.Empty));
+        html.AppendLine(Row("Email", customer?.Email ?? string.Empty));
+        html.AppendLine("</div><div>");
+        html.AppendLine("<h2>Job</h2>");
+        html.AppendLine(Row("Job", $"{job.JobCode} {job.JobTitle}".Trim()));
+        html.AppendLine(Row("Type", job.Type.ToString()));
+        html.AppendLine(Row("Status", job.Status.ToString()));
+        html.AppendLine(Row("Due / handover date", job.DueDate?.ToShortDateString() ?? "To be confirmed"));
+        html.AppendLine("</div></div>");
+
+        html.AppendLine("<h2>Handover Checklist</h2>");
+        html.AppendLine("<table><tr><th>Check</th><th>Status / Notes</th></tr>");
+        html.AppendLine($"<tr><td>Handover type</td><td>{Html(handoverMode)}</td></tr>");
+        html.AppendLine($"<tr><td>Payment checked</td><td>{Html(balance <= 0 ? "No balance currently owing" : $"Balance still owing: {Money(balance)}")}</td></tr>");
+        html.AppendLine("<tr><td>Item condition checked</td><td></td></tr>");
+        html.AppendLine(BuildModeSpecificChecklistRow(job));
+        html.AppendLine("<tr><td>Customer notified / tracking shared</td><td></td></tr>");
+        html.AppendLine("</table>");
+
+        html.AppendLine(NotesBlock("Work Notes", job.DesignNotes));
+        html.AppendLine(NotesBlock("Handover Notes", handoverNotes));
+        AppendDocumentNotice(html, "Handover status", BuildJobHandoverStatus(job, balance));
+        AppendPaymentsTable(html, payments);
+        html.AppendLine(SignatureBlock("Customer / recipient"));
+        html.AppendLine(SignatureBlock("Business handover"));
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
     public static string CreateReceiptFromSale(Sale sale)
     {
         Directory.CreateDirectory(PrintoutFolder);
@@ -1883,6 +1940,25 @@ public static class DocumentExportService
         };
 
         return $"{statusText} {paymentText}";
+    }
+
+    private static string BuildHandoverMode(Job job)
+    {
+        return job.Status switch
+        {
+            JobStatus.ReadyToShip => "Shipping",
+            JobStatus.ReadyForPickup => "Collection",
+            JobStatus.Completed => "Completed handover",
+            _ => "Collection / shipping"
+        };
+    }
+
+    private static string BuildModeSpecificChecklistRow(Job job)
+    {
+        var check = job.Status == JobStatus.ReadyToShip
+            ? "Shipping address / tracking checked"
+            : "Customer identity / collection checked";
+        return $"<tr><td>{Html(check)}</td><td></td></tr>";
     }
 
     private static string SignatureBlock(string label)
