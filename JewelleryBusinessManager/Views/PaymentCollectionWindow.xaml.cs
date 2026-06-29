@@ -13,6 +13,7 @@ public partial class PaymentCollectionWindow : Window
 {
     private readonly List<JobPaymentRow> _rows = new();
     private JobPaymentRow? _selectedRow;
+    private int? _handoverChecklistJobId;
     private bool _loading;
 
     public PaymentCollectionWindow()
@@ -97,6 +98,7 @@ public partial class PaymentCollectionWindow : Window
             SelectedJobDetails.Text = string.Empty;
             TotalAmountText.Text = PaidAmountText.Text = BalanceAmountText.Text = StatusText.Text = string.Empty;
             PaymentsGrid.ItemsSource = null;
+            SyncHandoverChecklistForSelection(null);
             return;
         }
 
@@ -116,6 +118,54 @@ public partial class PaymentCollectionWindow : Window
         StatusText.Text = job.Status.ToString();
         PaymentAmountBox.Text = balance > 0m ? balance.ToString("0.##") : string.Empty;
         PaymentsGrid.ItemsSource = payments;
+        SyncHandoverChecklistForSelection(balance);
+    }
+
+    private void SyncHandoverChecklistForSelection(decimal? balance)
+    {
+        var hasJob = _selectedRow != null && balance.HasValue;
+        HandoverPaymentCheckedBox.IsEnabled = hasJob;
+        HandoverItemCheckedBox.IsEnabled = hasJob;
+        HandoverCustomerCheckedBox.IsEnabled = hasJob;
+        HandoverCareCheckedBox.IsEnabled = hasJob;
+        HandoverDocumentCheckedBox.IsEnabled = hasJob;
+
+        if (!hasJob)
+        {
+            _handoverChecklistJobId = null;
+            HandoverPaymentCheckedBox.IsChecked = false;
+            HandoverItemCheckedBox.IsChecked = false;
+            HandoverCustomerCheckedBox.IsChecked = false;
+            HandoverCareCheckedBox.IsChecked = false;
+            HandoverDocumentCheckedBox.IsChecked = false;
+            HandoverChecklistSummaryText.Text = "Select a job to complete the handover checklist.";
+            return;
+        }
+
+        if (_handoverChecklistJobId != _selectedRow!.JobId)
+        {
+            _handoverChecklistJobId = _selectedRow.JobId;
+            HandoverPaymentCheckedBox.IsChecked = balance <= 0m;
+            HandoverItemCheckedBox.IsChecked = false;
+            HandoverCustomerCheckedBox.IsChecked = false;
+            HandoverCareCheckedBox.IsChecked = false;
+            HandoverDocumentCheckedBox.IsChecked = false;
+        }
+        else if (balance <= 0m)
+        {
+            HandoverPaymentCheckedBox.IsChecked = true;
+        }
+
+        UpdateHandoverChecklistSummary();
+    }
+
+    private void HandoverChecklist_Changed(object sender, RoutedEventArgs e) => UpdateHandoverChecklistSummary();
+
+    private void UpdateHandoverChecklistSummary()
+    {
+        HandoverChecklistSummaryText.Text = _selectedRow == null
+            ? "Select a job to complete the handover checklist."
+            : BuildHandoverChecklistSummary();
     }
 
     private Job? GetSelectedJob(AppDbContext db)
@@ -317,7 +367,7 @@ public partial class PaymentCollectionWindow : Window
                 CustomerId = job.CustomerId,
                 JobId = job.Id,
                 Description = $"Contact customer about collection/shipping and outstanding balance for {job.JobTitle}.",
-                FollowUpNotes = HandoverNotesBox.Text.Trim(),
+                FollowUpNotes = BuildHandoverContext(),
                 ShowOnDashboard = true
             };
             db.BusinessTasks.Add(task);
@@ -341,7 +391,7 @@ public partial class PaymentCollectionWindow : Window
             var job = GetSelectedJob(db);
             if (job == null) return;
 
-            var path = DocumentExportService.CreateHandoverConfirmationFromJob(job, HandoverNotesBox.Text.Trim());
+            var path = DocumentExportService.CreateHandoverConfirmationFromJob(job, BuildHandoverContext());
             Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
             StatusMessageText.Text = "Handover confirmation generated.";
         }
@@ -477,7 +527,7 @@ public partial class PaymentCollectionWindow : Window
                 CostOfGoods = job.MaterialCost + job.LabourCost,
                 PaymentMethod = PaymentMethodCombo.SelectedItem is PaymentMethod method ? method : PaymentMethod.Card,
                 SaleLocation = SaleLocation.CustomOrder,
-                Notes = $"Created from Payment & Collection workflow for {job.JobCode}. {HandoverNotesBox.Text.Trim()}"
+                Notes = $"Created from Payment & Collection workflow for {job.JobCode}. {BuildHandoverContext()}"
             };
             db.Sales.Add(sale);
             AppendNote(job, "Sale record created from job.");
@@ -501,8 +551,43 @@ public partial class PaymentCollectionWindow : Window
 
     private string FormatHandoverNote()
     {
+        var context = BuildHandoverContext();
+        return string.IsNullOrWhiteSpace(context) ? string.Empty : $" Notes: {context}";
+    }
+
+    private string BuildHandoverContext()
+    {
+        var parts = new List<string>();
         var note = HandoverNotesBox.Text.Trim();
-        return string.IsNullOrWhiteSpace(note) ? string.Empty : $" Notes: {note}";
+        if (!string.IsNullOrWhiteSpace(note))
+            parts.Add(note);
+
+        var checklist = BuildHandoverChecklistSummary();
+        if (!string.IsNullOrWhiteSpace(checklist))
+            parts.Add(checklist);
+
+        return string.Join(Environment.NewLine, parts);
+    }
+
+    private string BuildHandoverChecklistSummary()
+    {
+        if (_selectedRow == null)
+            return string.Empty;
+
+        var items = new[]
+        {
+            ChecklistLine("Payment checked", HandoverPaymentCheckedBox),
+            ChecklistLine("Item condition checked", HandoverItemCheckedBox),
+            ChecklistLine("Customer notified / tracking shared", HandoverCustomerCheckedBox),
+            ChecklistLine("Care instructions included", HandoverCareCheckedBox),
+            ChecklistLine("Handover document ready", HandoverDocumentCheckedBox)
+        };
+        return "Handover checklist: " + string.Join("; ", items) + ".";
+    }
+
+    private static string ChecklistLine(string label, CheckBox checkBox)
+    {
+        return $"{label}: {(checkBox.IsChecked == true ? "Yes" : "No")}";
     }
 
     private static string BuildThankYouFollowUpMessage(Job job, Customer? customer)

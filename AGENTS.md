@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.73.0 Hosted Editor Unsaved Change Guard
+- Current workspace version: V1.74.0 Payment Handover Checklist
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,23 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.74.0 State
+
+V1.74.0 completes the payment handover checklist polish item:
+
+- Bumped visible/project version metadata to 1.74.0.
+- Added a live `Handover Checklist` panel to Payment & Collection.
+- Checklist items cover payment checked, item condition checked, customer notified/tracking shared, care instructions included, and handover document ready.
+- The checklist auto-checks payment when no balance is owing and stays tied to the selected job across same-job refreshes.
+- Handover checklist summaries are included in pickup reminders, handover confirmations, ready/complete notes, sale notes and completion notes through the existing handover notes path.
+- Preserved database schema and existing payment, sale, invoice/receipt, handover confirmation, reminder and job completion behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.73.0 State
 
