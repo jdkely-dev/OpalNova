@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.72.0 Job Payment History
+- Current workspace version: V1.73.0 Hosted Editor Unsaved Change Guard
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,23 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.73.0 State
+
+V1.73.0 broadens unsaved-change protection to hosted record editor tabs:
+
+- Bumped visible/project version metadata to 1.73.0.
+- Added `IWorkspaceCloseRequestHandler` and close-decision support for hosted workspace tabs.
+- Implemented field snapshot dirty detection in `EditEntityWindow`.
+- Closing a changed hosted record editor now prompts Save, Discard, or Cancel.
+- Save from the close prompt routes through the existing `Saved` event so normal `MainWindow` validation, business rules and database persistence still apply.
+- Preserved database schema and existing quote, payment, sale, document, reminder and job completion behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.72.0 State
 

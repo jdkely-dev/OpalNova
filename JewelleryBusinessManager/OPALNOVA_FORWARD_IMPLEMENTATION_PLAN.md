@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.72.0 Job Payment History
+Current baseline: V1.73.0 Hosted Editor Unsaved Change Guard
 
 ## Purpose
 
@@ -80,7 +80,7 @@ Ease:
 | Universal next-action service | P2 | M-L | Implemented in V1.51.0 as a shared runtime service for Alert Centre and dashboard counts; Project Hub can be refactored to share it more deeply later. | V1.51 |
 | Alert centre | P2 | M | Implemented in V1.51.0 as a workspace-hosted alert list with filters, search, counts, details, and workflow actions. | V1.51 |
 | Recently opened tabs/items | P2 | S-M | Useful once tab lifecycle is stable. Can be local settings-backed first. | V1.51 |
-| Unsaved-change warnings for tab close | P2 | M-L | Started in V1.66.0 with a reusable close-guard interface and Custom Quote Builder dirty tracking. Broader editor adoption can follow once patterns are proven. | V1.66 |
+| Unsaved-change warnings for tab close | P2 | M-L | Started in V1.66.0 with Custom Quote Builder dirty tracking and broadened in V1.73.0 to hosted generic record editor tabs. | V1.66, V1.73 |
 | Payment schedule tracking | P2 | M | Supports quote approvals and handover. Should follow proposal/action changes. | V1.50-V1.51 |
 | Polished invoice/receipt templates | P2 | M | Implemented in V1.57.0 for job invoices/receipts, sale receipts, deposit receipts and payment receipts. | V1.57 |
 | Balance reminder messages | P2 | S | Implemented in V1.68.0 through Payment & Collection copy-ready reminder text and duplicate-safe follow-up task creation. | V1.68 |

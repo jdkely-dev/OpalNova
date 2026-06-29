@@ -374,7 +374,19 @@ public partial class MainWindow : Window
         var title = GetTabTitle(tab);
         var state = tab.Tag as WorkspaceTabState;
         var closedSelectedTab = Equals(WorkspaceTabs.SelectedItem, tab);
-        if (state?.HostWindow is IWorkspaceCloseGuard closeGuard && !closeGuard.CanCloseWorkspace())
+        if (state?.HostWindow is IWorkspaceCloseRequestHandler closeHandler)
+        {
+            var decision = closeHandler.RequestWorkspaceClose();
+            if (decision == WorkspaceCloseDecision.Cancel)
+            {
+                StatusText.Text = $"Close cancelled: {title}.";
+                return;
+            }
+
+            if (decision == WorkspaceCloseDecision.Handled)
+                return;
+        }
+        else if (state?.HostWindow is IWorkspaceCloseGuard closeGuard && !closeGuard.CanCloseWorkspace())
         {
             StatusText.Text = $"Close cancelled: {title}.";
             return;

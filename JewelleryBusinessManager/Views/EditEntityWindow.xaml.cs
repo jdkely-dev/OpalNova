@@ -26,10 +26,12 @@ using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace JewelleryBusinessManager.Views;
 
-public partial class EditEntityWindow : Window
+public partial class EditEntityWindow : Window, IWorkspaceCloseRequestHandler
 {
     private readonly object _entity;
     private readonly Dictionary<PropertyInfo, FrameworkElement> _controls = new();
+    private readonly Dictionary<PropertyInfo, string?> _initialControlSnapshots = new();
+    private bool _suppressCloseGuardOnce;
 
     public bool IsHostedInTab { get; set; }
     public event EventHandler? Saved;
@@ -123,6 +125,75 @@ public partial class EditEntityWindow : Window
         }
 
         AddJobPaymentHistoryPanel(currentRow);
+        CaptureInitialControlSnapshots();
+    }
+
+    public WorkspaceCloseDecision RequestWorkspaceClose()
+    {
+        if (_suppressCloseGuardOnce || !IsHostedInTab || !HasUnsavedControlChanges())
+            return WorkspaceCloseDecision.Close;
+
+        var result = MessageBox.Show(
+            $"This {SplitName(_entity.GetType().Name).ToLowerInvariant()} record has unsaved changes. Save before closing this tab?",
+            "Unsaved record changes",
+            MessageBoxButton.YesNoCancel,
+            MessageBoxImage.Warning);
+
+        if (result == MessageBoxResult.Cancel)
+            return WorkspaceCloseDecision.Cancel;
+        if (result == MessageBoxResult.No)
+            return WorkspaceCloseDecision.Close;
+
+        if (!TryApplyChanges())
+            return WorkspaceCloseDecision.Cancel;
+
+        _suppressCloseGuardOnce = true;
+        try
+        {
+            Saved?.Invoke(this, EventArgs.Empty);
+        }
+        finally
+        {
+            _suppressCloseGuardOnce = false;
+        }
+
+        return WorkspaceCloseDecision.Handled;
+    }
+
+    private void CaptureInitialControlSnapshots()
+    {
+        _initialControlSnapshots.Clear();
+        foreach (var (prop, control) in _controls)
+            _initialControlSnapshots[prop] = ReadControlSnapshot(prop, control);
+    }
+
+    private bool HasUnsavedControlChanges()
+    {
+        foreach (var (prop, control) in _controls)
+        {
+            _initialControlSnapshots.TryGetValue(prop, out var initial);
+            var current = ReadControlSnapshot(prop, control);
+            if (!string.Equals(initial, current, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static string? ReadControlSnapshot(PropertyInfo prop, FrameworkElement control)
+    {
+        if (control is StackPanel panel && prop.Name.Equals("FilePath", StringComparison.OrdinalIgnoreCase))
+            return FindChildTextBox(panel)?.Text ?? string.Empty;
+
+        return control switch
+        {
+            WpfTextBox textBox => textBox.Text,
+            WpfComboBox comboBox when string.Equals(comboBox.Tag?.ToString(), "Lookup", StringComparison.Ordinal) => comboBox.SelectedValue?.ToString(),
+            WpfComboBox comboBox => comboBox.SelectedItem?.ToString(),
+            WpfCheckBox checkBox => (checkBox.IsChecked ?? false).ToString(CultureInfo.InvariantCulture),
+            DatePicker datePicker => datePicker.SelectedDate?.Date.ToString("O", CultureInfo.InvariantCulture),
+            _ => null
+        };
     }
 
     private void AddEditorField(PropertyInfo prop, FrameworkElement control, bool fullWidth, ref int currentRow, ref int fieldSlot)
@@ -743,7 +814,15 @@ public partial class EditEntityWindow : Window
 
         if (IsHostedInTab)
         {
-            Saved?.Invoke(this, EventArgs.Empty);
+            _suppressCloseGuardOnce = true;
+            try
+            {
+                Saved?.Invoke(this, EventArgs.Empty);
+            }
+            finally
+            {
+                _suppressCloseGuardOnce = false;
+            }
             return;
         }
 
