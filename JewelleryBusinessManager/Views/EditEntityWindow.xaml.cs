@@ -3,6 +3,9 @@ using System.Reflection;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Media;
 using WpfComboBox = System.Windows.Controls.ComboBox;
 using WpfTextBox = System.Windows.Controls.TextBox;
 using WpfImage = System.Windows.Controls.Image;
@@ -10,6 +13,7 @@ using WpfPanel = System.Windows.Controls.Panel;
 using WpfButton = System.Windows.Controls.Button;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
 using System.Windows.Media.Imaging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using JewelleryBusinessManager.Data;
 using JewelleryBusinessManager.Models;
@@ -111,6 +115,14 @@ public partial class EditEntityWindow : Window
             AddEditorField(prop, control, IsFullWidthEditorField(prop), ref currentRow, ref fieldSlot);
             _controls[prop] = control;
         }
+
+        if (fieldSlot != 0)
+        {
+            currentRow++;
+            fieldSlot = 0;
+        }
+
+        AddJobPaymentHistoryPanel(currentRow);
     }
 
     private void AddEditorField(PropertyInfo prop, FrameworkElement control, bool fullWidth, ref int currentRow, ref int fieldSlot)
@@ -339,7 +351,7 @@ public partial class EditEntityWindow : Window
     private static string GetWorkflowHelperText(Type entityType)
     {
         if (entityType == typeof(Job))
-            return "Job workflow: create the enquiry, add quote/deposit details, then use the main-window Advance Job button to move it through quoted, approved, in progress, ready and completed.";
+            return "Job workflow: create the enquiry, add quote/deposit details, then use the main-window Advance Job button to move it through quoted, approved, in progress, ready and completed. Saved jobs show their partial payment ledger below.";
         if (entityType == typeof(JewelleryItem))
             return "Jewellery stock workflow: link the main stone where relevant, add making costs and retail price, then use Create Sale or Add To Market from the main window.";
         if (entityType == typeof(Stone))
@@ -360,6 +372,166 @@ public partial class EditEntityWindow : Window
             return "Task workflow: link tasks to customers, jobs, jewellery, stones, markets, batches or purchase orders. Use Complete Task from the main window when finished, and Work Queue for today/overdue priorities.";
         return string.Empty;
     }
+
+    private void AddJobPaymentHistoryPanel(int row)
+    {
+        if (_entity is not Job job || job.Id <= 0)
+            return;
+
+        using var db = new AppDbContext();
+        var storedJob = db.Jobs.AsNoTracking().FirstOrDefault(x => x.Id == job.Id) ?? job;
+        var customer = storedJob.CustomerId.HasValue
+            ? db.Customers.AsNoTracking().FirstOrDefault(x => x.Id == storedJob.CustomerId.Value)
+            : null;
+        var payments = db.Payments.AsNoTracking()
+            .Where(x => x.JobId == storedJob.Id)
+            .OrderByDescending(x => x.PaymentDate)
+            .ThenByDescending(x => x.Id)
+            .ToList();
+        var hasSale = db.Sales.AsNoTracking().Any(x => x.JobId == storedJob.Id);
+        var total = storedJob.FinalPrice > 0 ? storedJob.FinalPrice : storedJob.QuoteAmount;
+        var recordedPaymentTotal = payments.Sum(x => x.Amount);
+        var paid = Math.Max(storedJob.DepositPaid, recordedPaymentTotal);
+        var balance = Math.Max(0m, total - paid);
+
+        FormGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        var panel = new Border
+        {
+            Background = Brush(13, 20, 34),
+            BorderBrush = Brush(51, 65, 85),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(10),
+            Margin = new Thickness(2, 10, 2, 2)
+        };
+
+        var stack = new StackPanel();
+        panel.Child = stack;
+
+        var title = new TextBlock
+        {
+            Text = "Job Payment History",
+            FontSize = 13,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = Brush(184, 138, 46),
+            Margin = new Thickness(0, 0, 0, 3)
+        };
+        stack.Children.Add(title);
+
+        var subtitle = new TextBlock
+        {
+            Text = $"{storedJob.JobCode} {storedJob.JobTitle}".Trim() + $" | Customer: {customer?.FullName ?? "Not linked"} | Sale created: {(hasSale ? "Yes" : "No")}",
+            FontSize = 11,
+            Foreground = Brush(216, 206, 190),
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 8)
+        };
+        stack.Children.Add(subtitle);
+
+        var summary = new UniformGrid
+        {
+            Columns = 4,
+            Margin = new Thickness(0, 0, 0, 8)
+        };
+        summary.Children.Add(CreatePaymentSummaryTile("Total", total.ToString("C", CultureInfo.CurrentCulture)));
+        summary.Children.Add(CreatePaymentSummaryTile("Paid", paid.ToString("C", CultureInfo.CurrentCulture)));
+        summary.Children.Add(CreatePaymentSummaryTile("Balance", balance.ToString("C", CultureInfo.CurrentCulture)));
+        summary.Children.Add(CreatePaymentSummaryTile("Payments", payments.Count.ToString(CultureInfo.CurrentCulture)));
+        stack.Children.Add(summary);
+
+        if (payments.Count == 0)
+        {
+            stack.Children.Add(new TextBlock
+            {
+                Text = storedJob.DepositPaid > 0
+                    ? $"No ledger rows yet. Deposit Paid field currently records {storedJob.DepositPaid.ToString("C", CultureInfo.CurrentCulture)}."
+                    : "No payment ledger rows have been recorded for this job yet.",
+                Foreground = Brush(216, 206, 190),
+                FontSize = 11,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 2, 0, 0)
+            });
+        }
+        else
+        {
+            stack.Children.Add(CreatePaymentHistoryGrid(payments));
+        }
+
+        Grid.SetRow(panel, row);
+        Grid.SetColumn(panel, 0);
+        Grid.SetColumnSpan(panel, 5);
+        FormGrid.Children.Add(panel);
+    }
+
+    private static Border CreatePaymentSummaryTile(string label, string value)
+    {
+        var stack = new StackPanel();
+        stack.Children.Add(new TextBlock
+        {
+            Text = label,
+            Foreground = Brush(216, 206, 190),
+            FontSize = 10
+        });
+        stack.Children.Add(new TextBlock
+        {
+            Text = value,
+            Foreground = Brush(239, 234, 224),
+            FontSize = 15,
+            FontWeight = FontWeights.SemiBold,
+            TextWrapping = TextWrapping.Wrap
+        });
+
+        return new Border
+        {
+            Background = Brush(31, 41, 55),
+            BorderBrush = Brush(51, 65, 85),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(6),
+            Padding = new Thickness(8),
+            Margin = new Thickness(0, 0, 6, 0),
+            Child = stack
+        };
+    }
+
+    private static DataGrid CreatePaymentHistoryGrid(IReadOnlyCollection<Payment> payments)
+    {
+        var rows = payments
+            .Select(x => new JobPaymentHistoryRow(
+                x.PaymentDate.ToString("d", CultureInfo.CurrentCulture),
+                x.Amount.ToString("C", CultureInfo.CurrentCulture),
+                x.Method.ToString(),
+                x.Reference ?? string.Empty,
+                x.Notes ?? string.Empty))
+            .ToList();
+
+        return new DataGrid
+        {
+            ItemsSource = rows,
+            AutoGenerateColumns = false,
+            IsReadOnly = true,
+            CanUserAddRows = false,
+            CanUserDeleteRows = false,
+            Height = 150,
+            Background = Brush(4, 8, 19),
+            Foreground = Brush(239, 234, 224),
+            BorderBrush = Brush(51, 65, 85),
+            GridLinesVisibility = DataGridGridLinesVisibility.Horizontal,
+            HeadersVisibility = DataGridHeadersVisibility.Column,
+            RowBackground = Brush(4, 8, 19),
+            AlternatingRowBackground = Brush(13, 20, 34),
+            HorizontalGridLinesBrush = Brush(51, 65, 85),
+            Columns =
+            {
+                new DataGridTextColumn { Header = "Date", Binding = new Binding(nameof(JobPaymentHistoryRow.DateText)), Width = new DataGridLength(95) },
+                new DataGridTextColumn { Header = "Amount", Binding = new Binding(nameof(JobPaymentHistoryRow.AmountText)), Width = new DataGridLength(105) },
+                new DataGridTextColumn { Header = "Method", Binding = new Binding(nameof(JobPaymentHistoryRow.MethodText)), Width = new DataGridLength(110) },
+                new DataGridTextColumn { Header = "Reference", Binding = new Binding(nameof(JobPaymentHistoryRow.Reference)), Width = new DataGridLength(150) },
+                new DataGridTextColumn { Header = "Notes", Binding = new Binding(nameof(JobPaymentHistoryRow.Notes)), Width = new DataGridLength(1, DataGridLengthUnitType.Star) }
+            }
+        };
+    }
+
+    private static SolidColorBrush Brush(byte r, byte g, byte b) => new(Color.FromRgb(r, g, b));
 
     private FrameworkElement CreateControl(PropertyInfo prop)
     {
@@ -671,4 +843,6 @@ public partial class EditEntityWindow : Window
     {
         public override string ToString() => string.IsNullOrWhiteSpace(Label) ? "Select" : Label;
     }
+
+    private sealed record JobPaymentHistoryRow(string DateText, string AmountText, string MethodText, string Reference, string Notes);
 }

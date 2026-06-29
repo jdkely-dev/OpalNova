@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.71.0 Final Customer Follow-Up
+- Current workspace version: V1.72.0 Job Payment History
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,22 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.72.0 State
+
+V1.72.0 continues payment workflow polish inside the job editor:
+
+- Bumped visible/project version metadata to 1.72.0.
+- Added a saved-job payment history panel to `EditEntityWindow`.
+- The job editor now shows total, paid, balance, payment count, linked customer, sale-created state, and read-only payment ledger rows for the selected job.
+- Reuses the existing Payment & Collection paid/balance calculation pattern for compatibility with older deposit-only records.
+- Preserved database schema and existing payment recording, sale creation, invoice/receipt, handover confirmation and job completion behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.71.0 State
 

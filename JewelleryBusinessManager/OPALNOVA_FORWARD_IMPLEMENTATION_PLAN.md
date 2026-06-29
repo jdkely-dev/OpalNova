@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.71.0 Final Customer Follow-Up
+Current baseline: V1.72.0 Job Payment History
 
 ## Purpose
 
@@ -87,6 +87,7 @@ Ease:
 | Reminder task consistency | P2 | S | Implemented in V1.69.0 through shared duplicate-safe open-task checks and consistent task-code generation across active reminder workflows. | V1.69 |
 | Shipping/collection confirmation document | P2 | S | Implemented in V1.70.0 as a Payment & Collection handover confirmation with payment summary, checklist, notes and sign-off lines. | V1.70 |
 | Final customer thank-you/follow-up task | P2 | S | Implemented in V1.71.0 as a duplicate-safe Payment & Collection task with customer-ready after-care follow-up text. | V1.71 |
+| Partial-payment history inside jobs | P2 | S | Implemented in V1.72.0 as a read-only payment summary and ledger panel inside saved job editor tabs. | V1.72 |
 | Job completion checklist and stock consume/release wizard | P2 | L | Implemented in V1.52.0 as an explicit completion checklist that consumes reserved materials, marks reserved stones set, releases unconsumed reservations, and writes material movement audit entries. | V1.52 |
 | Production stage checklist, waiting flags, and job files | P2 | M-L | The transcript shows these as central after proposal acceptance. Do this around the safe job-completion work. | V1.52 |
 | Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
