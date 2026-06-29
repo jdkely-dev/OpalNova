@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.74.0 Payment Handover Checklist
+- Current workspace version: V1.75.0 Customer Communication Templates
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,25 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.75.0 State
+
+V1.75.0 continues customer relationship workflow polish:
+
+- Bumped visible/project version metadata to 1.75.0.
+- Added a `Communication Templates` action to Customer Relationship Studio.
+- Added `CustomerRelationshipService.CreateCustomerCommunicationTemplates(...)`.
+- Customer templates are generated from existing customer preferences, quotes, jobs, sales, tasks and value guidance.
+- Customer summary cards and timelines now include lifetime value, value guidance, suggested next step and repeat follow-up suggestions.
+- Customer relationship report now includes lifetime value, value guidance and suggested next step columns.
+- Created customer follow-up tasks now include value guidance and a relevant message starter in follow-up notes.
+- Preserved database schema and existing customer, quote, job, sale, payment, task and report behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.74.0 State
 

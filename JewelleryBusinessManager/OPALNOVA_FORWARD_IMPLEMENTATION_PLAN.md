@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.74.0 Payment Handover Checklist
+Current baseline: V1.75.0 Customer Communication Templates
 
 ## Purpose
 
@@ -89,13 +89,15 @@ Ease:
 | Final customer thank-you/follow-up task | P2 | S | Implemented in V1.71.0 as a duplicate-safe Payment & Collection task with customer-ready after-care follow-up text. | V1.71 |
 | Partial-payment history inside jobs | P2 | S | Implemented in V1.72.0 as a read-only payment summary and ledger panel inside saved job editor tabs. | V1.72 |
 | Payment handover checklist | P2 | S | Implemented in V1.74.0 as a live Payment & Collection checklist whose summary feeds reminders, handover confirmation, sale notes and completion notes. | V1.74 |
+| Customer communication templates | P3 | S-M | Implemented in V1.75.0 as customer-specific quote, production, handover, after-care and repeat-customer message starters. | V1.75 |
+| Customer lifetime value and repeat follow-up guidance | P3 | S-M | Started in V1.75.0 through customer summary/timeline/report value guidance and generated follow-up notes. | V1.75 |
 | Job completion checklist and stock consume/release wizard | P2 | L | Implemented in V1.52.0 as an explicit completion checklist that consumes reserved materials, marks reserved stones set, releases unconsumed reservations, and writes material movement audit entries. | V1.52 |
 | Production stage checklist, waiting flags, and job files | P2 | M-L | The transcript shows these as central after proposal acceptance. Do this around the safe job-completion work. | V1.52 |
 | Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
 | Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; profitability reporting is implemented in V1.59.0; tax/GST summary is implemented in V1.60.0; visual charts are implemented in V1.61.0. | V1.54, V1.58, V1.59, V1.60, V1.61 |
-| Customer profile dashboard and timeline | P3 | M | Customer timeline implemented in V1.56.0 using existing quote, proposal, job, sale, payment and task records; fuller dashboard remains later polish. | V1.56 |
+| Customer profile dashboard and timeline | P3 | M | Customer timeline implemented in V1.56.0 using existing quote, proposal, job, sale, payment and task records; V1.75 adds value guidance and communication templates. | V1.56, V1.75 |
 | Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |
 | Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
 | Automated backup schedule | P3 | L | Health indicator is easy; true scheduling is OS/app lifecycle work. | V1.55 |

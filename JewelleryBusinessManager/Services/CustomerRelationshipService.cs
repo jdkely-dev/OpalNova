@@ -34,6 +34,8 @@ public static class CustomerRelationshipService
         var nextFollowUp = openTasks.OrderBy(t => t.DueDate ?? DateTime.MaxValue).FirstOrDefault();
         var lifetimeSales = sales.Sum(s => s.SaleAmount);
         var outstandingBalance = activeJobs.Sum(j => Math.Max(0, j.BalanceOwing));
+        var valueProfile = BuildCustomerValueProfile(customer, jobs, quotes, sales, payments, tasks);
+        var templates = BuildCommunicationTemplates(customer, jobs, quotes, sales, tasks, valueProfile);
 
         var fileName = SafeFileName($"CustomerSummary_{customer.FullName}_{customer.Id}.html");
         var path = Path.Combine(PrintoutFolder, fileName);
@@ -56,8 +58,10 @@ public static class CustomerRelationshipService
         html.AppendLine(Tile("Payments", payments.Count.ToString(CultureInfo.InvariantCulture), lastPayment == null ? "No payments" : $"Last: {lastPayment.PaymentDate:d}"));
         html.AppendLine(Tile("Open Follow-ups", openTasks.Count.ToString(CultureInfo.InvariantCulture), nextFollowUp?.DueDate?.ToShortDateString() ?? "None due"));
         html.AppendLine(Tile("Outstanding Balance", Money(outstandingBalance), "Active jobs only"));
+        html.AppendLine(Tile("Lifetime Value", Money(valueProfile.LifetimeValue), valueProfile.ValueTier));
         html.AppendLine(Tile("Last Activity", MostRecentDate(lastSale?.SaleDate, lastJob?.DateReceived, lastPayment?.PaymentDate), "Sale, job or payment"));
         html.AppendLine("</div>");
+        AppendRelationshipGuidance(html, valueProfile);
         html.AppendLine("<h2>Preferences</h2>");
         html.AppendLine(Row("Ring Sizes", customer.RingSizes ?? string.Empty));
         html.AppendLine(Row("Preferred Metals", customer.PreferredMetals ?? string.Empty));
@@ -72,6 +76,7 @@ public static class CustomerRelationshipService
         AppendSalesTable(html, sales.Take(8).ToList());
         AppendTasksTable(html, openTasks.Take(8).ToList());
         AppendTimelineTable(html, timeline.Take(10).ToList(), "Recent Timeline");
+        AppendCommunicationTemplates(html, templates.Take(3).ToList(), "Suggested Message Starters");
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
         File.WriteAllText(path, html.ToString());
@@ -94,6 +99,7 @@ public static class CustomerRelationshipService
         var activeJobs = jobs.Where(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled).ToList();
         var openTasks = tasks.Where(t => t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled).ToList();
         var outstandingBalance = activeJobs.Sum(j => Math.Max(0, j.BalanceOwing));
+        var valueProfile = BuildCustomerValueProfile(customer, jobs, quotes, sales, payments, tasks);
 
         var fileName = SafeFileName($"CustomerTimeline_{customer.FullName}_{customer.Id}.html");
         var path = Path.Combine(PrintoutFolder, fileName);
@@ -109,7 +115,9 @@ public static class CustomerRelationshipService
         html.AppendLine(Tile("Timeline Events", timeline.Count.ToString(CultureInfo.InvariantCulture), "quotes, jobs, sales, payments, tasks"));
         html.AppendLine(Tile("Active Jobs", activeJobs.Count.ToString(CultureInfo.InvariantCulture), Money(outstandingBalance)));
         html.AppendLine(Tile("Open Follow-ups", openTasks.Count.ToString(CultureInfo.InvariantCulture), openTasks.OrderBy(t => t.DueDate ?? DateTime.MaxValue).FirstOrDefault()?.DueDate?.ToShortDateString() ?? "None due"));
+        html.AppendLine(Tile("Lifetime Value", Money(valueProfile.LifetimeValue), valueProfile.ValueTier));
         html.AppendLine("</div>");
+        AppendRelationshipGuidance(html, valueProfile);
         html.AppendLine("<h2>Preferences</h2>");
         html.AppendLine(Row("Ring Sizes", customer.RingSizes ?? string.Empty));
         html.AppendLine(Row("Preferred Metals", customer.PreferredMetals ?? string.Empty));
@@ -128,6 +136,7 @@ public static class CustomerRelationshipService
 
         var customers = db.Customers.AsNoTracking().AsEnumerable().OrderBy(c => c.FullName).ToList();
         var jobs = db.Jobs.AsNoTracking().AsEnumerable().ToList();
+        var quotes = db.CustomQuotes.AsNoTracking().AsEnumerable().ToList();
         var sales = db.Sales.AsNoTracking().AsEnumerable().ToList();
         var tasks = db.BusinessTasks.AsNoTracking().AsEnumerable().ToList();
         var payments = db.Payments.AsNoTracking().AsEnumerable().ToList();
@@ -142,15 +151,17 @@ public static class CustomerRelationshipService
         html.AppendLine(Row("Customers with open follow-ups", customers.Count(c => tasks.Any(t => t.CustomerId == c.Id && t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled)).ToString(CultureInfo.InvariantCulture)));
         html.AppendLine(Row("Customers with active jobs", customers.Count(c => jobs.Any(j => j.CustomerId == c.Id && j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled)).ToString(CultureInfo.InvariantCulture)));
         html.AppendLine("<h2>Customer Overview</h2>");
-        html.AppendLine("<table><tr><th>Customer</th><th>Contact</th><th>Jobs</th><th>Active Jobs</th><th>Sales</th><th>Total Sales</th><th>Open Follow-ups</th><th>Last Activity</th><th>Next Follow-up</th></tr>");
+        html.AppendLine("<table><tr><th>Customer</th><th>Contact</th><th>Jobs</th><th>Active Jobs</th><th>Sales</th><th>Lifetime Value</th><th>Value Guidance</th><th>Open Follow-ups</th><th>Last Activity</th><th>Next Follow-up</th><th>Suggested Next Step</th></tr>");
         foreach (var customer in customers)
         {
             var customerJobs = jobs.Where(j => j.CustomerId == customer.Id).ToList();
+            var customerQuotes = quotes.Where(q => q.CustomerId == customer.Id).ToList();
             var customerSales = sales.Where(s => s.CustomerId == customer.Id).ToList();
             var customerPayments = payments.Where(p => p.CustomerId == customer.Id || customerJobs.Any(j => p.JobId == j.Id) || customerSales.Any(s => p.SaleId == s.Id)).ToList();
             var customerTasks = tasks.Where(t => t.CustomerId == customer.Id && t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled).OrderBy(t => t.DueDate ?? DateTime.MaxValue).ToList();
             var lastActivity = MostRecentDate(customerSales.Select(s => s.SaleDate).Concat(customerJobs.Select(j => j.DateReceived)).Concat(customerPayments.Select(p => p.PaymentDate)).ToArray());
-            html.AppendLine($"<tr><td>{Html(customer.FullName)}</td><td>{Html(CompactContact(customer))}</td><td>{customerJobs.Count}</td><td>{customerJobs.Count(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled)}</td><td>{customerSales.Count}</td><td>{Money(customerSales.Sum(s => s.SaleAmount))}</td><td>{customerTasks.Count}</td><td>{Html(lastActivity)}</td><td>{Html(customerTasks.FirstOrDefault()?.DueDate?.ToShortDateString() ?? string.Empty)}</td></tr>");
+            var valueProfile = BuildCustomerValueProfile(customer, customerJobs, customerQuotes, customerSales, customerPayments, tasks.Where(t => t.CustomerId == customer.Id).ToList());
+            html.AppendLine($"<tr><td>{Html(customer.FullName)}</td><td>{Html(CompactContact(customer))}</td><td>{customerJobs.Count}</td><td>{customerJobs.Count(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled)}</td><td>{customerSales.Count}</td><td>{Money(valueProfile.LifetimeValue)}</td><td>{Html(valueProfile.ValueTier)}</td><td>{customerTasks.Count}</td><td>{Html(lastActivity)}</td><td>{Html(customerTasks.FirstOrDefault()?.DueDate?.ToShortDateString() ?? string.Empty)}</td><td>{Html(valueProfile.SuggestedNextStep)}</td></tr>");
         }
         html.AppendLine("</table>");
         html.AppendLine("</section>");
@@ -159,8 +170,50 @@ public static class CustomerRelationshipService
         return path;
     }
 
+    public static string CreateCustomerCommunicationTemplates(Customer customer)
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+
+        var jobs = db.Jobs.AsNoTracking().AsEnumerable().Where(j => j.CustomerId == customer.Id).OrderByDescending(j => j.DateReceived).ToList();
+        var quotes = db.CustomQuotes.AsNoTracking().AsEnumerable().Where(q => q.CustomerId == customer.Id).OrderByDescending(q => q.QuoteDate).ToList();
+        var sales = db.Sales.AsNoTracking().AsEnumerable().Where(s => s.CustomerId == customer.Id).OrderByDescending(s => s.SaleDate).ToList();
+        var payments = db.Payments.AsNoTracking().AsEnumerable().Where(p => p.CustomerId == customer.Id || jobs.Any(j => p.JobId == j.Id) || sales.Any(s => p.SaleId == s.Id)).OrderByDescending(p => p.PaymentDate).ToList();
+        var tasks = db.BusinessTasks.AsNoTracking().AsEnumerable().Where(t => t.CustomerId == customer.Id).OrderBy(t => t.DueDate ?? DateTime.MaxValue).ToList();
+        var valueProfile = BuildCustomerValueProfile(customer, jobs, quotes, sales, payments, tasks);
+        var templates = BuildCommunicationTemplates(customer, jobs, quotes, sales, tasks, valueProfile);
+
+        var fileName = SafeFileName($"CustomerCommunicationTemplates_{customer.FullName}_{customer.Id}.html");
+        var path = Path.Combine(PrintoutFolder, fileName);
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Customer Communication Templates"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Customer Communication Templates</h1>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}</p>");
+        html.AppendLine(Row("Customer", customer.FullName));
+        html.AppendLine(Row("Contact", CompactContact(customer)));
+        html.AppendLine(Row("Value Guidance", valueProfile.ValueTier));
+        html.AppendLine(Row("Suggested Next Step", valueProfile.SuggestedNextStep));
+        AppendRelationshipGuidance(html, valueProfile);
+        AppendCommunicationTemplates(html, templates, "Message Starters");
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
     public static BusinessTask CreateFollowUpTask(Customer customer)
     {
+        using var db = new AppDbContext();
+        var jobs = db.Jobs.AsNoTracking().AsEnumerable().Where(j => j.CustomerId == customer.Id).OrderByDescending(j => j.DateReceived).ToList();
+        var quotes = db.CustomQuotes.AsNoTracking().AsEnumerable().Where(q => q.CustomerId == customer.Id).OrderByDescending(q => q.QuoteDate).ToList();
+        var sales = db.Sales.AsNoTracking().AsEnumerable().Where(s => s.CustomerId == customer.Id).OrderByDescending(s => s.SaleDate).ToList();
+        var payments = db.Payments.AsNoTracking().AsEnumerable().Where(p => p.CustomerId == customer.Id || jobs.Any(j => p.JobId == j.Id) || sales.Any(s => p.SaleId == s.Id)).ToList();
+        var tasks = db.BusinessTasks.AsNoTracking().AsEnumerable().Where(t => t.CustomerId == customer.Id).ToList();
+        var valueProfile = BuildCustomerValueProfile(customer, jobs, quotes, sales, payments, tasks);
+        var templates = BuildCommunicationTemplates(customer, jobs, quotes, sales, tasks, valueProfile);
+
         return new BusinessTask
         {
             TaskCode = TaskWorkflowService.GenerateTaskCode(),
@@ -172,12 +225,200 @@ public static class CustomerRelationshipService
             ReminderDate = DateTime.Today.AddDays(1),
             CustomerId = customer.Id,
             Description = "Customer relationship follow-up. Add the reason, next step, quote reminder, collection reminder or after-sale check-in details.",
-            FollowUpNotes = BuildPreferenceSummary(customer),
+            FollowUpNotes = BuildFollowUpNotes(customer, valueProfile, templates),
             ShowOnDashboard = true
         };
     }
 
     private sealed record CustomerTimelineEvent(DateTime Date, string Type, string Title, string Detail, string Status, decimal? Amount);
+    private sealed record CustomerValueProfile(decimal LifetimeValue, decimal PaymentsRecorded, decimal OutstandingBalance, int JobsCount, int ActiveJobsCount, int SalesCount, int OpenQuotesCount, int OpenTasksCount, string ValueTier, string SuggestedNextStep, string RepeatFollowUpSuggestion);
+    private sealed record CommunicationTemplate(string Title, string Body);
+
+    private static CustomerValueProfile BuildCustomerValueProfile(
+        Customer customer,
+        List<Job> jobs,
+        List<CustomQuote> quotes,
+        List<Sale> sales,
+        List<Payment> payments,
+        List<BusinessTask> tasks)
+    {
+        var lifetimeValue = sales.Sum(s => s.SaleAmount);
+        var paymentsRecorded = payments.Sum(p => p.Amount);
+        var activeJobs = jobs.Where(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled).ToList();
+        var outstandingBalance = activeJobs.Sum(j => Math.Max(0, j.BalanceOwing));
+        var openQuotes = quotes.Where(q => !q.AcceptedOptionId.HasValue && !q.LinkedJobId.HasValue && !q.Status.Contains("Cancelled", StringComparison.OrdinalIgnoreCase)).ToList();
+        var openTasks = tasks.Where(t => t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled).ToList();
+        var lastActivity = MostRecentActivityDate(jobs, sales, payments, tasks);
+
+        var valueTier = lifetimeValue >= 5000m || sales.Count >= 5
+            ? "High-value repeat customer"
+            : sales.Count >= 2 || jobs.Count >= 2
+                ? "Repeat customer"
+                : activeJobs.Count > 0
+                    ? "Active project customer"
+                    : openQuotes.Count > 0
+                        ? "Quote / proposal customer"
+                        : lifetimeValue > 0m
+                            ? "Past customer"
+                            : "New / early relationship";
+
+        var suggestedNextStep = openTasks.Count > 0
+            ? $"Review {openTasks.Count} open follow-up task(s)."
+            : outstandingBalance > 0m
+                ? $"Send a balance or handover payment check for {Money(outstandingBalance)}."
+                : openQuotes.Count > 0
+                    ? "Send a quote or proposal check-in."
+                    : activeJobs.Count > 0
+                        ? "Send a production progress or handover update."
+                        : lifetimeValue > 0m && lastActivity.HasValue && lastActivity.Value.Date <= DateTime.Today.AddDays(-120)
+                            ? "Send an after-care or repeat-customer check-in."
+                            : lifetimeValue > 0m
+                                ? "Keep warm with care advice or a preference-led future design prompt."
+                                : "Confirm preferences and invite the next jewellery brief.";
+
+        var repeatFollowUp = lifetimeValue <= 0m
+            ? "Ask about preferred stones, metals, ring sizes and upcoming occasions."
+            : sales.Count >= 2 || jobs.Count >= 2
+                ? "Thank them as a repeat customer and suggest a future clean/check, matching piece or occasion-based design."
+                : "Send an after-care check-in and ask whether they would like reminders for cleaning, sizing or future gifts.";
+
+        return new CustomerValueProfile(
+            lifetimeValue,
+            paymentsRecorded,
+            outstandingBalance,
+            jobs.Count,
+            activeJobs.Count,
+            sales.Count,
+            openQuotes.Count,
+            openTasks.Count,
+            valueTier,
+            suggestedNextStep,
+            repeatFollowUp);
+    }
+
+    private static List<CommunicationTemplate> BuildCommunicationTemplates(
+        Customer customer,
+        List<Job> jobs,
+        List<CustomQuote> quotes,
+        List<Sale> sales,
+        List<BusinessTask> tasks,
+        CustomerValueProfile profile)
+    {
+        var name = FirstName(customer);
+        var preferences = BuildPreferenceSummary(customer);
+        var openQuote = quotes.FirstOrDefault(q => !q.AcceptedOptionId.HasValue && !q.LinkedJobId.HasValue && !q.Status.Contains("Cancelled", StringComparison.OrdinalIgnoreCase));
+        var activeJob = jobs.FirstOrDefault(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled);
+        var readyJob = jobs.FirstOrDefault(j => j.Status is JobStatus.ReadyForPickup or JobStatus.ReadyToShip);
+        var latestSale = sales.FirstOrDefault();
+        var nextTask = tasks.Where(t => t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled).OrderBy(t => t.DueDate ?? DateTime.MaxValue).FirstOrDefault();
+
+        var templates = new List<CommunicationTemplate>();
+
+        if (openQuote != null)
+        {
+            templates.Add(new CommunicationTemplate(
+                "Quote / proposal check-in",
+                $"Hi {name},\n\nI wanted to check in on {openQuote.QuoteCode}. I am happy to adjust the design, stone, metal or budget if you would like to compare another option.\n\nPlease let me know what feels closest to what you had in mind and I can guide the next step.\n\nKind regards"));
+        }
+
+        if (activeJob != null)
+        {
+            templates.Add(new CommunicationTemplate(
+                "Production update",
+                $"Hi {name},\n\nA quick update on {activeJob.JobCode} {activeJob.JobTitle}: it is currently at {activeJob.Status}. {(activeJob.DueDate.HasValue ? $"The current target date is {activeJob.DueDate.Value:dd MMM yyyy}." : "I will confirm the next timing update as soon as the workshop schedule is clear.")}\n\nI will let you know if anything changes.\n\nKind regards"));
+        }
+
+        if (readyJob != null)
+        {
+            templates.Add(new CommunicationTemplate(
+                readyJob.Status == JobStatus.ReadyToShip ? "Shipping handover message" : "Collection handover message",
+                $"Hi {name},\n\n{readyJob.JobCode} {readyJob.JobTitle} is ready for {(readyJob.Status == JobStatus.ReadyToShip ? "shipping" : "collection")}.\n\nI have checked the handover details. Please let me know if you need the payment details, collection timing or shipping information resent.\n\nKind regards"));
+        }
+
+        if (latestSale != null)
+        {
+            templates.Add(new CommunicationTemplate(
+                "After-care check-in",
+                $"Hi {name},\n\nI hope you are enjoying your piece. I wanted to check that everything is fitting and looking as expected.\n\nIf you have any questions about cleaning, care or future adjustments, please let me know.\n\nKind regards"));
+        }
+
+        templates.Add(new CommunicationTemplate(
+            "Repeat customer / preference prompt",
+            $"Hi {name},\n\nI was reviewing your preferences and thought it would be useful to check whether anything has changed for future pieces.\n\n{(string.IsNullOrWhiteSpace(preferences) ? "If you have preferred stones, metals, ring sizes or upcoming occasions, I can keep those in mind." : preferences)}\n\n{profile.RepeatFollowUpSuggestion}\n\nKind regards"));
+
+        if (nextTask != null)
+        {
+            templates.Add(new CommunicationTemplate(
+                "Open follow-up context",
+                $"Hi {name},\n\nI am following up on: {nextTask.Title}.\n\n{nextTask.FollowUpNotes ?? nextTask.Description ?? "Please let me know what you would like to do next."}\n\nKind regards"));
+        }
+
+        return templates;
+    }
+
+    private static void AppendRelationshipGuidance(StringBuilder html, CustomerValueProfile profile)
+    {
+        html.AppendLine("<h2>Relationship Guidance</h2>");
+        html.AppendLine(Row("Lifetime Value", Money(profile.LifetimeValue)));
+        html.AppendLine(Row("Payments Recorded", Money(profile.PaymentsRecorded)));
+        html.AppendLine(Row("Value Guidance", profile.ValueTier));
+        html.AppendLine(Row("Suggested Next Step", profile.SuggestedNextStep));
+        html.AppendLine(Row("Repeat Follow-up Suggestion", profile.RepeatFollowUpSuggestion));
+    }
+
+    private static void AppendCommunicationTemplates(StringBuilder html, List<CommunicationTemplate> templates, string title)
+    {
+        html.AppendLine($"<h2>{Html(title)}</h2>");
+        foreach (var template in templates)
+        {
+            html.AppendLine("<div class='template'>");
+            html.AppendLine($"<h3>{Html(template.Title)}</h3>");
+            html.AppendLine($"<pre>{Html(template.Body)}</pre>");
+            html.AppendLine("</div>");
+        }
+    }
+
+    private static string BuildFollowUpNotes(Customer customer, CustomerValueProfile profile, List<CommunicationTemplate> templates)
+    {
+        var sb = new StringBuilder();
+        var preferences = BuildPreferenceSummary(customer);
+        if (!string.IsNullOrWhiteSpace(preferences))
+        {
+            sb.AppendLine(preferences);
+            sb.AppendLine();
+        }
+
+        sb.AppendLine($"Value guidance: {profile.ValueTier}");
+        sb.AppendLine($"Suggested next step: {profile.SuggestedNextStep}");
+        sb.AppendLine($"Repeat follow-up suggestion: {profile.RepeatFollowUpSuggestion}");
+
+        var firstTemplate = templates.FirstOrDefault();
+        if (firstTemplate != null)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"Message starter - {firstTemplate.Title}:");
+            sb.AppendLine(firstTemplate.Body);
+        }
+
+        return sb.ToString().Trim();
+    }
+
+    private static DateTime? MostRecentActivityDate(List<Job> jobs, List<Sale> sales, List<Payment> payments, List<BusinessTask> tasks)
+    {
+        var dates = jobs.Select(j => j.DateReceived)
+            .Concat(sales.Select(s => s.SaleDate))
+            .Concat(payments.Select(p => p.PaymentDate))
+            .Concat(tasks.Select(t => t.CompletedAt ?? t.DueDate ?? t.ReminderDate ?? t.CreatedAt))
+            .ToList();
+        return dates.Count == 0 ? null : dates.Max();
+    }
+
+    private static string FirstName(Customer customer)
+    {
+        if (string.IsNullOrWhiteSpace(customer.FullName))
+            return "there";
+        return customer.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? customer.FullName;
+    }
 
     private static List<CustomerTimelineEvent> BuildCustomerTimelineEvents(
         List<CustomQuote> quotes,
@@ -388,6 +629,9 @@ public static class CustomerRelationshipService
         html.AppendLine(".key { width: 210px; font-weight: bold; }");
         html.AppendLine(".value { flex: 1; }");
         html.AppendLine(".notes { white-space: pre-wrap; border: 1px solid #ddd; min-height: 54px; padding: 8px; margin-bottom: 10px; }");
+        html.AppendLine(".template { border: 1px solid #ddd; background: #fafafa; padding: 12px; margin: 10px 0; }");
+        html.AppendLine(".template h3 { margin: 0 0 8px 0; }");
+        html.AppendLine(".template pre { white-space: pre-wrap; margin: 0; font-family: Arial, sans-serif; line-height: 1.45; }");
         html.AppendLine(".summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0 18px 0; }");
         html.AppendLine(".tile { border: 1px solid #ddd; padding: 12px; background: #fafafa; }");
         html.AppendLine(".tile span { display: block; font-size: 12px; color: #555; }");

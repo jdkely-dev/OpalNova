@@ -1084,6 +1084,7 @@ public partial class MainWindow : Window
         {
             new("Customer Summary Card", "Preview one customer with contact details, preferences, jobs, sales, payments and next follow-up.", CustomerSummaryCardSetup_Click),
             new("Customer Timeline", "Preview one customer's quotes, proposals, jobs, sales, payments and follow-ups in date order.", CustomerTimelineSetup_Click),
+            new("Communication Templates", "Preview customer-specific message starters for quotes, production, handover, after-care and repeat work.", CustomerCommunicationTemplatesSetup_Click),
             new("Create Customer Follow-Up", "Create a linked follow-up task for the selected customer.", CustomerFollowUpSetup_Click),
             new("Customer History", "Preview the existing detailed customer purchase/job history report.", CustomerHistorySetup_Click),
             new("Relationship Report", "Preview all customers with sales, active jobs, open follow-ups and last activity.", CustomerRelationshipReport_Click),
@@ -1512,6 +1513,7 @@ public partial class MainWindow : Window
         ["Hardware & POS Studio"] = new("Hardware & POS Studio", "Printers, camera/scale capture and market POS.", "Supports DYMO-style labels, camera/photo capture, scale notes and a market operations display.", "Set up devices in Windows first, then use OPALNOVA to print labels, capture photos or open market operations tools.", "Test printers and labels before a market day.", "Hardware behaviour depends on Windows drivers, printer setup and connected device compatibility."),
         ["Customer Relationship Studio"] = new("Customer Relationship Studio", "Customer history and follow-up tools.", "Shows customer summaries, history, open follow-ups, jobs, sales, payments and relationship reports.", "Select a customer, open the summary or history, then create a follow-up task when action is needed.", "Record preferences like ring sizes, favourite stones and budget notes to improve repeat customer service.", "Customer reports are only as useful as the linked jobs, sales and payments entered."),
         ["Customer Relationship Studio|Customer Timeline"] = new("Customer Timeline", "See one customer's activity trail.", "Combines existing quotes, proposal sent events, jobs, sales, payments and customer tasks into one dated report.", "Use it before contacting a repeat customer so you can see recent work and open actions in one place.", "Create a follow-up from the same studio when the timeline shows a next step.", "The timeline reflects linked records only; unlinked payments or jobs will not appear."),
+        ["Customer Relationship Studio|Communication Templates"] = new("Communication Templates", "Prepare customer-specific message starters.", "Creates local message templates from the selected customer's quotes, jobs, sales, preferences and follow-up context.", "Open it before messaging a customer, choose the relevant starter, then personalize it before sending outside OPALNOVA.", "Use it for proposal nudges, production updates, handover messages, after-care and repeat-customer prompts.", "Templates are drafts. Check tone, accuracy, prices and private notes before sending."),
         ["Data Cleanup Studio"] = new("Data Cleanup Studio", "Data quality and safe cleanup.", "Finds duplicates, missing information and selected records that need status or market cleanup.", "Run reports first, review the affected records, then apply selected bulk actions only when you are confident.", "Backup before data cleanup or bulk updates.", "Cleanup actions can change many records at once. Avoid rushing these tools."),
     };
 
@@ -1524,6 +1526,7 @@ public partial class MainWindow : Window
         ["Inventory Studio|Stock Movement"] = new("Stock Movement", "Record material stock in or out.", "Adds a transaction for receiving, using, adjusting or returning material quantities.", "Select the material, choose movement type and enter quantity/notes.", "Record small adjustments immediately so stock figures stay trustworthy.", "Double-check units such as grams, carats, pieces or metres."),
         ["Inventory Studio|Change Status"] = new("Change Status", "Change stock or stone status.", "Moves jewellery or stones between statuses such as available, reserved, sold, at market or in production.", "Select a record, choose the new status, then save.", "Use status updates instead of deleting records when items move through the business.", "Wrong status can hide items from the workflow you expect."),
         ["Customer Relationship Studio|Create Customer Follow-Up"] = new("Create Customer Follow-Up", "Make a reminder linked to a customer.", "Creates a task for calling, messaging, quote checking, pickup reminders or after-sale follow-up.", "Select a customer, enter the reason and due date, then save the generated task.", "Use follow-ups after every quote, custom job and important sale.", "Do not put sensitive private information in notes unless you really need it for business service."),
+        ["Customer Relationship Studio|Communication Templates"] = new("Communication Templates", "Draft customer communication.", "Builds customer-specific message starters from linked quotes, jobs, sales, preferences and follow-up context.", "Select a customer, generate the templates, then copy and personalize the relevant message outside OPALNOVA.", "Use this before sending proposal, production, handover or after-care messages.", "Generated text is a starting point and should be checked before sending."),
         ["Documents Studio|Quote"] = new("Quote", "Create a customer quote preview.", "Generates quote paperwork from a selected job, price and customer information.", "Select the job/customer, confirm prices and details, generate preview, then open or print the HTML output.", "Always check expiry date, deposit terms and item details before sending.", "Quotes can create expectations. Make sure labour, stone and metal details are accurate."),
 
         ["Custom Workflow Studio|Custom Quote Builder"] = new("Custom Quote Builder", "Create one quote with several design and price options.", "Combines customer requirements, labour, metal, stones, setting, findings, markup and deposit information in one connected workflow.", "Choose or create a quote, add options, enter costs, save, preview the proposal, accept the chosen option, then create the production job.", "Save before previewing or converting. Review the live total and customer details carefully.", "The accepted option preserves the quoted price when the job is created."),
@@ -3852,6 +3855,29 @@ public partial class MainWindow : Window
         }
     }
 
+    private void CustomerCommunicationTemplates_Click(object sender, RoutedEventArgs e)
+    {
+        if (RecordsGrid.SelectedItem is not Customer selectedCustomer)
+        {
+            MessageBox.Show("Select a customer first, then click Communication Templates.", "Communication Templates", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            using var db = new AppDbContext();
+            var customer = db.Customers.Find(selectedCustomer.Id);
+            if (customer == null) return;
+            var path = CustomerRelationshipService.CreateCustomerCommunicationTemplates(customer);
+            OpenReportInApp(path, "Communication Templates");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create customer communication templates");
+            MessageBox.Show($"Could not create the communication templates.\n\n{ex.Message}", "Communication Templates", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void CustomerFollowUp_Click(object sender, RoutedEventArgs e)
     {
         if (RecordsGrid.SelectedItem is not Customer selectedCustomer)
@@ -5156,6 +5182,9 @@ public partial class MainWindow : Window
 
     private void CustomerTimelineSetup_Click(object sender, RoutedEventArgs e) =>
         ShowSingleRecordToolPanel("Customer Timeline", "Choose a customer to preview quotes, proposal events, jobs, sales, payments and follow-ups in date order.", new[] { "Customers" }, CustomerTimeline_Click, "Generate Customer Timeline");
+
+    private void CustomerCommunicationTemplatesSetup_Click(object sender, RoutedEventArgs e) =>
+        ShowSingleRecordToolPanel("Communication Templates", "Choose a customer to preview customer-specific quote, production, handover, after-care and repeat-work message starters.", new[] { "Customers" }, CustomerCommunicationTemplates_Click, "Generate Templates");
 
     private void CustomerFollowUpSetup_Click(object sender, RoutedEventArgs e) =>
         ShowSingleRecordToolPanel("Create Customer Follow-Up", "Choose a customer and create a linked follow-up task. You can edit the due date, reason and notes before saving.", new[] { "Customers" }, CustomerFollowUp_Click, "Create Customer Follow-Up");
