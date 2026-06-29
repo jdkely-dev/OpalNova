@@ -351,6 +351,48 @@ public partial class PaymentCollectionWindow : Window
         }
     }
 
+    private void CreateThankYouFollowUp_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using var db = new AppDbContext();
+            var job = GetSelectedJob(db);
+            if (job == null) return;
+
+            var title = $"Thank-you follow-up - {job.JobCode}";
+            if (TaskWorkflowService.OpenTaskExists(db, exactTitle: title, jobId: job.Id))
+            {
+                MessageBox.Show("An open thank-you follow-up already exists for this job.", "Thank-you follow-up", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var customer = job.CustomerId.HasValue ? db.Customers.AsNoTracking().FirstOrDefault(x => x.Id == job.CustomerId.Value) : null;
+            var dueDate = DateTime.Today.AddDays(2);
+            var task = new BusinessTask
+            {
+                TaskCode = TaskWorkflowService.GenerateTaskCode(),
+                Title = title,
+                Category = BusinessTaskCategory.CustomerFollowUp,
+                Priority = BusinessTaskPriority.Normal,
+                Status = BusinessTaskStatus.ToDo,
+                DueDate = dueDate,
+                ReminderDate = DateTime.Today.AddDays(1),
+                CustomerId = job.CustomerId,
+                JobId = job.Id,
+                Description = $"Send a thank-you or after-care follow-up for {job.JobCode} {job.JobTitle}.",
+                FollowUpNotes = BuildThankYouFollowUpMessage(job, customer),
+                ShowOnDashboard = true
+            };
+            db.BusinessTasks.Add(task);
+            db.SaveChanges();
+            StatusMessageText.Text = $"Created thank-you follow-up {task.TaskCode}.";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Thank-you follow-up", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void MarkCollected_Click(object sender, RoutedEventArgs e)
     {
         var allowBalance = ConfirmBalanceBeforeComplete();
@@ -461,6 +503,16 @@ public partial class PaymentCollectionWindow : Window
     {
         var note = HandoverNotesBox.Text.Trim();
         return string.IsNullOrWhiteSpace(note) ? string.Empty : $" Notes: {note}";
+    }
+
+    private static string BuildThankYouFollowUpMessage(Job job, Customer? customer)
+    {
+        var name = string.IsNullOrWhiteSpace(customer?.FullName) ? "there" : customer.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? customer.FullName;
+        return
+            $"Hi {name},\n\n" +
+            $"Thank you again for choosing us for {job.JobCode} {job.JobTitle}.\n\n" +
+            "I just wanted to check that everything is fitting and looking as expected. Please let me know if you have any questions about care, cleaning or future adjustments.\n\n" +
+            "Kind regards";
     }
 
     private void SelectJob(int jobId)

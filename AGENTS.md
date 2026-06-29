@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.70.0 Handover Confirmation Document
+- Current workspace version: V1.71.0 Final Customer Follow-Up
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,22 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.71.0 State
+
+V1.71.0 continues payment and handover workflow polish:
+
+- Bumped visible/project version metadata to 1.71.0.
+- Added `Create Thank-You Follow-Up` to Payment & Collection handover actions.
+- Creates duplicate-safe customer follow-up tasks linked to the selected job/customer.
+- The task includes a customer-ready after-care check-in message.
+- Preserved database schema and existing payment, sale, invoice/receipt, handover confirmation and job completion behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.70.0 State
 
