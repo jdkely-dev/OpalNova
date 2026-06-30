@@ -3,78 +3,501 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OPALNOVA Nivoda Staging Handoff</title>
+  <title>OPALNOVA Nivoda GraphiQL Staging</title>
   <style>
-    body { margin: 0; font-family: Segoe UI, Arial, sans-serif; color: #1f2937; background: #f8fafc; line-height: 1.55; }
-    main { max-width: 1040px; margin: 0 auto; padding: 32px 20px 48px; }
-    h1, h2 { color: #111827; }
-    h1 { margin-bottom: 4px; }
-    .meta { color: #6b7280; margin-top: 0; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
-    .card { background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 16px; margin: 14px 0; }
-    .warn { border-left: 5px solid #b45309; background: #fff7ed; }
-    .ok { border-left: 5px solid #047857; background: #ecfdf5; }
-    code { background: #e5e7eb; padding: 2px 5px; border-radius: 4px; word-break: break-all; }
-    li { margin: 5px 0; }
+    :root {
+      color-scheme: dark;
+      --app: #040813;
+      --panel: #0D1422;
+      --card: #121C2E;
+      --card-alt: #172338;
+      --header-a: #10192B;
+      --header-b: #0B1220;
+      --header-c: #1A2336;
+      --border: #29384F;
+      --border-strong: #41516A;
+      --gold: #CDA24A;
+      --gold-hover: #B8892E;
+      --gold-deep: #7C5A1A;
+      --text: #EFEAE0;
+      --text-soft: #E2D8C8;
+      --muted: #B8AD9E;
+      --input: #040813;
+      --success: #4ADE80;
+      --warning: #F59E0B;
+      --danger: #FB7185;
+      --shadow: rgba(0, 0, 0, 0.32);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI Variable Display", "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: var(--app);
+      line-height: 1.5;
+    }
+
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { color: var(--gold-hover); text-decoration: underline; }
+    code, pre { font-family: "Cascadia Code", Consolas, monospace; }
+
+    .shell { min-height: 100vh; display: grid; grid-template-rows: auto auto 1fr auto; }
+
+    .topbar {
+      background: linear-gradient(135deg, var(--header-a), var(--header-b) 48%, var(--header-c));
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+    }
+
+    .brand-row {
+      max-width: 1420px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #111827;
+      font-size: 24px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--gold), #A87A2B 58%, var(--gold-deep));
+      box-shadow: 0 6px 18px var(--shadow);
+      flex: 0 0 auto;
+    }
+
+    .brand-title { min-width: 0; flex: 1; }
+    .brand-title h1 { margin: 0; font-size: clamp(1.28rem, 2.2vw, 1.65rem); line-height: 1.1; letter-spacing: 0; }
+    .brand-title p { margin: 4px 0 0; color: var(--muted); font-size: 0.92rem; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #0B1220;
+      color: var(--gold);
+      font-size: 0.82rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .nav-strip {
+      background: #0B1220;
+      border-bottom: 1px solid var(--border);
+      padding: 7px 18px;
+    }
+
+    .nav-inner {
+      max-width: 1420px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .tab {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text-soft);
+      border-radius: 8px 8px 0 0;
+      padding: 9px 12px;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    .tab.active {
+      background: var(--app);
+      border-color: #000;
+      box-shadow: inset 0 3px 0 var(--gold);
+      color: var(--text);
+    }
+
+    .toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #1B2942;
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .button:hover { background: #2B2116; border-color: var(--border-strong); text-decoration: none; }
+    .button.primary { background: linear-gradient(135deg, var(--gold), #A87A2B 58%, var(--gold-deep)); color: var(--text); border-color: var(--gold); }
+    .button.primary:hover { background: var(--gold-hover); }
+
+    main {
+      max-width: 1420px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.75fr);
+      gap: 16px;
+    }
+
+    .workspace {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 10px 30px var(--shadow);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .workspace-header, .panel-header {
+      padding: 13px 15px;
+      background: #101827;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .workspace-header h2, .panel-header h2 { margin: 0; font-size: 1.02rem; color: var(--gold); }
+    .workspace-header p, .panel-header p { margin: 3px 0 0; color: var(--muted); font-size: 0.86rem; }
+
+    .content-grid {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: linear-gradient(135deg, #162238, #101827);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 0.98rem;
+      color: var(--text);
+    }
+
+    .card p { color: var(--muted); margin: 0 0 10px; }
+    .card p:last-child { margin-bottom: 0; }
+
+    .field-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      margin: 0 0 5px;
+      text-transform: uppercase;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 8px 10px;
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text-soft);
+      word-break: break-word;
+    }
+
+    .field + .field-label { margin-top: 12px; }
+
+    .status-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      padding: 0 14px 14px;
+    }
+
+    .metric {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .metric span { display: block; color: var(--muted); font-size: 0.75rem; font-weight: 800; }
+    .metric strong { display: block; margin-top: 6px; color: var(--gold); font-size: 1.35rem; line-height: 1.1; }
+
+    .query-panel { padding: 0 14px 14px; }
+
+    .query-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-bottom: 0;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .query-head strong { color: var(--gold); }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #040813;
+      border: 1px solid var(--border);
+      border-radius: 0 0 8px 8px;
+      padding: 14px;
+      color: #E2D8C8;
+      font-size: 0.86rem;
+      min-height: 210px;
+    }
+
+    aside { display: grid; gap: 16px; align-content: start; min-width: 0; }
+
+    .side-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 10px 30px var(--shadow);
+      overflow: hidden;
+    }
+
+    .side-body { padding: 14px; }
+
+    .checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 9px; }
+
+    .checklist li {
+      padding: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-soft);
+    }
+
+    .checklist b { color: var(--text); }
+    .ok { border-left: 4px solid var(--success) !important; }
+    .warn { border-left: 4px solid var(--warning) !important; }
+    .danger { border-left: 4px solid var(--danger) !important; }
+
+    .copy-note { color: var(--muted); font-size: 0.8rem; margin: 7px 0 0; min-height: 1.2em; }
+
+    footer {
+      padding: 11px 18px;
+      background: #080D17;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    footer .footer-inner {
+      max-width: 1420px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 980px) {
+      main { grid-template-columns: 1fr; }
+      .status-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 680px) {
+      .brand-row { align-items: flex-start; }
+      .status-pill { display: none; }
+      .content-grid, .status-row { grid-template-columns: 1fr; }
+      .toolbar-actions, .tabs { width: 100%; }
+      .button, .tab { flex: 1 1 auto; }
+    }
   </style>
 </head>
 <body>
-<main>
-  <h1>OPALNOVA Nivoda Staging Handoff</h1>
-  <p class="meta">Non-secret integration handoff page for Nivoda API review.</p>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand-row">
+      <div class="brand-mark">O</div>
+      <div class="brand-title">
+        <h1>OPALNOVA Nivoda GraphiQL Staging</h1>
+        <p>Public-safe API review surface styled to match the OPALNOVA desktop workspace.</p>
+      </div>
+      <div class="status-pill">No credentials published</div>
+    </div>
+  </header>
 
-  <div class="grid">
-    <section class="card">
-      <h2>Application</h2>
-      <p><b>Product:</b> OPALNOVA</p>
-      <p><b>Platform:</b> Windows desktop app, WPF / C#</p>
-      <p><b>Integration area:</b> External supplier diamond search, saved external diamonds, quote links, hold/order tracking and received-diamond conversion.</p>
-    </section>
-    <section class="card">
-      <h2>Default Staging Endpoint</h2>
-      <p><b>GraphQL endpoint:</b><br><code>https://intg-customer-staging.nivodaapi.net/api/diamonds</code></p>
-      <p><b>GraphiQL:</b><br><code>https://intg-customer-staging.nivodaapi.net/api/diamonds-graphiql</code></p>
-    </section>
-    <section class="card warn">
-      <h2>Credential Safety</h2>
-      <p>OPALNOVA does not hardcode or publish Nivoda credentials. Test credentials must be supplied directly to the local app by the account owner or through an approved secure channel.</p>
-    </section>
-    <section class="card">
-      <h2>Hosted Review URL</h2>
-      <p>This page is designed to be hosted from GitHub Pages using the repository workflow <code>Deploy Nivoda staging handoff</code>.</p>
-      <p>The final URL is shown by GitHub after deployment. For this repository it is expected to be either <code>https://jdkely-dev.github.io/OpalNova/</code> or <code>https://jdkely-dev.github.io/OpalNova/nivoda-staging/</code>, depending on the chosen Pages source.</p>
-    </section>
-  </div>
+  <nav class="nav-strip" aria-label="Workspace navigation">
+    <div class="nav-inner">
+      <div class="tabs" aria-hidden="true">
+        <span class="tab active">Nivoda staging</span>
+        <span class="tab">Schema diagnostics</span>
+        <span class="tab">Hold and order review</span>
+      </div>
+      <div class="toolbar-actions">
+        <a class="button primary" href="https://intg-customer-staging.nivodaapi.net/api/diamonds-graphiql" target="_blank" rel="noopener">Open GraphiQL</a>
+        <a class="button" href="https://intg-customer-staging.nivodaapi.net/api/diamonds" target="_blank" rel="noopener">GraphQL endpoint</a>
+      </div>
+    </div>
+  </nav>
 
-  <section class="card ok">
-    <h2>Current Implemented Surface</h2>
-    <ul>
-      <li>Username/password authentication against the configured Nivoda GraphQL endpoint.</li>
-      <li>Diamond search using lab-grown/natural, shape and carat filters.</li>
-      <li>Mapping of supplier diamond id, certificate, shape, carat, colour, clarity, cut, lab, price, availability, video and certificate fields where present.</li>
-      <li>Saving search results as OPALNOVA External Diamond records separate from owned inventory.</li>
-      <li>Quote-option linking, local hold/order workflow tracking, received status and conversion to owned loose-stone inventory.</li>
-      <li>In-app staging handoff report that can authenticate, introspect the accessible schema and list query/mutation fields without exposing credentials.</li>
-      <li>Static GitHub Pages handoff page for non-secret external review.</li>
-    </ul>
-  </section>
+  <main>
+    <section class="workspace" aria-labelledby="workspace-title">
+      <div class="workspace-header">
+        <div>
+          <h2 id="workspace-title">Diamond Supplier API Workbench</h2>
+          <p>Use this page as the external review link while OPALNOVA keeps credentials inside the local app only.</p>
+        </div>
+      </div>
 
-  <section class="card">
-    <h2>Needs Nivoda Confirmation</h2>
-    <ol>
-      <li>Current staging and production endpoints for the diamond API.</li>
-      <li>Current search query and filter names for lab-grown/natural, shape, carat range, lab, price, availability, certificate and video fields.</li>
-      <li>Whether this account can access hold, reserve, cart, order, purchase or checkout mutations.</li>
-      <li>Required mutation payloads for requesting holds, confirming orders, refreshing availability/price and retrieving supplier order documents.</li>
-      <li>Any token lifetime, rate limit, permission, supplier visibility or account-region constraints.</li>
-      <li>Whether Nivoda requires a webhook/callback URL. OPALNOVA is currently a local desktop app and does not expose a public callback without a separately approved hosted component.</li>
-    </ol>
-  </section>
+      <div class="content-grid">
+        <article class="card">
+          <h3>Application</h3>
+          <span class="field-label">Product</span>
+          <div class="field">OPALNOVA</div>
+          <span class="field-label">Platform</span>
+          <div class="field">Windows desktop app, WPF / C#</div>
+          <span class="field-label">Integration area</span>
+          <div class="field">External supplier diamond search, saved external diamonds, quote links, holds, orders, received intake and conversion to owned inventory.</div>
+        </article>
 
-  <section class="card warn">
-    <h2>Integration Boundary</h2>
-    <p>Until Nivoda confirms account-specific mutation names and payloads, OPALNOVA should keep hold/order actions as local workflow state and require confirmation in Nivoda. Once the schema is confirmed, the app can safely add API-backed hold/order actions without changing owned-stock records prematurely.</p>
-  </section>
-</main>
+        <article class="card">
+          <h3>Staging endpoints</h3>
+          <span class="field-label">GraphQL endpoint</span>
+          <div class="field">https://intg-customer-staging.nivodaapi.net/api/diamonds</div>
+          <span class="field-label">GraphiQL explorer</span>
+          <div class="field">https://intg-customer-staging.nivodaapi.net/api/diamonds-graphiql</div>
+          <p class="copy-note">OPALNOVA settings allow these URLs to be changed if Nivoda confirms a different endpoint.</p>
+        </article>
+      </div>
+
+      <div class="status-row" aria-label="Implemented surface summary">
+        <div class="metric"><span>Search</span><strong>Ready</strong></div>
+        <div class="metric"><span>Save supplier stone</span><strong>Ready</strong></div>
+        <div class="metric"><span>Local hold/order flow</span><strong>Ready</strong></div>
+        <div class="metric"><span>Live mutations</span><strong>Gated</strong></div>
+      </div>
+
+      <div class="query-panel">
+        <div class="query-head">
+          <strong>Suggested GraphiQL schema check</strong>
+          <button class="button" type="button" data-copy="query">Copy query</button>
+        </div>
+        <pre id="query">query OpalnovaSchemaCheck {
+  __schema {
+    queryType {
+      fields {
+        name
+        description
+      }
+    }
+    mutationType {
+      fields {
+        name
+        description
+      }
+    }
+  }
+}</pre>
+        <p class="copy-note" id="query-note"></p>
+      </div>
+    </section>
+
+    <aside>
+      <section class="side-panel" aria-labelledby="implemented-title">
+        <div class="panel-header">
+          <div>
+            <h2 id="implemented-title">Implemented in OPALNOVA</h2>
+            <p>Current local workflow surface.</p>
+          </div>
+        </div>
+        <div class="side-body">
+          <ul class="checklist">
+            <li class="ok"><b>Authentication diagnostics</b><br>User-entered credentials can be tested from the local app and are never placed on this page.</li>
+            <li class="ok"><b>Diamond search mapping</b><br>Supplier id, certificate, shape, carat, colour, clarity, cut, lab, price, availability, image/video and certificate fields are mapped where present.</li>
+            <li class="ok"><b>Supplier stock separation</b><br>Saved external diamonds remain separate from owned stock until physically received and converted.</li>
+            <li class="warn"><b>Hold/order mutations</b><br>API-backed actions remain disabled until Nivoda confirms accessible mutation names and required payloads.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="side-panel" aria-labelledby="confirmation-title">
+        <div class="panel-header">
+          <div>
+            <h2 id="confirmation-title">Needs Nivoda Confirmation</h2>
+            <p>Items required before live order actions.</p>
+          </div>
+        </div>
+        <div class="side-body">
+          <ul class="checklist">
+            <li>Current staging and production endpoint URLs.</li>
+            <li>Search query and filter names for natural/lab, shape, carat, lab, price, availability, certificate and video fields.</li>
+            <li>Account access for hold, reserve, cart, order, purchase or checkout mutations.</li>
+            <li>Required payloads for holds, orders, price refresh, availability refresh and supplier order documents.</li>
+            <li>Token lifetime, rate limit, region, permission and supplier visibility constraints.</li>
+            <li>Whether a webhook or callback URL is required for this desktop app workflow.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="side-panel" aria-labelledby="safety-title">
+        <div class="panel-header">
+          <div>
+            <h2 id="safety-title">Credential Boundary</h2>
+            <p>Public-safe review page.</p>
+          </div>
+        </div>
+        <div class="side-body">
+          <ul class="checklist">
+            <li class="danger"><b>No secrets here</b><br>Do not add usernames, passwords, bearer tokens, account ids, customer data or supplier-private data to this page.</li>
+            <li class="ok"><b>Review URL</b><br>Paste this hosted URL into OPALNOVA's Nivoda Review URL field, then generate the in-app staging handoff report for schema diagnostics.</li>
+          </ul>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>OPALNOVA Nivoda staging handoff</span>
+      <span>Hosted for external schema review only. Local credentials stay in OPALNOVA.</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const copyButton = document.querySelector('[data-copy="query"]');
+  const query = document.getElementById('query');
+  const queryNote = document.getElementById('query-note');
+
+  copyButton?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(query.textContent.trim());
+      queryNote.textContent = 'Schema check query copied.';
+    } catch {
+      queryNote.textContent = 'Copy failed. Select the query text manually.';
+    }
+  });
+</script>
 </body>
 </html>
