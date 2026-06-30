@@ -21,4 +21,4 @@ V1.80.0 is a checkpoint build for validating the recent workflow polish from V1.
 - Debug build: passed with zero warnings and zero errors.
 - Release publish: passed through `win-x64-self-contained`.
 - Published app launch smoke: passed.
-- Git milestone commit/push: pending.
+- Git milestone commit/push: passed to `origin/main`.

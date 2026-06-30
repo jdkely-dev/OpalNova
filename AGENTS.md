@@ -41,6 +41,7 @@ Validation completed:
 - Debug build succeeds with zero warnings and zero errors.
 - Release publish succeeds through `win-x64-self-contained`.
 - Published `OPALNOVA.exe` launches and closes cleanly.
+- V1.80 milestone commit and push to `origin/main` completed.
 
 ## V1.79.0 State
 
