@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -408,6 +409,196 @@ public static class DataSafetyService
         return sb.ToString();
     }
 
+    public static string CreateDataIntegrityReport()
+    {
+        DatabaseBootstrapper.Initialize();
+
+        var folder = BusinessSettingsService.GetPrintoutFolder();
+        Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, $"OPALNOVA-Data-Integrity-Check-{DateTime.Now:yyyyMMdd-HHmmss}.html");
+
+        using var db = new AppDbContext();
+        var issues = new List<DataIntegrityIssue>();
+
+        var customerIds = db.Customers.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var supplierIds = db.Suppliers.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var materialIds = db.Materials.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var opalParcelIds = db.OpalParcels.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var stoneIds = db.Stones.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var jewelleryIds = db.JewelleryItems.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var jobIds = db.Jobs.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var saleIds = db.Sales.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var marketEventIds = db.MarketEvents.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var productionBatchIds = db.ProductionBatches.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var onlineListingIds = db.OnlineListings.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var purchaseOrderIds = db.PurchaseOrders.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var taskIds = db.BusinessTasks.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var quoteIds = db.CustomQuotes.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var quoteOptionIds = db.QuoteOptions.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var externalDiamondIds = db.ExternalDiamonds.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var photoIds = db.PhotoRecords.AsNoTracking().Select(x => x.Id).ToHashSet();
+        var jewelleryIdsWithSales = db.Sales.AsNoTracking()
+            .Where(s => s.JewelleryItemId.HasValue)
+            .Select(s => s.JewelleryItemId!.Value)
+            .ToHashSet();
+
+        foreach (var job in db.Jobs.AsNoTracking())
+        {
+            AddMissingReference(issues, "Warning", "Jobs", $"Job #{job.Id} {job.JobCode}", "CustomerId", job.CustomerId, "Customers", customerIds);
+            if (job.BalanceOwing < 0)
+                AddIssue(issues, "Review", "Jobs", $"Job #{job.Id} {job.JobCode}", "BalanceOwing", "Negative balance. Confirm payment totals and final price.");
+        }
+
+        foreach (var quote in db.CustomQuotes.AsNoTracking())
+        {
+            AddMissingReference(issues, "Warning", "Quotes", $"Quote #{quote.Id} {quote.QuoteCode}", "CustomerId", quote.CustomerId, "Customers", customerIds);
+            AddMissingReference(issues, "Warning", "Quotes", $"Quote #{quote.Id} {quote.QuoteCode}", "LinkedJobId", quote.LinkedJobId, "Jobs", jobIds);
+            AddMissingReference(issues, "Warning", "Quotes", $"Quote #{quote.Id} {quote.QuoteCode}", "AcceptedOptionId", quote.AcceptedOptionId, "QuoteOptions", quoteOptionIds);
+            if (!string.IsNullOrWhiteSpace(quote.ProposalLastPath) && !File.Exists(quote.ProposalLastPath))
+                AddIssue(issues, "Warning", "Quotes", $"Quote #{quote.Id} {quote.QuoteCode}", "ProposalLastPath", $"Proposal file is missing: {quote.ProposalLastPath}");
+        }
+
+        foreach (var option in db.QuoteOptions.AsNoTracking())
+        {
+            AddRequiredReference(issues, "Error", "Quote Options", $"Option #{option.Id} {option.OptionName}", "CustomQuoteId", option.CustomQuoteId, "CustomQuotes", quoteIds);
+            if (!string.IsNullOrWhiteSpace(option.ImagePath) && !File.Exists(option.ImagePath))
+                AddIssue(issues, "Warning", "Quote Options", $"Option #{option.Id} {option.OptionName}", "ImagePath", $"Design image file is missing: {option.ImagePath}");
+        }
+
+        foreach (var link in db.QuoteOptionStoneLinks.AsNoTracking())
+        {
+            AddRequiredReference(issues, "Error", "Quote Stone Links", $"Quote stone link #{link.Id}", "QuoteOptionId", link.QuoteOptionId, "QuoteOptions", quoteOptionIds);
+            AddRequiredReference(issues, "Error", "Quote Stone Links", $"Quote stone link #{link.Id}", "StoneId", link.StoneId, "Stones", stoneIds);
+        }
+
+        foreach (var link in db.QuoteOptionMaterialLinks.AsNoTracking())
+        {
+            AddRequiredReference(issues, "Error", "Quote Material Links", $"Quote material link #{link.Id}", "QuoteOptionId", link.QuoteOptionId, "QuoteOptions", quoteOptionIds);
+            AddRequiredReference(issues, "Error", "Quote Material Links", $"Quote material link #{link.Id}", "MaterialId", link.MaterialId, "Materials", materialIds);
+            if (link.Quantity <= 0)
+                AddIssue(issues, "Review", "Quote Material Links", $"Quote material link #{link.Id}", "Quantity", "Quantity is zero or negative. Confirm the reservation line is intentional.");
+        }
+
+        foreach (var link in db.QuoteOptionExternalDiamondLinks.AsNoTracking())
+        {
+            AddRequiredReference(issues, "Error", "Quote Diamond Links", $"Quote diamond link #{link.Id}", "QuoteOptionId", link.QuoteOptionId, "QuoteOptions", quoteOptionIds);
+            AddRequiredReference(issues, "Error", "Quote Diamond Links", $"Quote diamond link #{link.Id}", "ExternalDiamondId", link.ExternalDiamondId, "ExternalDiamonds", externalDiamondIds);
+        }
+
+        foreach (var material in db.Materials.AsNoTracking())
+        {
+            AddMissingReference(issues, "Warning", "Materials", $"Material #{material.Id} {material.MaterialCode}", "SupplierId", material.SupplierId, "Suppliers", supplierIds);
+            if (material.CurrentQuantity < 0)
+                AddIssue(issues, "Warning", "Materials", $"Material #{material.Id} {material.MaterialCode}", "CurrentQuantity", "Current quantity is negative. Review stock movements.");
+        }
+
+        foreach (var transaction in db.MaterialTransactions.AsNoTracking())
+        {
+            AddRequiredReference(issues, "Error", "Material Transactions", $"Material transaction #{transaction.Id}", "MaterialId", transaction.MaterialId, "Materials", materialIds);
+            AddMissingReference(issues, "Warning", "Material Transactions", $"Material transaction #{transaction.Id}", "JobId", transaction.JobId, "Jobs", jobIds);
+            AddMissingReference(issues, "Warning", "Material Transactions", $"Material transaction #{transaction.Id}", "JewelleryItemId", transaction.JewelleryItemId, "JewelleryItems", jewelleryIds);
+        }
+
+        foreach (var stone in db.Stones.AsNoTracking())
+        {
+            AddMissingReference(issues, "Warning", "Stones", $"Stone #{stone.Id} {stone.StoneCode}", "OpalParcelId", stone.OpalParcelId, "OpalParcels", opalParcelIds);
+        }
+
+        foreach (var item in db.JewelleryItems.AsNoTracking())
+        {
+            AddMissingReference(issues, "Warning", "Jewellery Stock", $"Stock #{item.Id} {item.StockCode}", "MainStoneId", item.MainStoneId, "Stones", stoneIds);
+            if (item.Status == StockStatus.Sold && !jewelleryIdsWithSales.Contains(item.Id))
+                AddIssue(issues, "Review", "Jewellery Stock", $"Stock #{item.Id} {item.StockCode}", "Status", "Marked Sold but no linked sale record was found.");
+        }
+
+        foreach (var sale in db.Sales.AsNoTracking())
+        {
+            AddMissingReference(issues, "Warning", "Sales", $"Sale #{sale.Id}", "CustomerId", sale.CustomerId, "Customers", customerIds);
+            AddMissingReference(issues, "Warning", "Sales", $"Sale #{sale.Id}", "JobId", sale.JobId, "Jobs", jobIds);
+            AddMissingReference(issues, "Warning", "Sales", $"Sale #{sale.Id}", "JewelleryItemId", sale.JewelleryItemId, "JewelleryItems", jewelleryIds);
+            if (sale.SaleAmount <= 0)
+                AddIssue(issues, "Review", "Sales", $"Sale #{sale.Id}", "SaleAmount", "Sale amount is zero or negative. Confirm this is intentional.");
+        }
+
+        foreach (var payment in db.Payments.AsNoTracking())
+        {
+            AddMissingReference(issues, "Warning", "Payments", $"Payment #{payment.Id}", "CustomerId", payment.CustomerId, "Customers", customerIds);
+            AddMissingReference(issues, "Warning", "Payments", $"Payment #{payment.Id}", "JobId", payment.JobId, "Jobs", jobIds);
+            AddMissingReference(issues, "Warning", "Payments", $"Payment #{payment.Id}", "SaleId", payment.SaleId, "Sales", saleIds);
+            if (payment.Amount <= 0)
+                AddIssue(issues, "Review", "Payments", $"Payment #{payment.Id}", "Amount", "Payment amount is zero or negative. Confirm refund/credit handling.");
+            if (!payment.CustomerId.HasValue && !payment.JobId.HasValue && !payment.SaleId.HasValue)
+                AddIssue(issues, "Review", "Payments", $"Payment #{payment.Id}", "Links", "Payment is not linked to a customer, job or sale.");
+        }
+
+        foreach (var marketStock in db.MarketStocks.AsNoTracking())
+        {
+            AddRequiredReference(issues, "Error", "Market Stock", $"Market stock #{marketStock.Id}", "MarketEventId", marketStock.MarketEventId, "MarketEvents", marketEventIds);
+            AddRequiredReference(issues, "Error", "Market Stock", $"Market stock #{marketStock.Id}", "JewelleryItemId", marketStock.JewelleryItemId, "JewelleryItems", jewelleryIds);
+            AddMissingReference(issues, "Warning", "Market Stock", $"Market stock #{marketStock.Id}", "SaleId", marketStock.SaleId, "Sales", saleIds);
+            if (marketStock.SoldAtMarket && marketStock.ReturnedToStock)
+                AddIssue(issues, "Warning", "Market Stock", $"Market stock #{marketStock.Id}", "Status", "Marked both sold at market and returned to stock.");
+        }
+
+        foreach (var batchItem in db.ProductionBatchItems.AsNoTracking())
+        {
+            AddRequiredReference(issues, "Error", "Production Batch Items", $"Batch item #{batchItem.Id}", "ProductionBatchId", batchItem.ProductionBatchId, "ProductionBatches", productionBatchIds);
+            AddMissingReference(issues, "Warning", "Production Batch Items", $"Batch item #{batchItem.Id}", "JewelleryItemId", batchItem.JewelleryItemId, "JewelleryItems", jewelleryIds);
+            AddMissingReference(issues, "Warning", "Production Batch Items", $"Batch item #{batchItem.Id}", "StoneId", batchItem.StoneId, "Stones", stoneIds);
+            AddMissingReference(issues, "Warning", "Production Batch Items", $"Batch item #{batchItem.Id}", "JobId", batchItem.JobId, "Jobs", jobIds);
+        }
+
+        foreach (var listing in db.OnlineListings.AsNoTracking())
+            AddMissingReference(issues, "Warning", "Online Listings", $"Listing #{listing.Id}", "JewelleryItemId", listing.JewelleryItemId, "JewelleryItems", jewelleryIds);
+
+        foreach (var purchaseOrder in db.PurchaseOrders.AsNoTracking())
+            AddMissingReference(issues, "Warning", "Purchase Orders", $"Purchase order #{purchaseOrder.Id} {purchaseOrder.PurchaseOrderCode}", "SupplierId", purchaseOrder.SupplierId, "Suppliers", supplierIds);
+
+        foreach (var purchaseOrderItem in db.PurchaseOrderItems.AsNoTracking())
+        {
+            AddRequiredReference(issues, "Error", "Purchase Order Items", $"Purchase order item #{purchaseOrderItem.Id}", "PurchaseOrderId", purchaseOrderItem.PurchaseOrderId, "PurchaseOrders", purchaseOrderIds);
+            AddMissingReference(issues, "Warning", "Purchase Order Items", $"Purchase order item #{purchaseOrderItem.Id}", "MaterialId", purchaseOrderItem.MaterialId, "Materials", materialIds);
+            if (purchaseOrderItem.OrderedQuantity <= 0)
+                AddIssue(issues, "Review", "Purchase Order Items", $"Purchase order item #{purchaseOrderItem.Id}", "OrderedQuantity", "Ordered quantity is zero or negative.");
+        }
+
+        foreach (var task in db.BusinessTasks.AsNoTracking())
+        {
+            AddMissingReference(issues, "Warning", "Tasks", $"Task #{task.Id} {task.TaskCode}", "CustomerId", task.CustomerId, "Customers", customerIds);
+            AddMissingReference(issues, "Warning", "Tasks", $"Task #{task.Id} {task.TaskCode}", "JobId", task.JobId, "Jobs", jobIds);
+            AddMissingReference(issues, "Warning", "Tasks", $"Task #{task.Id} {task.TaskCode}", "JewelleryItemId", task.JewelleryItemId, "JewelleryItems", jewelleryIds);
+            AddMissingReference(issues, "Warning", "Tasks", $"Task #{task.Id} {task.TaskCode}", "StoneId", task.StoneId, "Stones", stoneIds);
+            AddMissingReference(issues, "Warning", "Tasks", $"Task #{task.Id} {task.TaskCode}", "MarketEventId", task.MarketEventId, "MarketEvents", marketEventIds);
+            AddMissingReference(issues, "Warning", "Tasks", $"Task #{task.Id} {task.TaskCode}", "ProductionBatchId", task.ProductionBatchId, "ProductionBatches", productionBatchIds);
+            AddMissingReference(issues, "Warning", "Tasks", $"Task #{task.Id} {task.TaskCode}", "PurchaseOrderId", task.PurchaseOrderId, "PurchaseOrders", purchaseOrderIds);
+        }
+
+        foreach (var photo in db.PhotoRecords.AsNoTracking())
+        {
+            if (string.IsNullOrWhiteSpace(photo.FilePath) || !File.Exists(photo.FilePath))
+                AddIssue(issues, "Warning", "Photos", $"Photo #{photo.Id}", "FilePath", $"Photo file is missing: {photo.FilePath}");
+
+            if (string.IsNullOrWhiteSpace(photo.EntityType))
+            {
+                AddIssue(issues, "Warning", "Photos", $"Photo #{photo.Id}", "EntityType", "Photo has no linked entity type.");
+                continue;
+            }
+
+            if (photo.EntityId <= 0)
+            {
+                AddIssue(issues, "Warning", "Photos", $"Photo #{photo.Id}", "EntityId", "Photo has no valid linked entity id.");
+                continue;
+            }
+
+            if (!PhotoEntityExists(photo.EntityType, photo.EntityId, customerIds, supplierIds, materialIds, stoneIds, jewelleryIds, jobIds, saleIds, marketEventIds, productionBatchIds, onlineListingIds, purchaseOrderIds, taskIds, quoteIds, quoteOptionIds, externalDiamondIds, photoIds))
+                AddIssue(issues, "Warning", "Photos", $"Photo #{photo.Id}", "Entity Link", $"Linked {photo.EntityType} #{photo.EntityId} was not found.");
+        }
+
+        var html = BuildDataIntegrityHtml(db, issues);
+        File.WriteAllText(path, html);
+        return path;
+    }
+
     public static int ImportCsvIntoSection(string csvPath, Type entityType)
     {
         if (!File.Exists(csvPath))
@@ -454,17 +645,17 @@ public static class DataSafetyService
 <style>body{font-family:Segoe UI,Arial,sans-serif;margin:32px;line-height:1.55;color:#1f2937;background:#f8fafc}h1,h2,h3{color:#111827}h1{margin-bottom:4px}.meta{color:#6b7280}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}.box{background:#fff;border:1px solid #d1d5db;padding:16px;margin:14px 0;border-radius:10px}.warn{border-left:5px solid #b45309;background:#fff7ed}.ok{border-left:5px solid #047857;background:#ecfdf5}code{background:#e5e7eb;padding:2px 4px;border-radius:3px}li{margin:4px 0}.toc a{display:block;margin:3px 0;color:#1f4f5f;text-decoration:none}.small{font-size:12px;color:#6b7280}@media print{body{background:#fff;margin:12mm}.box{break-inside:avoid}}</style></head>
 <body>
 <h1>OPALNOVA User Guide</h1>
-<p class="meta">Generated locally by OPALNOVA. Manual version V1.80.0.</p>
+<p class="meta">Generated locally by OPALNOVA. Manual version V1.90.0.</p>
 <div class="box toc"><h2>Contents</h2><a href="#setup">1. Setup and daily rhythm</a><a href="#quotes">2. Quotes and proposals</a><a href="#production">3. Production workflow</a><a href="#payments">4. Payments, invoices and handover</a><a href="#inventory">5. Inventory and supplier diamonds</a><a href="#reports">6. Reports and bookkeeping review</a><a href="#safety">7. Backups, restore and data safety</a><a href="#release">8. Release testing routine</a></div>
-<div class="box ok"><h2>Best starting point</h2><p>Use the main workflow homes first: Quotes & Proposals, Production, Payments & Sales, Inventory, Reports, and Settings & Backup. Specialist studios are for deeper work once the daily workflow is clear.</p></div>
-<div class="box" id="setup"><h2>1. Setup and daily rhythm</h2><ol><li>Open <b>Settings</b> and confirm business name, contact details, logo, document footer, tax/GST settings, printout folder and backup folder.</li><li>Add suppliers, customers, materials, stones and jewellery stock before relying on reports.</li><li>Use the dashboard setup-readiness card and Alert Centre to find missing setup, overdue work, low stock and follow-ups.</li><li>Use the dashboard <b>Recent Work</b> panel to reopen workflow tabs, generated reports and saved record editors from the current session.</li><li>Use Customer Relationship Studio for customer summary cards, timelines, communication templates, value guidance and follow-up creation.</li><li>When closing changed record editor tabs, choose Save, Discard or Cancel from the unsaved-change prompt.</li><li>Run <b>Create Backup</b> before importing CSV files, restoring data, bulk cleanup, or major stock status changes.</li></ol><p class="small">Daily habit: open Alert Centre, review Project Workbench, process payments and follow-ups, then back up after important changes.</p></div>
-<div class="box" id="quotes"><h2>2. Quotes and proposals</h2><ol><li>Use <b>Custom Quote Builder</b> for multi-option custom work. Keep customer details, expiry dates, occasion, required-by date, ring size, budget, preferred metal and preferred stone current.</li><li>After selecting a customer, use <b>Use Customer Preferences</b> to fill blank ring size, preferred metal and preferred stone fields from that customer profile.</li><li>Add quote options with material, labour, stone, setting, finding and other costs. Mark the best option as recommended when appropriate.</li><li>Attach design images to quote options when they help the customer compare designs.</li><li>Save before leaving the quote workspace. If you close a quote tab with unsaved changes, OPALNOVA prompts you to save, discard or cancel.</li><li>Preview the proposal, then use the proposal send workflow to copy/open an email draft and record when it was sent.</li><li>Use <b>Proposal Pipeline</b> to review prepared proposals, sent proposals, due follow-ups, accepted quotes and converted jobs from one workspace queue.</li><li>After customer approval, mark the accepted option and convert it into a production job.</li></ol><div class="box warn"><h3>Quote caution</h3><p>Do not mark an option accepted until the customer has clearly approved it. Accepted quotes can drive job creation, reserved stock and follow-up actions. Internal quote notes stay private and are not printed in proposal output.</p></div></div>
-<div class="box" id="production"><h2>3. Production workflow</h2><ol><li>Use <b>Production Board</b> to move jobs through approval, materials, bench work, setting, polishing, quality check, pickup/shipping and completion.</li><li>Use <b>Stage Checklist</b> from the Production Board, Production studio, Production &amp; Opal Studio or Documents Studio to review customer contact, quote acceptance, reservations, supplier waits, payment position, open tasks and linked job photos before moving a job forward.</li><li>Keep due dates realistic. Alert Centre and reports depend on dates and statuses.</li><li>Use job cards, workshop notes and batch reports when preparing bench work or market collections.</li><li>Use the job completion checklist when a job is physically ready. It can consume reserved materials, set reserved stones and release unused reservations.</li></ol><div class="box warn"><h3>Completion caution</h3><p>Material consumption should be reviewable. Check linked quote reservations before completing a job so stock movement remains traceable.</p></div></div>
-<div class="box" id="payments"><h2>4. Payments, invoices and handover</h2><ol><li>Use <b>Payment & Collection</b> near the end of production to record deposits, balance payments, pickup/shipping status and sale creation.</li><li>Review the Payment Schedule panel for deposit target, final balance target, paid amount, remaining amount and timing guidance before handover.</li><li>Use the live handover checklist before collection or shipping so payment, item condition, customer notification, care instructions and document readiness are recorded in the handover notes path.</li><li>Open a saved job record to review its payment history panel with total, paid, balance and linked ledger rows.</li><li>Generate invoices, receipts, deposit receipts and payment receipts from Documents Studio or Payment & Collection.</li><li>Generate a handover confirmation when an item is collected or shipped so the customer, job, payment state, checklist and sign-off are recorded together.</li><li>Create a thank-you follow-up after handover when after-care, cleaning or adjustment check-in is useful.</li><li>Use Copy Balance Reminder when a customer-ready balance message is needed, and Create Balance Follow-Up when the reminder should also appear in the task queue.</li><li>Create pickup/handover reminders only when an open reminder does not already exist for the job.</li><li>Check customer details, payment method, reference, total paid and balance before printing or sending paperwork.</li><li>Run <b>Outstanding Balances</b> before pickup days so unpaid balances are not missed.</li></ol><p class="small">Avoid manually creating duplicate sales for the same completed job. Use the guided handover workflow where possible.</p></div>
-<div class="box" id="inventory"><h2>5. Inventory and supplier diamonds</h2><ol><li>Use Jewellery Stock, Stones and Materials for owned physical stock.</li><li>Use Saved External Diamonds for supplier diamonds that are not yet owned inventory.</li><li>Use Supplier Holds & Orders to track hold expiry, ordered status, received status and conversion to owned stones.</li><li>Use Stock Movement for material receive/use/adjust/return actions.</li><li>Use Change Inventory Status when a jewellery item or stone needs a lifecycle update, and read the lifecycle guidance before saving.</li><li>Run Stock Ageing, Inventory Value, Reserved Inventory and Opal / Stone Stock reports before buying more stock or preparing markets. These reports now explain owned, reserved, supplier, sold and consumed states.</li></ol><div class="box warn"><h3>Supplier stock caution</h3><p>Do not treat supplier diamonds as owned inventory until they are received and explicitly converted into owned loose stone records.</p></div></div>
+<div class="box ok"><h2>Best starting point</h2><p>Use the main workflow homes first: Quotes & Proposals, Production, Payments & Sales, Inventory, Reports, and Settings & Backup. Use Search All for records, saved views and workflow actions when you know what you need but not where it lives. Specialist studios are for deeper work once the daily workflow is clear.</p></div>
+<div class="box" id="setup"><h2>1. Setup and daily rhythm</h2><ol><li>Open <b>Settings</b> and confirm business name, contact details, logo, document footer, tax/GST settings, printout folder and backup folder.</li><li>Add suppliers, customers, materials, stones and jewellery stock before relying on reports.</li><li>Use the dashboard setup-readiness card and Alert Centre to find missing setup, overdue work, low stock and follow-ups.</li><li>Use <b>Search All</b> to find customers, jobs, quotes, quote options, supplier diamonds, saved views and workflow actions from one window.</li><li>Use the dashboard <b>Recent Work</b> panel to reopen workflow tabs, generated reports and saved record editors from the current session.</li><li>Use Customer Relationship Studio for customer summary cards, timelines, communication templates, value guidance and follow-up creation.</li><li>When closing changed record editor tabs, choose Save, Discard or Cancel from the unsaved-change prompt.</li><li>Run <b>Create Backup</b> before importing CSV files, restoring data, bulk cleanup, or major stock status changes.</li></ol><p class="small">Daily habit: open Alert Centre, review Project Workbench, process payments and follow-ups, then back up after important changes.</p></div>
+<div class="box" id="quotes"><h2>2. Quotes and proposals</h2><ol><li>Use <b>Custom Quote Builder</b> for multi-option custom work. Keep customer details, expiry dates, occasion, required-by date, ring size, budget, preferred metal and preferred stone current.</li><li>After selecting a customer, use <b>Use Customer Preferences</b> to fill blank ring size, preferred metal and preferred stone fields from that customer profile.</li><li>Add quote options with material, labour, stone, setting, finding and other costs. Mark the best option as recommended when appropriate.</li><li>Attach design images to quote options when they help the customer compare designs.</li><li>Save before leaving the quote workspace. If you close a quote tab with unsaved changes, OPALNOVA prompts you to save, discard or cancel.</li><li>Preview the proposal, then use the proposal send workflow to copy/open an email draft and record when it was sent.</li><li>Proposal files are revisioned automatically and include a Print / Save as PDF button for browser-based PDF output.</li><li>Use <b>Proposal Pipeline</b> to review prepared proposals, sent proposals, due follow-ups, accepted quotes and converted jobs from one workspace queue.</li><li>After customer approval, mark the accepted option and convert it into a production job.</li></ol><div class="box warn"><h3>Quote caution</h3><p>Do not mark an option accepted until the customer has clearly approved it. Accepted quotes can drive job creation, reserved stock and follow-up actions. Internal quote notes stay private and are not printed in proposal output.</p></div></div>
+<div class="box" id="production"><h2>3. Production workflow</h2><ol><li>Use <b>Production Board</b> to move jobs through approval, materials, bench work, setting, polishing, quality check, pickup/shipping and completion.</li><li>Use <b>Capacity Snapshot</b> from Production Board, Production studio, Production &amp; Opal Studio or Reports Studio to review due-date buckets, recorded labour hours, active batches and scheduling risk before promising new dates.</li><li>Use <b>Stage Checklist</b> from the Production Board, Production studio, Production &amp; Opal Studio or Documents Studio to review customer contact, quote acceptance, reservations, supplier waits, payment position, open tasks and linked job photos before moving a job forward.</li><li>Keep due dates and labour hours realistic. Alert Centre, Production Board and capacity reporting depend on dates, statuses and labour estimates.</li><li>Use job cards, workshop notes and batch reports when preparing bench work or market collections.</li><li>Use the job completion checklist when a job is physically ready. It can consume reserved materials, set reserved stones and release unused reservations.</li></ol><div class="box warn"><h3>Completion caution</h3><p>Material consumption should be reviewable. Check linked quote reservations before completing a job so stock movement remains traceable.</p></div></div>
+<div class="box" id="payments"><h2>4. Payments, invoices and handover</h2><ol><li>Use <b>Payment & Collection</b> near the end of production to record deposits, balance payments, pickup/shipping status and sale creation.</li><li>Review the Payment Schedule panel for deposit target, final balance target, paid amount, remaining amount and timing guidance before handover.</li><li>Use the live handover checklist before collection or shipping so payment, item condition, customer notification, care instructions and document readiness are recorded in the handover notes path.</li><li>Open a saved job record to review its payment history panel with total, paid, balance and linked ledger rows.</li><li>For market sales, use Market Operations or Record Market Sale so the sale record, stock status, market stock row and reconciliation totals stay aligned.</li><li>Generate invoices, receipts, deposit receipts and payment receipts from Documents Studio or Payment & Collection.</li><li>Generate a handover confirmation when an item is collected or shipped so the customer, job, payment state, checklist and sign-off are recorded together.</li><li>Create a thank-you follow-up after handover when after-care, cleaning or adjustment check-in is useful.</li><li>Use Copy Balance Reminder when a customer-ready balance message is needed, and Create Balance Follow-Up when the reminder should also appear in the task queue.</li><li>Create pickup/handover reminders only when an open reminder does not already exist for the job.</li><li>Check customer details, payment method, reference, total paid and balance before printing or sending paperwork.</li><li>Run <b>Outstanding Balances</b> before pickup days so unpaid balances are not missed.</li></ol><p class="small">Avoid manually creating duplicate sales for the same completed job. Use the guided handover workflow where possible.</p></div>
+<div class="box" id="inventory"><h2>5. Inventory and supplier diamonds</h2><ol><li>Use Jewellery Stock, Stones and Materials for owned physical stock.</li><li>Use the record detail <b>+ Photos</b> action to attach one or more image files to stock, stones, materials, jobs and other saved records.</li><li>Use <b>Jeweller Tools</b> from Pricing Studio or Hardware & POS Studio for quick ring-size reference, metal-weight estimates and stone-carat estimates before final manual checks.</li><li>Use Saved External Diamonds for supplier diamonds that are not yet owned inventory.</li><li>Use Supplier Holds & Orders to track hold expiry, ordered status, received status, replacement search criteria and conversion to owned stones.</li><li>Use Copy Replacement Search when a supplier diamond is expired, unavailable, unsuitable or needs a backup option. It copies target criteria and close saved alternatives already in OPALNOVA.</li><li>Use Stock Movement for material receive/use/adjust/return actions.</li><li>Use Change Inventory Status when a jewellery item or stone needs a lifecycle update, and read the lifecycle guidance before saving.</li><li>Run Stock Ageing, Inventory Value, Reserved Inventory and Opal / Stone Stock reports before buying more stock or preparing markets. These reports now explain owned, reserved, supplier, sold and consumed states.</li></ol><div class="box warn"><h3>Supplier stock caution</h3><p>Do not treat supplier diamonds as owned inventory until they are received and explicitly converted into owned loose stone records. Confirm live availability and price with the supplier before promising a replacement stone.</p></div></div>
 <div class="box" id="reports"><h2>6. Reports and bookkeeping review</h2><div class="grid"><div><h3>Weekly review</h3><ul><li>BI Command Report</li><li>Visual Charts</li><li>Weekly Sales</li><li>Customer Follow-Ups</li><li>Outstanding Balances</li></ul></div><div><h3>Stock review</h3><ul><li>Inventory Value</li><li>Stock Ageing</li><li>Reserved Inventory</li><li>Opal / Stone Stock</li><li>Low Stock / Reorder reports</li></ul></div><div><h3>Bookkeeping review</h3><ul><li>Monthly Sales</li><li>Profitability</li><li>Tax / GST Summary</li><li>Export BI Excel</li><li>Export BI CSV</li></ul></div></div><p class="small">Reports are snapshots. Re-run them after major data changes and compare totals against known jobs, sales and payment records.</p></div>
-<div class="box" id="safety"><h2>7. Backups, restore and data safety</h2><ol><li><b>Create Backup</b> saves a copy of the active SQLite database.</li><li><b>Health Check</b> checks database access, record counts, missing photo links, low stock and overdue jobs.</li><li><b>Export Bundle</b> creates a private ZIP containing a database snapshot, settings, photos and CSV exports.</li><li><b>Restore Backup</b> validates the selected database or export bundle and shows a restore preview before staging the restore.</li><li><b>Import CSV</b> creates new records from matching column headers. It does not edit existing records by ID.</li></ol><div class="box warn"><h3>High-risk actions</h3><p>Restore, import, bulk status updates and cleanup tools can change many records. Create a backup first and close any other running copy of OPALNOVA before restore work.</p></div></div>
-<div class="box" id="release"><h2>8. Release testing routine</h2><ol><li>Open the latest version-specific testing checklist from the project folder.</li><li>Launch the published app and confirm the header and About version.</li><li>Run the new feature from both quick workspace and specialist studio entry points when both exist.</li><li>Confirm reports/documents open in preview and with Open HTML / Print where applicable.</li><li>Run a quick safety check: existing records still load, no unexpected records were added, and the app closes cleanly.</li></ol><p class="small">For development validation, each major build should pass debug build, release publish and published executable launch smoke before being committed and pushed.</p></div>
+<div class="box" id="safety"><h2>7. Backups, restore and data safety</h2><ol><li><b>Create Backup</b> saves a copy of the active SQLite database.</li><li><b>Health Check</b> checks database access, record counts, missing photo links, low stock and overdue jobs.</li><li><b>Data Integrity</b> creates a read-only report for orphaned links, missing proposal/design/photo files, inconsistent market stock states, negative stock quantities and payment records needing review.</li><li><b>Export Bundle</b> creates a private ZIP containing a database snapshot, settings, photos and CSV exports.</li><li><b>Restore Backup</b> validates the selected database or export bundle and shows a restore preview before staging the restore.</li><li><b>Import CSV</b> creates new records from matching column headers. It does not edit existing records by ID.</li></ol><div class="box warn"><h3>High-risk actions</h3><p>Restore, import, bulk status updates and cleanup tools can change many records. Create a backup first and close any other running copy of OPALNOVA before restore work. Data Integrity is read-only, but any manual fixes after reviewing it should still start with a backup.</p></div></div>
+<div class="box" id="release"><h2>8. Release testing routine</h2><ol><li>Open the latest version-specific testing checklist from the project folder.</li><li>Launch the published app and confirm the header and About version.</li><li>Run the new feature from both quick workspace and specialist studio entry points when both exist.</li><li>Open <b>Release Readiness</b> from Settings &amp; Backup or Safety &amp; Data Studio to review packaging notes, validation gates, staging cautions and generated document checks.</li><li>Confirm reports/documents open in preview and with Open HTML / Print where applicable.</li><li>Run a quick safety check: existing records still load, no unexpected records were added, and the app closes cleanly.</li></ol><p class="small">For development validation, each major build should pass debug build, release publish and published executable launch smoke before being committed and pushed.</p></div>
 </body></html>
 """;
         File.WriteAllText(path, html);
@@ -483,6 +674,16 @@ public static class DataSafetyService
 <body>
 <h1>OPALNOVA Release Notes</h1>
 <p class="meta">Generated from the installed app. These notes summarize the current major workflow builds.</p>
+<div class="card"><h2>V1.90.0 <span class="tag">Stability Milestone</span></h2><ul><li>Completed a redundancy and consistency checkpoint across V1.81 through V1.89 before the whole-number git milestone.</li><li>Confirmed the recent additions preserve database schema, keep cross-studio action repetition intentional, and pass debug build, release publish and launch smoke validation.</li></ul></div>
+<div class="card"><h2>V1.89.0 <span class="tag">Release Readiness Prep</span></h2><ul><li>Added a Release Readiness report covering runtime paths, database/photo/settings paths, validation gates, packaging notes, staging cautions and generated document checks.</li><li>Added Release Readiness entry points in Settings &amp; Backup, Safety &amp; Data Studio and Search All workflow actions while keeping installer, shortcut and update-channel choices deferred.</li></ul></div>
+<div class="card"><h2>V1.88.0 <span class="tag">Practical Jeweller Tools</span></h2><ul><li>Added a dark themed Jeweller Tools window with ring-size reference, metal-weight estimator and faceted-stone carat estimator.</li><li>Added Jeweller Tools entry points in Pricing Studio, Hardware &amp; POS Studio and Search All workflow actions without changing the database schema.</li></ul></div>
+<div class="card"><h2>V1.87.0 <span class="tag">Workflow Search Finder</span></h2><ul><li>Expanded Search All to include Custom Quotes, Quote Options and External Diamonds so newer workflow records are searchable from the global search window.</li><li>Added searchable Workflow Actions that navigate to daily priorities, Project Workbench, quotes, production, payments, inventory, supplier diamonds, reports, backups, data integrity, customer relationship, market and hardware/tool areas.</li></ul></div>
+<div class="card"><h2>V1.86.0 <span class="tag">Data Integrity Check</span></h2><ul><li>Added a read-only Data Integrity report for orphaned links, missing proposal/design/photo files, inconsistent market stock states, negative stock quantities and incomplete payment links.</li><li>Added Data Integrity entry points on the dashboard Data Safety card, Settings &amp; Backup and Safety &amp; Data Studio without changing the database schema.</li></ul></div>
+<div class="card"><h2>V1.85.0 <span class="tag">Proposal Revision PDF-Ready Polish</span></h2><ul><li>Proposal HTML output now uses explicit revisioned filenames and displays generated time plus revision label in the customer-facing document.</li><li>Proposal output now includes a Print / Save as PDF button, and Send / Record Proposal can copy browser print-to-PDF steps for customer PDF delivery.</li></ul></div>
+<div class="card"><h2>V1.84.0 <span class="tag">Production Capacity Snapshot</span></h2><ul><li>Added a no-schema Production Capacity Snapshot report based on existing job due dates, job labour hours and active production batches.</li><li>Added Capacity Snapshot actions in Production Board, Production workflow, Production & Opal Studio and Reports Studio.</li></ul></div>
+<div class="card"><h2>V1.83.0 <span class="tag">Supplier Diamond Replacement Readiness</span></h2><ul><li>Added Copy Replacement Search in Supplier Diamond Holds & Orders to copy replacement criteria for the selected supplier diamond.</li><li>The copied note includes target type, shape, carat range, colour/clarity, lab, original certificate, quote/customer context and close saved alternatives already in OPALNOVA.</li></ul></div>
+<div class="card"><h2>V1.82.0 <span class="tag">Inventory Media Batch Workflow</span></h2><ul><li>Updated the record detail photo action to support selecting and importing multiple image files at once.</li><li>Batch imports reuse existing OPALNOVA photo storage and `PhotoRecord` links, preserving the current local database schema.</li></ul></div>
+<div class="card"><h2>V1.81.0 <span class="tag">Market POS Speed Polish</span></h2><ul><li>Routed Market Operations sales through the shared market sale workflow so sale records, sold stock state, market stock rows and reconciliation totals stay aligned.</li><li>Improved market stock state display, returned-stock safety checks, packed-state handling, and end-of-day reconciliation guidance.</li></ul></div>
 <div class="card"><h2>V1.80.0 <span class="tag">Stability Milestone</span></h2><ul><li>Completed a redundancy and consistency review across the V1.76 production checklist, V1.77 Recent Work, V1.78 payment schedule guidance and V1.79 stock lifecycle guidance work.</li><li>Confirmed the recent workflow additions remain advisory/read-only where intended and do not create payment, stock movement, reservation or supplier-diamond state changes just by opening guidance or reports.</li></ul></div>
 <div class="card"><h2>V1.79.0 <span class="tag">Stock Lifecycle Clarity</span></h2><ul><li>Added shared lifecycle guidance for jewellery stock, stones, quote reservations and supplier diamonds.</li><li>Inventory status changes, supplier diamond workflow and inventory reports now distinguish owned, reserved, supplier, sold and consumed states more clearly.</li></ul></div>
 <div class="card"><h2>V1.78.0 <span class="tag">Payment Schedule Guidance</span></h2><ul><li>Added shared payment schedule guidance for quotes and jobs using existing quote, job and payment records.</li><li>Payment & Collection, proposal output and job payment summaries now show deposit and final-balance stages with paid and remaining amounts.</li></ul></div>
@@ -521,10 +722,46 @@ public static class DataSafetyService
         return path;
     }
 
+    public static string CreateReleaseReadinessReport()
+    {
+        var folder = BusinessSettingsService.GetPrintoutFolder();
+        Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, $"OPALNOVA-Release-Readiness-{DateTime.Now:yyyyMMdd-HHmmss}.html");
+        var settings = BusinessSettingsService.Load();
+        var assembly = Assembly.GetExecutingAssembly();
+        var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?? assembly.GetName().Version?.ToString()
+            ?? "unknown";
+        var processPath = Environment.ProcessPath ?? "unknown";
+        var appFolder = AppContext.BaseDirectory;
+
+        var html = $$$"""
+<!doctype html>
+<html><head><meta charset="utf-8"><title>OPALNOVA Release Readiness</title>
+<style>body{font-family:Segoe UI,Arial,sans-serif;margin:32px;line-height:1.5;color:#1f2937;background:#f8fafc}h1,h2,h3{color:#111827}.meta{color:#6b7280}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}.card{background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:16px;margin:14px 0}.warn{border-left:5px solid #b45309;background:#fff7ed}.ok{border-left:5px solid #047857;background:#ecfdf5}code{background:#e5e7eb;padding:2px 5px;border-radius:4px}li{margin:5px 0}@media print{body{background:#fff;margin:12mm}.card{break-inside:avoid}}</style></head>
+<body>
+<h1>OPALNOVA Release Readiness</h1>
+<p class="meta">Generated locally: {{{Html(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))}}}<br>Installed version: {{{Html(version)}}}</p>
+<div class="grid">
+<div class="card"><h2>Runtime</h2><p><b>Executable:</b><br>{{{Html(processPath)}}}</p><p><b>App folder:</b><br>{{{Html(appFolder)}}}</p></div>
+<div class="card"><h2>Business Data</h2><p><b>Database:</b><br>{{{Html(DatabaseBootstrapper.DatabasePath)}}}</p><p><b>Photos:</b><br>{{{Html(DatabaseBootstrapper.PhotoDirectory)}}}</p></div>
+<div class="card"><h2>Business Settings</h2><p><b>Business:</b> {{{Html(settings.BusinessName)}}}</p><p><b>Backups:</b><br>{{{Html(BusinessSettingsService.GetBackupFolder())}}}</p><p><b>Printouts:</b><br>{{{Html(BusinessSettingsService.GetPrintoutFolder())}}}</p></div>
+</div>
+<div class="card ok"><h2>Release Gate Checklist</h2><ol><li>Run Debug build and confirm zero warnings and zero errors.</li><li>Run Release publish for <code>win-x64</code> self-contained output.</li><li>Launch the published <code>OPALNOVA.exe</code>, confirm the header/About version, then close cleanly.</li><li>Create a fresh backup and confirm the backup folder is accessible.</li><li>Run Health Check and Data Integrity from Safety &amp; Data Studio.</li><li>Open Release Notes and User Guide from inside the app.</li><li>Open core workflows: dashboard, Search All, Project Workbench, Alert Centre, quotes, proposal pipeline, production, payments, inventory, supplier diamonds, reports and data safety.</li><li>Generate one customer-facing document and one business report, then confirm OPALNOVA branding, readable text, current version/release context where shown, and print layout.</li></ol></div>
+<div class="card"><h2>Packaging Notes</h2><ul><li>Current release output is the published folder containing <code>OPALNOVA.exe</code> and self-contained runtime files.</li><li>Do not distribute only the executable unless publish settings are changed and validated. Use the full publish folder for portable testing.</li><li>Installer technology remains a release decision. Good candidates are MSIX for Windows-managed installs or Inno Setup for a traditional installer.</li><li>A desktop shortcut should point to the installed <code>OPALNOVA.exe</code>. Shortcut creation should be owned by the installer, not by normal app startup.</li></ul></div>
+<div class="card warn"><h2>Production / Staging Separation</h2><ul><li>OPALNOVA currently uses the standard local database path: <code>{{{Html(DatabaseBootstrapper.DatabasePath)}}}</code>.</li><li>Do not test destructive restore/import flows against real business data without a fresh backup.</li><li>For staged release testing, use a separate Windows profile, VM, or copied database folder until a formal staging configuration is introduced.</li><li>Nivoda credentials remain user-entered. Do not package real supplier credentials in builds, scripts, reports or screenshots.</li></ul></div>
+<div class="card"><h2>Installer Decision Record</h2><ul><li><b>Installer:</b> not created in this pass.</li><li><b>Desktop shortcut:</b> deferred to installer packaging.</li><li><b>Update/version check:</b> design remains manual release-notes verification until a trusted update channel is chosen.</li><li><b>Automatic backups:</b> app-level reminders exist through health/readiness surfaces; OS scheduling remains deferred until lifecycle support is explicit.</li></ul></div>
+<div class="card"><h2>Generated Document Review</h2><ul><li>Proposal HTML should show OPALNOVA branding, proposal revision and print/PDF guidance.</li><li>Invoices, receipts and handover confirmations should show customer/job/payment details with readable headings.</li><li>Reports should open locally, avoid broken special characters, and print without clipped headers.</li><li>Release notes and user guide should be available from Settings &amp; Backup and Safety &amp; Data Studio.</li></ul></div>
+</body></html>
+""";
+        File.WriteAllText(path, html);
+        return path;
+    }
+
     public static string CreateAboutText()
     {
         var settings = BusinessSettingsService.Load();
-        return $"OPALNOVA\nVersion 1.80.0 - Stability Milestone\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
+        return $"OPALNOVA\nVersion 1.90.0 - Stability Milestone\n\nBusiness: {settings.BusinessName}\nDatabase: {DatabaseBootstrapper.DatabasePath}\nBackups: {BusinessSettingsService.GetBackupFolder()}\nPrintouts: {BusinessSettingsService.GetPrintoutFolder()}\nPhotos: {DatabaseBootstrapper.PhotoDirectory}\nError log: {ErrorLogService.LogPath}\n\nThis app stores your jewellery business data locally on this Windows computer using SQLite.";
     }
 
     public static void OpenTextReport(string title, string text)
@@ -633,4 +870,129 @@ public static class DataSafetyService
         if (targetType.IsEnum) return Enum.Parse(targetType, text);
         return Convert.ChangeType(text, targetType, CultureInfo.InvariantCulture);
     }
+
+    private static string BuildDataIntegrityHtml(AppDbContext db, List<DataIntegrityIssue> issues)
+    {
+        var errorCount = issues.Count(i => i.Severity == "Error");
+        var warningCount = issues.Count(i => i.Severity == "Warning");
+        var reviewCount = issues.Count(i => i.Severity == "Review");
+        var status = issues.Count == 0 ? "No integrity issues found" : $"{issues.Count:N0} item(s) need review";
+
+        var html = new StringBuilder();
+        html.AppendLine("""
+<!doctype html>
+<html><head><meta charset="utf-8"><title>OPALNOVA Data Integrity Check</title>
+<style>body{font-family:Segoe UI,Arial,sans-serif;margin:32px;line-height:1.45;color:#1f2937;background:#f8fafc}h1,h2{color:#111827}.meta{color:#6b7280}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0}.card{background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:14px}.card strong{display:block;font-size:24px;color:#111827}.ok{border-left:5px solid #047857}.warn{border-left:5px solid #b45309}.bad{border-left:5px solid #b91c1c}table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #d1d5db}th,td{padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}th{background:#111827;color:#f9fafb}.sev{font-weight:700}.Error{color:#b91c1c}.Warning{color:#b45309}.Review{color:#1f4f5f}.small{font-size:12px;color:#6b7280}@media print{body{background:#fff;margin:12mm}.card,table{break-inside:avoid}}</style></head>
+<body>
+""");
+        html.AppendLine("<h1>OPALNOVA Data Integrity Check</h1>");
+        html.AppendLine($"<p class=\"meta\">Generated locally: {Html(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))}<br>Database: {Html(DatabaseBootstrapper.DatabasePath)}</p>");
+        html.AppendLine("<div class=\"grid\">");
+        html.AppendLine($"<div class=\"card {(issues.Count == 0 ? "ok" : "warn")}\"><strong>{Html(status)}</strong><span>Overall status</span></div>");
+        html.AppendLine($"<div class=\"card bad\"><strong>{errorCount:N0}</strong><span>Broken required links</span></div>");
+        html.AppendLine($"<div class=\"card warn\"><strong>{warningCount:N0}</strong><span>Missing optional links or files</span></div>");
+        html.AppendLine($"<div class=\"card\"><strong>{reviewCount:N0}</strong><span>Business data review items</span></div>");
+        html.AppendLine("</div>");
+        html.AppendLine("<div class=\"grid\">");
+        html.AppendLine(SummaryMetric("Customers", db.Customers.Count()));
+        html.AppendLine(SummaryMetric("Quotes", db.CustomQuotes.Count()));
+        html.AppendLine(SummaryMetric("Quote Options", db.QuoteOptions.Count()));
+        html.AppendLine(SummaryMetric("Jobs", db.Jobs.Count()));
+        html.AppendLine(SummaryMetric("Sales", db.Sales.Count()));
+        html.AppendLine(SummaryMetric("Payments", db.Payments.Count()));
+        html.AppendLine(SummaryMetric("Stock", db.JewelleryItems.Count()));
+        html.AppendLine(SummaryMetric("Stones", db.Stones.Count()));
+        html.AppendLine(SummaryMetric("Materials", db.Materials.Count()));
+        html.AppendLine(SummaryMetric("Photos", db.PhotoRecords.Count()));
+        html.AppendLine("</div>");
+        html.AppendLine("<h2>Integrity Findings</h2>");
+
+        if (issues.Count == 0)
+        {
+            html.AppendLine("<div class=\"card ok\"><p>No orphaned links, missing proposal/design/photo files, negative stock balances, incomplete payment links, or conflicting market stock states were found by this read-only check.</p></div>");
+        }
+        else
+        {
+            html.AppendLine("<table><thead><tr><th>Severity</th><th>Area</th><th>Record</th><th>Field</th><th>Issue</th></tr></thead><tbody>");
+            foreach (var issue in issues.OrderBy(i => SeverityRank(i.Severity)).ThenBy(i => i.Area).ThenBy(i => i.Record))
+            {
+                html.AppendLine($"<tr><td class=\"sev {Html(issue.Severity)}\">{Html(issue.Severity)}</td><td>{Html(issue.Area)}</td><td>{Html(issue.Record)}</td><td>{Html(issue.Field)}</td><td>{Html(issue.Message)}</td></tr>");
+            }
+            html.AppendLine("</tbody></table>");
+        }
+
+        html.AppendLine("<p class=\"small\">This check is read-only. It does not repair, delete, relink, import or restore any records. Create a backup before manually fixing records listed here.</p>");
+        html.AppendLine("</body></html>");
+        return html.ToString();
+    }
+
+    private static string SummaryMetric(string label, int count) => $"<div class=\"card\"><strong>{count:N0}</strong><span>{Html(label)}</span></div>";
+
+    private static int SeverityRank(string severity) => severity switch
+    {
+        "Error" => 0,
+        "Warning" => 1,
+        "Review" => 2,
+        _ => 3
+    };
+
+    private static void AddMissingReference(List<DataIntegrityIssue> issues, string severity, string area, string record, string field, int? id, string targetArea, HashSet<int> targetIds)
+    {
+        if (id.HasValue && !targetIds.Contains(id.Value))
+            AddIssue(issues, severity, area, record, field, $"Linked {targetArea} record #{id.Value} was not found.");
+    }
+
+    private static void AddRequiredReference(List<DataIntegrityIssue> issues, string severity, string area, string record, string field, int id, string targetArea, HashSet<int> targetIds)
+    {
+        if (id <= 0 || !targetIds.Contains(id))
+            AddIssue(issues, severity, area, record, field, $"Required {targetArea} record #{id} was not found.");
+    }
+
+    private static void AddIssue(List<DataIntegrityIssue> issues, string severity, string area, string record, string field, string message)
+    {
+        issues.Add(new DataIntegrityIssue(severity, area, record, field, message));
+    }
+
+    private static bool PhotoEntityExists(
+        string entityType,
+        int entityId,
+        HashSet<int> customerIds,
+        HashSet<int> supplierIds,
+        HashSet<int> materialIds,
+        HashSet<int> stoneIds,
+        HashSet<int> jewelleryIds,
+        HashSet<int> jobIds,
+        HashSet<int> saleIds,
+        HashSet<int> marketEventIds,
+        HashSet<int> productionBatchIds,
+        HashSet<int> onlineListingIds,
+        HashSet<int> purchaseOrderIds,
+        HashSet<int> taskIds,
+        HashSet<int> quoteIds,
+        HashSet<int> quoteOptionIds,
+        HashSet<int> externalDiamondIds,
+        HashSet<int> photoIds) => entityType switch
+    {
+        nameof(Customer) => customerIds.Contains(entityId),
+        nameof(Supplier) => supplierIds.Contains(entityId),
+        nameof(Material) => materialIds.Contains(entityId),
+        nameof(Stone) => stoneIds.Contains(entityId),
+        nameof(JewelleryItem) => jewelleryIds.Contains(entityId),
+        nameof(Job) => jobIds.Contains(entityId),
+        nameof(Sale) => saleIds.Contains(entityId),
+        nameof(MarketEvent) => marketEventIds.Contains(entityId),
+        nameof(ProductionBatch) => productionBatchIds.Contains(entityId),
+        nameof(OnlineListing) => onlineListingIds.Contains(entityId),
+        nameof(PurchaseOrder) => purchaseOrderIds.Contains(entityId),
+        nameof(BusinessTask) => taskIds.Contains(entityId),
+        nameof(CustomQuote) => quoteIds.Contains(entityId),
+        nameof(QuoteOption) => quoteOptionIds.Contains(entityId),
+        nameof(ExternalDiamond) => externalDiamondIds.Contains(entityId),
+        nameof(PhotoRecord) => photoIds.Contains(entityId),
+        _ => false
+    };
+
+    private static string Html(string? value) => WebUtility.HtmlEncode(value ?? string.Empty);
+
+    private sealed record DataIntegrityIssue(string Severity, string Area, string Record, string Field, string Message);
 }

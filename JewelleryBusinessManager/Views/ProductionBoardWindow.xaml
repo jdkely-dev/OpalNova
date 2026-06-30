@@ -46,6 +46,7 @@
                 <Button Content="Move Back" Click="MoveBack_Click"/>
                 <Button Content="Move Forward" Click="MoveForward_Click"/>
                 <Button Content="Stage Checklist" Click="StageChecklist_Click"/>
+                <Button Content="Capacity Snapshot" Click="CapacitySnapshot_Click"/>
                 <Button Content="Complete Selected" Click="CompleteSelected_Click"/>
                 <Button Content="Edit Selected Job" Click="EditSelected_Click"/>
             </StackPanel>

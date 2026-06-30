@@ -43,17 +43,17 @@ public static class MarketProService
         {
             market.PackingChecklist = string.Join(Environment.NewLine, new[]
             {
-                "☐ Jewellery stock selected and checked",
-                "☐ Price tags / labels checked",
-                "☐ Display trays and stands packed",
-                "☐ Tablecloth packed",
-                "☐ Mirror packed",
-                "☐ Business cards / care cards packed",
-                "☐ Packaging, bags and boxes packed",
-                "☐ Payment reader charged",
-                "☐ Cash float prepared",
-                "☐ Cleaning cloth and basic tools packed",
-                "☐ Market stock reconciled after event"
+                "[ ] Jewellery stock selected and checked",
+                "[ ] Price tags / labels checked",
+                "[ ] Display trays and stands packed",
+                "[ ] Tablecloth packed",
+                "[ ] Mirror packed",
+                "[ ] Business cards / care cards packed",
+                "[ ] Packaging, bags and boxes packed",
+                "[ ] Payment reader charged",
+                "[ ] Cash float prepared",
+                "[ ] Cleaning cloth and basic tools packed",
+                "[ ] Market stock reconciled after event"
             });
         }
         db.SaveChanges();
@@ -88,6 +88,10 @@ public static class MarketProService
         var marketStock = db.MarketStocks.Find(marketStockId) ?? throw new InvalidOperationException("Market stock record could not be found.");
         var item = db.JewelleryItems.Find(marketStock.JewelleryItemId) ?? throw new InvalidOperationException("Linked jewellery item could not be found.");
         var market = db.MarketEvents.Find(marketStock.MarketEventId);
+        if (marketStock.SoldAtMarket || marketStock.SaleId.HasValue)
+            throw new InvalidOperationException("This market stock item is already marked sold.");
+        if (marketStock.ReturnedToStock)
+            throw new InvalidOperationException("This market stock item has already been returned to stock. Add it back to the market before selling.");
 
         var sale = new Sale
         {
@@ -106,6 +110,11 @@ public static class MarketProService
         db.Sales.Add(sale);
         db.SaveChanges();
 
+        if (!marketStock.Packed)
+        {
+            marketStock.Packed = true;
+            marketStock.PackedAt = DateTime.Now;
+        }
         marketStock.SoldAtMarket = true;
         marketStock.SoldAt = DateTime.Now;
         marketStock.ReturnedToStock = false;
@@ -136,6 +145,31 @@ public static class MarketProService
         return sale;
     }
 
+    public static void ReturnMarketStockToInventory(int marketStockId)
+    {
+        using var db = new AppDbContext();
+        var marketStock = db.MarketStocks.Find(marketStockId) ?? throw new InvalidOperationException("Market stock record could not be found.");
+        var item = db.JewelleryItems.Find(marketStock.JewelleryItemId) ?? throw new InvalidOperationException("Linked jewellery item could not be found.");
+        if (marketStock.SoldAtMarket || marketStock.SaleId.HasValue)
+            throw new InvalidOperationException("Sold market stock cannot be returned to inventory from this action.");
+
+        marketStock.ReturnedToStock = true;
+        item.Status = StockStatus.InStock;
+        db.SaveChanges();
+        ReconcileMarket(marketStock.MarketEventId);
+    }
+
+    public static string BuildMarketReconciliationGuidance(MarketEvent market, IEnumerable<MarketStock> stock)
+    {
+        var rows = stock.ToList();
+        var stockSalesTotal = rows.Where(s => s.SoldAtMarket).Sum(s => s.SalePrice);
+        var paymentBreakdownTotal = market.CashSales + market.CardSales + market.OtherSales;
+        var difference = paymentBreakdownTotal - stockSalesTotal;
+        var packedUnsold = rows.Count(s => s.Packed && !s.SoldAtMarket && !s.ReturnedToStock);
+        var returned = rows.Count(s => s.ReturnedToStock || (s.Packed && !s.SoldAtMarket));
+        return $"Recorded stock sales: {Money(stockSalesTotal)} | Payment breakdown: {Money(paymentBreakdownTotal)} | Difference: {Money(difference)} | Packed unsold: {packedUnsold} | Returned/return expected: {returned}";
+    }
+
     public static string CreatePackingListReport(int marketEventId)
     {
         PrepareMarket(marketEventId);
@@ -157,7 +191,7 @@ public static class MarketProService
         foreach (var row in stock.OrderBy(s => s.Packed).ThenBy(s => s.Id))
         {
             items.TryGetValue(row.JewelleryItemId, out var item);
-            html.AppendLine($"<tr><td>{(row.Packed ? "☑" : "☐")}</td><td>{Html(item?.StockCode ?? string.Empty)}</td><td>{Html(item?.Name ?? $"Item #{row.JewelleryItemId}")}</td><td>{Money(item?.RetailPrice ?? 0)}</td><td>{Html(item?.Status.ToString() ?? string.Empty)}</td><td>{Html(row.Notes ?? string.Empty)}</td></tr>");
+            html.AppendLine($"<tr><td>{(row.Packed ? "Yes" : "No")}</td><td>{Html(item?.StockCode ?? string.Empty)}</td><td>{Html(item?.Name ?? $"Item #{row.JewelleryItemId}")}</td><td>{Money(item?.RetailPrice ?? 0)}</td><td>{Html(item?.Status.ToString() ?? string.Empty)}</td><td>{Html(row.Notes ?? string.Empty)}</td></tr>");
         }
         html.AppendLine("</table>");
         html.AppendLine(HtmlFooter());

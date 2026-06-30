@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.80.0 Stability Milestone
+- Current workspace version: V1.90.0 Stability Milestone
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,198 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.90.0 State
+
+V1.90.0 is the whole-number stability checkpoint across the V1.81-V1.89 work:
+
+- Bumped visible/project version metadata to 1.90.0.
+- Completed a redundancy review across market/POS, media import, supplier diamond replacement, production capacity, proposal revision/PDF-ready workflow, data integrity, workflow search, jeweller tools and release-readiness additions.
+- Confirmed no duplicate tool action labels within the same tool section.
+- Confirmed cross-studio repeated actions remain intentional shortcuts, not duplicate controls in one workspace.
+- Confirmed the V1.81-V1.89 work preserves database schema and does not add destructive migrations.
+- Confirmed Nivoda credentials remain user-entered and endpoint reset does not fill credentials.
+- Added V1.90 audit/checklist documentation.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- V1.90 is the next whole-number milestone and should be committed/pushed after validation.
+
+## V1.89.0 State
+
+V1.89.0 prepares the release-readiness surface before the V1.90 milestone checkpoint:
+
+- Bumped visible/project version metadata to 1.89.0.
+- Added `DataSafetyService.CreateReleaseReadinessReport()`.
+- Added Release Readiness entry points in Settings & Backup and Safety & Data Studio.
+- Added Release Readiness to Search All workflow actions.
+- The report summarizes runtime executable/app folder, database/photo/settings paths, backup/printout paths, validation gates, packaging notes, staging cautions, installer decision notes and generated document review checks.
+- Installer creation, desktop shortcut creation, update/version channel, OS backup scheduling and production/staging config separation remain explicit release decisions rather than hidden app-startup behavior.
+- Preserved database schema and existing backup, restore, health check, data integrity, release notes and user guide behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published launch smoke is pending if Codex process-launch escalation remains blocked by the app usage-limit approval gate.
+- Per the milestone-only git rule, V1.89 remains uncommitted until the V1.90 whole-number milestone unless explicitly requested.
+
+## V1.88.0 State
+
+V1.88.0 starts the practical jeweller tools pass without adding hardware dependencies:
+
+- Bumped visible/project version metadata to 1.88.0.
+- Added `JewellerToolsWindow`.
+- Added ring-size reference rows for common AU/UK, US, EU, inside-diameter and inside-circumference values.
+- Added a metal-weight estimator using simple dimension and density inputs.
+- Added a faceted-stone carat estimator using shape-specific dimension factors.
+- Added copyable results for calculator output.
+- Added Jeweller Tools entry points in Pricing Studio and Hardware & POS Studio.
+- Added Jeweller Tools to Search All workflow actions.
+- Preserved database schema and existing device capture, pricing helper and label behavior.
+- True hardware-specific improvements remain dependent on confirmed printer/camera/scale setup.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published launch smoke is pending because Codex process-launch escalation was blocked by the app usage-limit approval gate.
+- Per the milestone-only git rule, V1.88 remains uncommitted until the next whole-number milestone unless explicitly requested.
+
+## V1.87.0 State
+
+V1.87.0 improves global findability without adding a new command data model:
+
+- Bumped visible/project version metadata to 1.87.0.
+- Expanded Advanced Search / Search All to include `CustomQuote`, `QuoteOption` and `ExternalDiamond` records.
+- Added quick filters for proposal follow-up due and supplier holds expiring.
+- Added searchable workflow action results for daily priorities, Project Workbench, quotes, proposal pipeline, payments, production, inventory, supplier diamonds, reports, backups, data integrity, customer relationship, market, hardware/labels and cleanup workflows.
+- Workflow action results navigate to the relevant workspace section through `MainWindow.OpenWorkflowCommand(...)`.
+- Updated search window copy so Search All is clearly for records and workflow actions.
+- Preserved database schema and existing saved search/view behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.87 remains uncommitted until the next whole-number milestone unless explicitly requested.
+
+## V1.86.0 State
+
+V1.86.0 starts the deeper data-safety inspection pass without adding automatic OS scheduling:
+
+- Bumped visible/project version metadata to 1.86.0.
+- Added `DataSafetyService.CreateDataIntegrityReport()`.
+- Added Data Integrity entry points in the dashboard Data Safety card, Reports / Data menu, Settings & Backup and Safety & Data Studio.
+- The report checks orphaned links across quotes, jobs, payments, sales, inventory, market stock, production batches, purchase orders, tasks and photos.
+- The report flags missing proposal/design/photo files, negative material quantities, incomplete payment links, conflicting market stock states and other review items.
+- Preserved database schema, backup/restore behavior and existing health check behavior.
+- True automatic backup scheduling remains deferred until app lifecycle or installer support is explicitly chosen.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.86 remains uncommitted until the next whole-number milestone unless explicitly requested.
+
+## V1.85.0 State
+
+V1.85.0 continues proposal polish without adding a PDF renderer dependency:
+
+- Bumped visible/project version metadata to 1.85.0.
+- Proposal HTML output now uses revisioned filenames like `QuoteCode_Proposal_v001_yyyyMMdd_HHmmss.html`.
+- Proposal documents show generated timestamp and revision label in the customer-facing header.
+- Proposal HTML includes print CSS and a `Print / Save as PDF` button for browser-based PDF output.
+- Send / Record Proposal now includes `Copy PDF Steps` for copyable browser print-to-PDF instructions.
+- Preserved database schema and existing proposal prepared/sent/follow-up tracking fields.
+- True native PDF generation remains deferred until a PDF rendering dependency is explicitly chosen.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.85 remains uncommitted until the next whole-number milestone unless explicitly requested.
+
+## V1.84.0 State
+
+V1.84.0 starts production capacity and scheduling support without a new time-entry schema:
+
+- Bumped visible/project version metadata to 1.84.0.
+- Added `DocumentExportService.CreateProductionCapacityReport()`.
+- Capacity snapshot uses existing active jobs, due dates, recorded job labour hours, balances and active production batches.
+- Added due-date buckets for overdue, due within 7 days, due 8-14 days and no due date.
+- Added capacity guidance using a conservative 32-hour weekly planning benchmark and flags for missing labour-hour estimates.
+- Added Capacity Snapshot actions in Production Board, Production workflow, Production & Opal Studio and Reports Studio.
+- Preserved database schema and existing production board movement, stage checklist and job completion behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.84 remains uncommitted until the next whole-number milestone unless explicitly requested.
+
+## V1.83.0 State
+
+V1.83.0 continues supplier diamond workflow readiness without relying on live supplier API mutations:
+
+- Bumped visible/project version metadata to 1.83.0.
+- Added `Copy Replacement Search` to Supplier Diamond Holds & Orders.
+- Replacement search copy includes selected diamond type, shape, carat range, colour/clarity, lab, original certificate and quote/customer context.
+- Replacement search copy lists up to five close saved alternatives already in OPALNOVA using same type, shape and nearby carat range.
+- Kept live supplier availability/price refresh deferred until real credentials and accessible schema behaviour are confirmed.
+- Preserved database schema and existing supplier diamond save, quote-link, hold, order, receipt and owned-inventory conversion behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.83 remains uncommitted until the next whole-number milestone unless explicitly requested.
+
+## V1.82.0 State
+
+V1.82.0 starts the inventory media and batch workflow pass:
+
+- Bumped visible/project version metadata to 1.82.0.
+- Updated the main record detail `+ Photos` action to support selecting multiple image files at once.
+- Batch imports reuse existing `PhotoStorageService` storage and existing `PhotoRecord` links.
+- Added batch photo captions that identify batch order and linked record type/id.
+- Updated the user guide, release notes, roadmap, forward plan and one-time future plan to the V1.82 baseline.
+- Preserved database schema and existing single-photo, preview and photo record behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.82 remains uncommitted until the next whole-number milestone unless explicitly requested.
+
+## V1.81.0 State
+
+V1.81.0 continues the market/POS workflow polish pass:
+
+- Bumped visible/project version metadata to 1.81.0.
+- Routed Market Operations sale recording through `MarketProService.CreateMarketSale(...)` so sale records, jewellery stock status, market stock rows and reconciliation totals stay aligned.
+- Excluded returned market stock from active market sale selection and guarded against selling already-sold or returned stock.
+- Added shared `MarketProService.ReturnMarketStockToInventory(...)` for safer market return-to-stock handling.
+- Added market stock state display for packed, sold and returned rows in Market Operations.
+- Added live reconciliation guidance comparing recorded stock sales with cash/card/other totals.
+- Replaced fragile market checklist/report symbols and encoded separators with plain ASCII text.
+- Preserved database schema and existing market event, stock, sale and reconciliation records.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.81 remains uncommitted until the next whole-number milestone unless explicitly requested.
 
 ## V1.80.0 State
 

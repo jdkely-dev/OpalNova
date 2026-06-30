@@ -773,6 +773,91 @@ public static class DocumentExportService
         return path;
     }
 
+    public static string CreateProductionCapacityReport()
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+        var today = DateTime.Today;
+        var path = Path.Combine(PrintoutFolder, $"ProductionCapacityReport_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+        var jobs = db.Jobs.AsEnumerable()
+            .Where(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled)
+            .OrderBy(j => j.DueDate ?? DateTime.MaxValue)
+            .ThenBy(j => j.JobCode)
+            .ToList();
+        var batches = db.ProductionBatches.AsEnumerable()
+            .Where(b => b.Status != ProductionBatchStatus.Completed && b.Status != ProductionBatchStatus.Cancelled)
+            .OrderBy(b => b.TargetCompletionDate ?? DateTime.MaxValue)
+            .ThenBy(b => b.Name)
+            .ToList();
+
+        const decimal weeklyBenchCapacityHours = 32m;
+        var overdue = jobs.Where(j => j.DueDate.HasValue && j.DueDate.Value.Date < today).ToList();
+        var dueThisWeek = jobs.Where(j => j.DueDate.HasValue && j.DueDate.Value.Date <= today.AddDays(7)).ToList();
+        var dueNextWeek = jobs.Where(j => j.DueDate.HasValue && j.DueDate.Value.Date > today.AddDays(7) && j.DueDate.Value.Date <= today.AddDays(14)).ToList();
+        var unscheduled = jobs.Where(j => !j.DueDate.HasValue).ToList();
+        var thisWeekHours = dueThisWeek.Sum(j => j.LabourHours);
+        var missingLabourHours = jobs.Count(j => j.LabourHours <= 0);
+        var risk = thisWeekHours > weeklyBenchCapacityHours
+            ? "Capacity risk: recorded labour hours due this week exceed the planning capacity."
+            : overdue.Count > 0
+                ? "Schedule risk: overdue jobs need attention before new work is promised."
+                : missingLabourHours > 0
+                    ? "Data risk: some active jobs have no labour hours recorded, so capacity is understated."
+                    : "No immediate capacity risk detected from recorded due dates and labour hours.";
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Production Capacity Report"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Production Capacity Snapshot</h1>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}. This no-schema planning snapshot uses existing job due dates, job labour hours and active production batches.</p>");
+        html.AppendLine(Row("Active jobs", jobs.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Overdue jobs", overdue.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Due within 7 days", dueThisWeek.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Recorded labour due within 7 days", $"{Number(thisWeekHours)} h / {Number(weeklyBenchCapacityHours)} h planning capacity"));
+        html.AppendLine(Row("Jobs missing labour hours", missingLabourHours.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Active production batches", batches.Count.ToString(CultureInfo.InvariantCulture)));
+        AppendDocumentNotice(html, "Capacity guidance", risk);
+
+        html.AppendLine("<h2>Due-Date Buckets</h2>");
+        html.AppendLine("<table><tr><th>Bucket</th><th>Jobs</th><th>Recorded Labour</th><th>Guidance</th></tr>");
+        AppendCapacityBucket(html, "Overdue", overdue, "Move, reschedule, or contact the customer before adding more work.");
+        AppendCapacityBucket(html, "Due within 7 days", dueThisWeek, thisWeekHours > weeklyBenchCapacityHours ? "Over planning capacity. Prioritise and reschedule lower-risk jobs." : "Review daily sequence and payment/handover blockers.");
+        AppendCapacityBucket(html, "Due 8-14 days", dueNextWeek, "Confirm materials, supplier diamonds and customer approvals now.");
+        AppendCapacityBucket(html, "No due date", unscheduled, "Set realistic due dates so Alert Centre and Production Board can guide the schedule.");
+        html.AppendLine("</table>");
+
+        html.AppendLine("<h2>Active Job Load</h2>");
+        html.AppendLine("<table><tr><th>Job</th><th>Status</th><th>Due</th><th>Labour Hours</th><th>Balance</th><th>Planning Note</th></tr>");
+        foreach (var job in jobs)
+        {
+            var note = BuildCapacityNote(job, today);
+            html.AppendLine($"<tr><td>{Html(job.ToString())}</td><td>{Html(job.Status.ToString())}</td><td>{Html(job.DueDate?.ToShortDateString() ?? "Not set")}</td><td>{Number(job.LabourHours)}</td><td>{Money(job.BalanceOwing)}</td><td>{Html(note)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+
+        html.AppendLine("<h2>Active Batch Load</h2>");
+        if (batches.Count == 0)
+        {
+            html.AppendLine("<p class='small'>No active production batches are currently recorded.</p>");
+        }
+        else
+        {
+            html.AppendLine("<table><tr><th>Batch</th><th>Status</th><th>Target</th><th>Estimated Labour</th><th>Pieces</th><th>Progress</th></tr>");
+            foreach (var batch in batches)
+            {
+                html.AppendLine($"<tr><td>{Html(batch.ToString())}</td><td>{Html(batch.Status.ToString())}</td><td>{Html(batch.TargetCompletionDate?.ToShortDateString() ?? "Not set")}</td><td>{Number(batch.EstimatedLabourHours)}</td><td>{Number(batch.CompletedPieces)} / {Number(batch.PlannedPieces)}</td><td>{batch.ProgressPercent.ToString("P0", CultureInfo.CurrentCulture)}</td></tr>");
+            }
+            html.AppendLine("</table>");
+        }
+
+        html.AppendLine("<h2>Scheduling Checklist</h2>");
+        html.AppendLine("<div class='checkboxes'><p>[ ] Overdue jobs contacted or rescheduled</p><p>[ ] This-week labour load reviewed</p><p>[ ] Jobs missing labour hours estimated</p><p>[ ] Materials and supplier stones checked</p><p>[ ] Payment and handover blockers reviewed</p><p>[ ] New promise dates checked against capacity</p></div>");
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
     public static string CreateMarketPerformanceReport()
     {
         Directory.CreateDirectory(PrintoutFolder);
@@ -801,6 +886,26 @@ public static class DocumentExportService
         html.Append(HtmlFooter());
         File.WriteAllText(path, html.ToString());
         return path;
+    }
+
+    private static void AppendCapacityBucket(StringBuilder html, string label, List<Job> jobs, string guidance)
+    {
+        html.AppendLine($"<tr><td>{Html(label)}</td><td>{jobs.Count}</td><td>{Number(jobs.Sum(j => j.LabourHours))} h</td><td>{Html(guidance)}</td></tr>");
+    }
+
+    private static string BuildCapacityNote(Job job, DateTime today)
+    {
+        if (!job.DueDate.HasValue)
+            return "No due date set";
+        if (job.DueDate.Value.Date < today)
+            return "Overdue";
+        if (job.LabourHours <= 0)
+            return "Labour hours not recorded";
+        if (job.Status is JobStatus.AwaitingMaterials)
+            return "Check materials or supplier stone blockers";
+        if (job.BalanceOwing > 0 && job.Status is JobStatus.ReadyForPickup or JobStatus.ReadyToShip)
+            return "Payment balance before handover";
+        return job.DueDate.Value.Date <= today.AddDays(7) ? "Schedule this week" : "Upcoming";
     }
 
     public static string CreateProductionBatchReport(ProductionBatch? selectedBatch = null)

@@ -7,13 +7,14 @@ using JewelleryBusinessManager.Services;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
 using MessageBoxImage = System.Windows.MessageBoxImage;
-using MessageBoxResult = System.Windows.MessageBoxResult;
 
 namespace JewelleryBusinessManager.Views;
 
 public partial class MarketReconcileWindow : Window
 {
     private readonly object? _selectedRecord;
+    private List<MarketStock> _selectedMarketStock = new();
+    private bool _loading;
     private sealed record LookupItem(int Id, string Display);
 
     public MarketReconcileWindow(object? selectedRecord)
@@ -29,7 +30,7 @@ public partial class MarketReconcileWindow : Window
         using var db = new AppDbContext();
         MarketBox.ItemsSource = db.MarketEvents.AsEnumerable()
             .OrderByDescending(m => m.EventDate)
-            .Select(m => new LookupItem(m.Id, $"{m.EventDate:d} {m.Name} — {m.Location}".Trim()))
+            .Select(m => new LookupItem(m.Id, $"{m.EventDate:d} {m.Name} - {m.Location}".Trim()))
             .ToList();
     }
 
@@ -51,13 +52,20 @@ public partial class MarketReconcileWindow : Window
         if (MarketBox.SelectedValue is not int marketId)
         {
             MarketInfoText.Text = "Choose a market to reconcile.";
+            ReconciliationGuidanceText.Text = string.Empty;
+            _selectedMarketStock.Clear();
             return;
         }
+
         using var db = new AppDbContext();
         var market = db.MarketEvents.Find(marketId);
-        if (market == null) return;
+        if (market == null)
+            return;
+
+        _loading = true;
         var stock = db.MarketStocks.Where(ms => ms.MarketEventId == market.Id).AsEnumerable().ToList();
-        MarketInfoText.Text = $"Stock records: {stock.Count} • Packed: {stock.Count(s => s.Packed)} • Sold: {stock.Count(s => s.SoldAtMarket)} • Returned: {stock.Count(s => s.ReturnedToStock || (s.Packed && !s.SoldAtMarket))}";
+        _selectedMarketStock = stock;
+        MarketInfoText.Text = $"Stock records: {stock.Count} | Packed: {stock.Count(s => s.Packed)} | Sold: {stock.Count(s => s.SoldAtMarket)} | Returned/return expected: {stock.Count(s => s.ReturnedToStock || (s.Packed && !s.SoldAtMarket))}";
         OpeningFloatBox.Text = market.OpeningFloat.ToString("0.00", CultureInfo.CurrentCulture);
         CashSalesBox.Text = market.CashSales.ToString("0.00", CultureInfo.CurrentCulture);
         CardSalesBox.Text = market.CardSales.ToString("0.00", CultureInfo.CurrentCulture);
@@ -67,6 +75,29 @@ public partial class MarketReconcileWindow : Window
         DisplayCostBox.Text = market.DisplayCost.ToString("0.00", CultureInfo.CurrentCulture);
         OtherCostsBox.Text = market.OtherCosts.ToString("0.00", CultureInfo.CurrentCulture);
         NotesBox.Text = market.ReconciliationNotes ?? string.Empty;
+        _loading = false;
+        RefreshReconciliationGuidance(market);
+    }
+
+    private void MoneyBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_loading || MarketBox.SelectedValue is not int marketId)
+            return;
+
+        using var db = new AppDbContext();
+        var market = db.MarketEvents.Find(marketId);
+        if (market == null)
+            return;
+
+        market.CashSales = ParseMoney(CashSalesBox.Text);
+        market.CardSales = ParseMoney(CardSalesBox.Text);
+        market.OtherSales = ParseMoney(OtherSalesBox.Text);
+        RefreshReconciliationGuidance(market);
+    }
+
+    private void RefreshReconciliationGuidance(MarketEvent market)
+    {
+        ReconciliationGuidanceText.Text = MarketProService.BuildMarketReconciliationGuidance(market, _selectedMarketStock);
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)

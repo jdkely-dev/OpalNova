@@ -102,6 +102,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal">
                     <Button Content="Open Proposal" Click="OpenProposal_Click" Style="{StaticResource ToolbarButtonStyle}"/>
+                    <Button Content="Copy PDF Steps" Click="CopyPdfSteps_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Copy print-to-PDF instructions for the generated proposal."/>
                     <Button Content="Copy Email Draft" Click="CopyDraft_Click" Style="{StaticResource ToolbarButtonStyle}"/>
                     <Button Content="Open Email Draft" Click="OpenEmailDraft_Click" Style="{StaticResource ToolbarButtonStyle}"/>
                 </StackPanel>

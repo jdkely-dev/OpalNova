@@ -108,6 +108,7 @@
                         <Button Content="Convert To Owned Stone" Click="ConvertToInventory_Click" Style="{StaticResource AccentButtonStyle}" />
                         <Button Content="Decline / Release" Click="ReleaseDiamond_Click" Style="{StaticResource ToolbarButtonStyle}" />
                         <Button Content="Create Reminder Task" Click="CreateReminderTask_Click" Style="{StaticResource ToolbarButtonStyle}" />
+                        <Button Content="Copy Replacement Search" Click="CopyReplacementSearch_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Copy criteria and close saved alternatives for replacing the selected supplier diamond." />
 
                         <Border Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,14,0,0">
                             <TextBlock Text="Tip: supplier diamonds are not owned stock until received and converted into an owned stone record. Use holds and orders to protect customer-approved stones before conversion." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />

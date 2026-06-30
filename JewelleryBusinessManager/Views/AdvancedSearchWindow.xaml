@@ -13,13 +13,13 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <TextBlock Text="Search &amp; Views" FontSize="28" FontWeight="Bold" />
-                    <TextBlock Text="Search globally, apply quick filters, then save useful views for daily work." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,5,0,18" />
+                    <TextBlock Text="Search records and workflow actions, apply quick filters, then save useful views for daily work." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,5,0,18" />
 
                     <TextBlock Text="SECTION" Style="{StaticResource PillTextStyle}" Margin="0,0,0,5" />
                     <ComboBox x:Name="SectionCombo" Margin="0,0,0,12" />
 
                     <TextBlock Text="SEARCH TEXT" Style="{StaticResource PillTextStyle}" Margin="0,0,0,5" />
-                    <TextBox x:Name="KeywordBox" Margin="0,0,0,12" ToolTip="Search text, codes, statuses, notes and visible field values." />
+                    <TextBox x:Name="KeywordBox" Margin="0,0,0,12" ToolTip="Search text, codes, statuses, notes, visible field values and workflow actions." />
 
                     <TextBlock Text="QUICK FILTER" Style="{StaticResource PillTextStyle}" Margin="0,0,0,5" />
                     <ComboBox x:Name="FilterCombo" Margin="0,0,0,16" />
@@ -54,7 +54,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel>
                             <TextBlock Text="Search Results" FontSize="22" FontWeight="Bold" />
-                            <TextBlock x:Name="ResultSummaryText" Text="Run a search to see matching records." Foreground="{StaticResource MutedTextBrush}" />
+                        <TextBlock x:Name="ResultSummaryText" Text="Run a search to see matching records and workflow actions." Foreground="{StaticResource MutedTextBrush}" />
                         </StackPanel>
                         <Button Grid.Column="1" Content="Close" Click="Close_Click" Style="{StaticResource ToolbarButtonStyle}" />
                     </Grid>

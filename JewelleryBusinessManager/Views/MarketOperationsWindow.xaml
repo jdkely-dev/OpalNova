@@ -127,6 +127,7 @@
                             <DataGridTextColumn Header="Code" Binding="{Binding StockCode}" Width="120" />
                             <DataGridTextColumn Header="Item" Binding="{Binding ItemName}" Width="*" />
                             <DataGridTextColumn Header="Price" Binding="{Binding RetailPrice, StringFormat=C}" Width="110" />
+                            <DataGridTextColumn Header="State" Binding="{Binding StateLine}" Width="110" />
                             <DataGridTextColumn Header="Packed" Binding="{Binding Packed}" Width="80" />
                             <DataGridTextColumn Header="Sold" Binding="{Binding SoldAtMarket}" Width="80" />
                             <DataGridTextColumn Header="Returned" Binding="{Binding ReturnedToStock}" Width="90" />
@@ -135,7 +136,7 @@
                     </DataGrid>
                 </Border>
                 <Border Grid.Row="2" Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="16" Padding="14" Margin="0,12,0,0">
-                    <TextBlock Text="Recommended workflow: pack stock before opening, use Preview On Customer Display before payment, then Record Market Sale to update market stock and inventory." Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="Recommended workflow: pack stock before opening, preview for the customer, then record the sale through the shared market workflow so stock, sales and reconciliation stay aligned." Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" />
                 </Border>
             </Grid>
 
@@ -154,10 +155,10 @@
                     <Border Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="16" Padding="14" Margin="0,16,0,0">
                         <StackPanel>
                             <TextBlock Text="Fast checks" Style="{StaticResource PillTextStyle}" />
-                            <TextBlock Text="• Correct market selected" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,8,0,0" />
-                            <TextBlock Text="• Customer display open" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,5,0,0" />
-                            <TextBlock Text="• Price confirmed" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,5,0,0" />
-                            <TextBlock Text="• Payment method selected" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,5,0,0" />
+                            <TextBlock Text="- Correct market selected" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,8,0,0" />
+                            <TextBlock Text="- Customer display open" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,5,0,0" />
+                            <TextBlock Text="- Price confirmed" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,5,0,0" />
+                            <TextBlock Text="- Payment method selected" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,5,0,0" />
                         </StackPanel>
                     </Border>
                 </StackPanel>

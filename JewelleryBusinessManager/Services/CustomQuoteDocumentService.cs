@@ -15,18 +15,23 @@ public static class CustomQuoteDocumentService
     {
         var settings = BusinessSettingsService.Load();
         var folder = BusinessSettingsService.GetPrintoutFolder();
+        Directory.CreateDirectory(folder);
         var safeCode = string.Join("_", (quote.QuoteCode.Length == 0 ? $"Quote_{quote.Id}" : quote.QuoteCode).Split(Path.GetInvalidFileNameChars()));
-        var path = Path.Combine(folder, $"{safeCode}_Proposal_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+        var revisionNumber = GetNextProposalRevisionNumber(folder, safeCode);
+        var revisionLabel = $"v{revisionNumber:000}";
+        var generatedAt = DateTime.Now;
+        var path = Path.Combine(folder, $"{safeCode}_Proposal_{revisionLabel}_{generatedAt:yyyyMMdd_HHmmss}.html");
 
         static string E(string? value) => WebUtility.HtmlEncode(value ?? string.Empty);
         static string Money(decimal value) => value.ToString("C");
 
         var sb = new StringBuilder();
         sb.Append("<!doctype html><html><head><meta charset='utf-8'><title>Jewellery Proposal</title><style>");
-        sb.Append("body{font-family:Segoe UI,Arial;background:#eef2f4;color:#172033;margin:0;padding:34px}.page{max-width:940px;margin:auto;background:white;padding:44px;border-radius:18px;box-shadow:0 18px 55px #0002}.top{display:flex;justify-content:space-between;border-bottom:3px solid #d9a441;padding-bottom:18px}.brand{font-size:29px;font-weight:750}.muted{color:#687387}.hero{padding:26px 0 16px}.hero h1{font-size:34px;margin:0 0 10px}.badge{display:inline-block;background:#fff7e4;border:1px solid #e8c46d;color:#6d4a00;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;text-transform:uppercase}.option{border:1px solid #dce1e8;border-radius:15px;padding:22px;margin:18px 0;background:#fff}.recommended{border:2px solid #d9a441;box-shadow:0 8px 22px #d9a44122}.price{font-size:28px;font-weight:750}.option-img{width:100%;max-height:380px;object-fit:cover;border-radius:14px;margin:12px 0;border:1px solid #dce1e8}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.costs,.schedule{width:100%;border-collapse:collapse}.costs td,.schedule td,.schedule th{padding:7px;border-bottom:1px solid #edf0f4}.schedule th{text-align:left;color:#687387;font-size:12px;text-transform:uppercase}.payment,.steps{background:#f8fafc;border:1px solid #dde5ed;border-radius:14px;padding:18px;margin-top:18px}.right{text-align:right}.footer{margin-top:34px;border-top:1px solid #ddd;padding-top:18px;font-size:13px;color:#687387}@media print{body{background:white;padding:0}.page{box-shadow:none;border-radius:0}}");
+        sb.Append("@page{size:A4;margin:14mm}body{font-family:Segoe UI,Arial;background:#eef2f4;color:#172033;margin:0;padding:34px}.print-tools{max-width:940px;margin:0 auto 12px auto;text-align:right}.print-tools button{background:#172033;color:white;border:0;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer}.page{max-width:940px;margin:auto;background:white;padding:44px;border-radius:18px;box-shadow:0 18px 55px #0002}.top{display:flex;justify-content:space-between;border-bottom:3px solid #d9a441;padding-bottom:18px}.brand{font-size:29px;font-weight:750}.muted{color:#687387}.meta-line{font-size:12px;color:#687387;margin-top:7px}.hero{padding:26px 0 16px}.hero h1{font-size:34px;margin:0 0 10px}.badge{display:inline-block;background:#fff7e4;border:1px solid #e8c46d;color:#6d4a00;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;text-transform:uppercase}.option{border:1px solid #dce1e8;border-radius:15px;padding:22px;margin:18px 0;background:#fff;break-inside:avoid}.recommended{border:2px solid #d9a441;box-shadow:0 8px 22px #d9a44122}.price{font-size:28px;font-weight:750}.option-img{width:100%;max-height:380px;object-fit:cover;border-radius:14px;margin:12px 0;border:1px solid #dce1e8}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.costs,.schedule{width:100%;border-collapse:collapse}.costs td,.schedule td,.schedule th{padding:7px;border-bottom:1px solid #edf0f4}.schedule th{text-align:left;color:#687387;font-size:12px;text-transform:uppercase}.payment,.steps{background:#f8fafc;border:1px solid #dde5ed;border-radius:14px;padding:18px;margin-top:18px;break-inside:avoid}.right{text-align:right}.footer{margin-top:34px;border-top:1px solid #ddd;padding-top:18px;font-size:13px;color:#687387}@media print{body{background:white;padding:0}.print-tools{display:none}.page{box-shadow:none;border-radius:0;max-width:none;padding:0}.option-img{max-height:280px}}");
         sb.Append("</style></head><body><div class='page'>");
+        sb.Insert(sb.ToString().IndexOf("<div class='page'>", StringComparison.Ordinal), "<div class='print-tools'><button onclick='window.print()'>Print / Save as PDF</button></div>");
 
-        sb.Append($"<div class='top'><div><div class='brand'>{E(settings.BusinessName)}</div><div class='muted'>{E(settings.OwnerName)} &middot; {E(settings.Email)} &middot; {E(settings.Phone)}</div></div><div class='right'><b>PROPOSAL</b><br>{E(quote.QuoteCode)}<br>{quote.QuoteDate:dd MMM yyyy}</div></div>");
+        sb.Append($"<div class='top'><div><div class='brand'>{E(settings.BusinessName)}</div><div class='muted'>{E(settings.OwnerName)} &middot; {E(settings.Email)} &middot; {E(settings.Phone)}</div><div class='meta-line'>Generated {generatedAt:dd MMM yyyy h:mm tt} &middot; Proposal revision {revisionLabel}</div></div><div class='right'><b>PROPOSAL</b><br>{E(quote.QuoteCode)}<br>{quote.QuoteDate:dd MMM yyyy}<br>{E(revisionLabel)}</div></div>");
         sb.Append($"<div class='hero'><h1>{E(quote.Title)}</h1><p>Prepared for <b>{E(customer?.FullName ?? "Customer")}</b></p>");
         if (!string.IsNullOrWhiteSpace(quote.Introduction))
             sb.Append($"<p>{E(quote.Introduction).Replace("\n", "<br>")}</p>");
@@ -53,6 +58,22 @@ public static class CustomQuoteDocumentService
         sb.Append($"<h3>Terms</h3><p>{E(quote.Terms ?? settings.TermsAndConditions).Replace("\n", "<br>")}</p><div class='footer'>{E(settings.DocumentFooterText)}</div></div></body></html>");
         File.WriteAllText(path, sb.ToString());
         return path;
+    }
+
+    private static int GetNextProposalRevisionNumber(string folder, string safeCode)
+    {
+        var prefix = $"{safeCode}_Proposal_v";
+        var max = 0;
+        foreach (var file in Directory.EnumerateFiles(folder, $"{safeCode}_Proposal_v*.html"))
+        {
+            var name = Path.GetFileNameWithoutExtension(file);
+            if (name.Length < prefix.Length + 3 || !name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                continue;
+            var revisionText = name.Substring(prefix.Length, Math.Min(3, name.Length - prefix.Length));
+            if (int.TryParse(revisionText, out var revision))
+                max = Math.Max(max, revision);
+        }
+        return max + 1;
     }
 
     private static void AppendPaymentSchedule(

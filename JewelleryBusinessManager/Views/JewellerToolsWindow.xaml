@@ -1,0 +1,114 @@
+<Window x:Class="JewelleryBusinessManager.Views.JewellerToolsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Jeweller Tools" Height="760" Width="1120" WindowStartupLocation="CenterOwner"
+        Background="{StaticResource AppBackgroundBrush}" UseLayoutRounding="True" SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Padding="18" Background="{StaticResource TopHeaderBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+            <StackPanel>
+                <TextBlock Text="Jeweller Tools" FontSize="26" FontWeight="Bold" />
+                <TextBlock Text="Quick workshop references for ring sizing, metal weight and stone carat estimates." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom" Padding="12" Background="#0B1220" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Calculate" Click="Calculate_Click" Style="{StaticResource AccentButtonStyle}" />
+                <Button Content="Copy Results" Click="CopyResults_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="8,0,0,0" />
+                <Button Content="Close" Click="Close_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="8,0,0,0" />
+            </StackPanel>
+        </Border>
+
+        <Grid Margin="18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="420" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="16" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Metal Weight Estimator" FontSize="20" FontWeight="Bold" />
+                            <TextBlock Text="Estimate blank/wire/sheet weight from dimensions and density." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,12" />
+
+                            <TextBlock Text="METAL" Style="{StaticResource PillTextStyle}" />
+                            <ComboBox x:Name="MetalBox" Margin="0,6,0,10">
+                                <ComboBoxItem Content="Sterling Silver" IsSelected="True" />
+                                <ComboBoxItem Content="9ct Gold" />
+                                <ComboBoxItem Content="14ct Gold" />
+                                <ComboBoxItem Content="18ct Gold" />
+                                <ComboBoxItem Content="Platinum" />
+                                <ComboBoxItem Content="Palladium" />
+                            </ComboBox>
+
+                            <TextBlock Text="LENGTH MM" Style="{StaticResource PillTextStyle}" />
+                            <TextBox x:Name="MetalLengthBox" Text="50" Margin="0,6,0,10" />
+                            <TextBlock Text="WIDTH MM" Style="{StaticResource PillTextStyle}" />
+                            <TextBox x:Name="MetalWidthBox" Text="4" Margin="0,6,0,10" />
+                            <TextBlock Text="THICKNESS MM" Style="{StaticResource PillTextStyle}" />
+                            <TextBox x:Name="MetalThicknessBox" Text="1.5" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Stone Carat Estimator" FontSize="20" FontWeight="Bold" />
+                            <TextBlock Text="Approximate faceted-stone carat weight from millimetre dimensions." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,12" />
+
+                            <TextBlock Text="SHAPE" Style="{StaticResource PillTextStyle}" />
+                            <ComboBox x:Name="StoneShapeBox" Margin="0,6,0,10">
+                                <ComboBoxItem Content="Round" IsSelected="True" />
+                                <ComboBoxItem Content="Oval" />
+                                <ComboBoxItem Content="Emerald / Rectangle" />
+                                <ComboBoxItem Content="Pear" />
+                                <ComboBoxItem Content="Marquise" />
+                                <ComboBoxItem Content="Cushion" />
+                            </ComboBox>
+
+                            <TextBlock Text="LENGTH MM" Style="{StaticResource PillTextStyle}" />
+                            <TextBox x:Name="StoneLengthBox" Text="7" Margin="0,6,0,10" />
+                            <TextBlock Text="WIDTH MM" Style="{StaticResource PillTextStyle}" />
+                            <TextBox x:Name="StoneWidthBox" Text="7" Margin="0,6,0,10" />
+                            <TextBlock Text="DEPTH MM" Style="{StaticResource PillTextStyle}" />
+                            <TextBox x:Name="StoneDepthBox" Text="4.2" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="14" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="16">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Ring Size Reference" FontSize="22" FontWeight="Bold" Margin="0,0,0,10" />
+                        <DataGrid x:Name="RingSizeGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="AU / UK" Binding="{Binding AuUk}" Width="90" />
+                                <DataGridTextColumn Header="US" Binding="{Binding Us}" Width="90" />
+                                <DataGridTextColumn Header="EU" Binding="{Binding Eu}" Width="90" />
+                                <DataGridTextColumn Header="Inside Diameter" Binding="{Binding InsideDiameterMm}" Width="150" />
+                                <DataGridTextColumn Header="Inside Circumference" Binding="{Binding InsideCircumferenceMm}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Border>
+
+                <Border Grid.Row="2" Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="Results" FontSize="20" FontWeight="Bold" />
+                        <TextBlock x:Name="ResultText" TextWrapping="Wrap" FontSize="15" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,8,0,0" />
+                        <TextBlock Text="Estimates are workshop guides only. Confirm final weights and sizes with your own scale, mandrel, stone gauge and supplier data before quoting high-value work." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,12,0,0" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>

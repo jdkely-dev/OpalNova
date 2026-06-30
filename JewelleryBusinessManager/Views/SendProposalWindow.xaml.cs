@@ -60,6 +60,26 @@ public partial class SendProposalWindow : Window
         }
     }
 
+    private void CopyPdfSteps_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Clipboard.SetText(
+                "Proposal PDF steps:" + Environment.NewLine +
+                "1. Open the proposal file in your browser." + Environment.NewLine +
+                "2. Choose Print, then select Save as PDF or Microsoft Print to PDF." + Environment.NewLine +
+                "3. Save the PDF beside the generated proposal file or in your customer folder." + Environment.NewLine +
+                "4. Attach the saved PDF to your email if the customer prefers a PDF." + Environment.NewLine +
+                Environment.NewLine +
+                "Proposal file: " + _proposalPath);
+            MessageBox.Show(this, "Print-to-PDF steps copied to the clipboard.", "Copy PDF steps", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Copy PDF steps", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private void OpenEmailDraft_Click(object sender, RoutedEventArgs e)
     {
         try

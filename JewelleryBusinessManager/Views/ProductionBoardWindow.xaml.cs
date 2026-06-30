@@ -173,6 +173,27 @@ public partial class ProductionBoardWindow : Window
     private void MoveBack_Click(object sender, RoutedEventArgs e) => MoveSelected(-1);
     private void CompleteSelected_Click(object sender, RoutedEventArgs e) => CompleteSelectedJob("Completed from Production Board.");
 
+    private void CapacitySnapshot_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DocumentExportService.CreateProductionCapacityReport();
+            if (ReportRequested != null)
+            {
+                ReportRequested.Invoke(path, "Production Capacity Snapshot");
+            }
+            else
+            {
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Production capacity snapshot");
+            MessageBox.Show($"Could not create the production capacity snapshot.\n\n{ex.Message}", "Production Capacity Snapshot", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void StageChecklist_Click(object sender, RoutedEventArgs e)
     {
         if (_selected == null)

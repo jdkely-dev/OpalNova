@@ -22,7 +22,7 @@
                                 <TextBlock Text="Command Centre" Style="{StaticResource PillTextStyle}" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Version 1.80.0 - stability milestone" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
+                        <TextBlock Text="Version 1.90.0 - stability milestone" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -101,6 +101,7 @@
                 <MenuItem Header="Create Backup" Click="Backup_Click" />
                 <MenuItem Header="Restore Backup" Click="RestoreBackup_Click" />
                 <MenuItem Header="Health Check" Click="HealthCheck_Click" />
+                <MenuItem Header="Data Integrity" Click="DataIntegrityCheck_Click" />
                 <MenuItem Header="User Guide" Click="UserGuide_Click" />
                 <MenuItem Header="Release Notes" Click="ReleaseNotes_Click" />
             </MenuItem>
@@ -300,6 +301,7 @@
                                             <Button Content="Create Backup" Click="DashboardCreateBackup_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Create a fresh SQLite backup now." />
                                             <Button Content="Restore Preview" Click="RestoreBackup_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="0,6,0,0" ToolTip="Choose a backup and preview it before staging a restore." />
                                             <Button Content="Health Check" Click="HealthCheck_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="0,6,0,0" ToolTip="Run database and record-count checks." />
+                                            <Button Content="Data Integrity" Click="DataIntegrityCheck_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="0,6,0,0" ToolTip="Preview orphaned links, missing files and inconsistent workflow records." />
                                             <Button Content="Release Notes" Click="ReleaseNotes_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="0,6,0,0" ToolTip="Open current OPALNOVA release notes." />
                                         </StackPanel>
                                     </Grid>
@@ -464,7 +466,7 @@
                                         <TextBlock Text="Quick Actions" FontSize="15" FontWeight="Bold" Margin="0,0,0,6" />
                                         <WrapPanel Margin="0,0,0,14">
                                             <Button Content="Edit" Click="Edit_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Edit this selected record" />
-                                            <Button Content="+ Photo" Click="AddPhoto_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Attach a photo to this record" />
+                                            <Button Content="+ Photos" Click="AddPhoto_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Attach one or more photos to this record" />
                                             <Button Content="Trace" Click="TraceSelected_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open traceability for the selected record" />
                                             <Button Content="Label" Click="GenerateSelectedScanLabel_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Generate a barcode label for this record" />
                                         </WrapPanel>

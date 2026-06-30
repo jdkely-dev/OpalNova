@@ -31,14 +31,15 @@ public partial class MarketSaleWindow : Window
         var markets = db.MarketEvents.AsEnumerable().ToDictionary(m => m.Id, m => m);
         var marketStock = new List<LookupItem> { new(null, "Select market stock item") };
         marketStock.AddRange(db.MarketStocks.AsEnumerable()
-            .Where(ms => !ms.SoldAtMarket)
+            .Where(ms => !ms.SoldAtMarket && !ms.ReturnedToStock)
             .OrderBy(ms => markets.TryGetValue(ms.MarketEventId, out var market) ? market.EventDate : DateTime.MaxValue)
             .ThenBy(ms => items.TryGetValue(ms.JewelleryItemId, out var item) ? item.StockCode : string.Empty)
             .Select(ms =>
             {
                 items.TryGetValue(ms.JewelleryItemId, out var item);
                 markets.TryGetValue(ms.MarketEventId, out var market);
-                var display = $"{market?.EventDate:d} {market?.Name} — {item?.StockCode} {item?.Name} — {(item?.RetailPrice ?? 0):C}".Trim();
+                var packed = ms.Packed ? "Packed" : "Not packed";
+                var display = $"{market?.EventDate:d} {market?.Name} - {item?.StockCode} {item?.Name} - {(item?.RetailPrice ?? 0):C} - {packed}".Trim();
                 return new LookupItem(ms.Id, display);
             }));
 
@@ -60,14 +61,14 @@ public partial class MarketSaleWindow : Window
         else if (_selectedRecord is JewelleryItem item)
         {
             using var db = new AppDbContext();
-            var linkedMarketStock = db.MarketStocks.AsEnumerable().LastOrDefault(ms => ms.JewelleryItemId == item.Id && !ms.SoldAtMarket);
+            var linkedMarketStock = db.MarketStocks.AsEnumerable().LastOrDefault(ms => ms.JewelleryItemId == item.Id && !ms.SoldAtMarket && !ms.ReturnedToStock);
             if (linkedMarketStock != null)
                 MarketStockBox.SelectedValue = linkedMarketStock.Id;
         }
         else if (_selectedRecord is MarketEvent market)
         {
             using var db = new AppDbContext();
-            var firstMarketStock = db.MarketStocks.AsEnumerable().FirstOrDefault(ms => ms.MarketEventId == market.Id && !ms.SoldAtMarket);
+            var firstMarketStock = db.MarketStocks.AsEnumerable().FirstOrDefault(ms => ms.MarketEventId == market.Id && !ms.SoldAtMarket && !ms.ReturnedToStock);
             if (firstMarketStock != null)
                 MarketStockBox.SelectedValue = firstMarketStock.Id;
         }
@@ -93,7 +94,8 @@ public partial class MarketSaleWindow : Window
         if (stock == null) return;
         var item = db.JewelleryItems.Find(stock.JewelleryItemId);
         var market = db.MarketEvents.Find(stock.MarketEventId);
-        StockInfoText.Text = $"{market?.Name} • {item?.StockCode} {item?.Name} • Retail {item?.RetailPrice:C}";
+        var packed = stock.Packed ? "Packed" : "Not packed";
+        StockInfoText.Text = $"{market?.Name} | {item?.StockCode} {item?.Name} | Retail {item?.RetailPrice:C} | {packed}";
         if (string.IsNullOrWhiteSpace(SalePriceBox.Text))
             SalePriceBox.Text = (stock.SalePrice > 0 ? stock.SalePrice : item?.RetailPrice ?? 0).ToString("0.00", CultureInfo.CurrentCulture);
     }

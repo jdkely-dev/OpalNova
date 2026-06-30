@@ -1159,6 +1159,7 @@ public partial class MainWindow : Window
         {
             new("Production Board", "Open the visual job pipeline for current bench work.", ProductionBoard_Click),
             new("Stage Checklist", "Preview stage readiness, waiting warnings, linked tasks and job files for a selected job.", ProductionStageChecklistSetup_Click),
+            new("Capacity Snapshot", "Preview production load by due date, labour hours and active batches.", ProductionCapacityReport_Click),
             new("Jobs", "Open job records for detailed editing.", (_, _) => SelectNavigationSection("Jobs")),
             new("Payment & Collection", "Finish pickup, shipping, receipts and balances from completed jobs.", PaymentCollection_Click),
             new("Production Batches", "Open batch records and collection/making runs.", (_, _) => SelectNavigationSection("Production Batches")),
@@ -1215,9 +1216,11 @@ public partial class MainWindow : Window
             new("Create Backup", "Create a safe database backup.", Backup_Click),
             new("Restore Backup", "Stage a validated restore from a backup database or export bundle.", RestoreBackup_Click),
             new("Health Check", "Check database connection, record counts, photos, low stock and overdue jobs.", HealthCheck_Click),
+            new("Data Integrity", "Preview a read-only report for orphaned links, missing files and inconsistent workflow records.", DataIntegrityCheck_Click),
             new("Export Bundle", "Create a private ZIP with database snapshot, settings, photos and CSV exports.", ExportBundle_Click),
             new("User Guide", "Preview the built-in user guide.", UserGuide_Click),
             new("Release Notes", "Open the current OPALNOVA release notes.", ReleaseNotes_Click),
+            new("Release Readiness", "Preview packaging notes, validation gates and release checklist.", ReleaseReadiness_Click),
             new("Data Cleanup", "Open data quality and bulk-cleanup tools.", (_, _) => SelectNavigationSection("Data Cleanup Studio")),
         },
         "Custom Workflow Studio" => new ToolAction[]
@@ -1240,6 +1243,7 @@ public partial class MainWindow : Window
         {
             new("Metal Prices", "Update manual or live gold, silver, platinum and palladium prices.", MetalPrices_Click),
             new("Pricing Helper", "Estimate metal, stone, labour, total cost, margin and recommended retail.", PricingHelper_Click),
+            new("Jeweller Tools", "Estimate metal weight, stone carat weight and ring-size conversions.", JewellerTools_Click),
         },
         "Inventory Studio" => new ToolAction[]
         {
@@ -1261,6 +1265,7 @@ public partial class MainWindow : Window
         {
             new("Production Board", "Open the visual workshop job pipeline with due dates, customer links and quick status movement.", ProductionBoard_Click),
             new("Stage Checklist", "Preview job stage readiness, waiting warnings, reservations, tasks and linked files.", ProductionStageChecklistSetup_Click),
+            new("Capacity Snapshot", "Preview due-date and labour-hour load before promising new production dates.", ProductionCapacityReport_Click),
             new("Payment & Collection", "Finish the handover stage with balance tracking, pickup/shipping status and sale creation.", PaymentCollection_Click),
             new("New Batch", "Create a production batch or collection plan.", NewBatch_Click),
             new("Add To Batch", "Add selected jewellery, stone or job to a production batch.", AddToBatchSetup_Click),
@@ -1345,6 +1350,7 @@ public partial class MainWindow : Window
             new("Costing Report", "Preview pricing, profit and margin reports.", CostingReport_Click),
             new("Low Stock", "Preview materials below reorder level.", LowStockReport_Click),
             new("Jobs Due", "Preview jobs due soon or overdue.", JobsDueReport_Click),
+            new("Production Capacity", "Preview production load by due date, labour hours and active batches.", ProductionCapacityReport_Click),
             new("Market Report", "Preview market event performance.", MarketReport_Click),
             new("Inventory Report", "Preview inventory audit and movements.", InventoryReport_Click),
             new("Reorder Report", "Preview purchasing and reorder needs.", ReorderReport_Click),
@@ -1355,16 +1361,19 @@ public partial class MainWindow : Window
             new("Create Backup", "Create a safe database backup.", Backup_Click),
             new("Restore Backup", "Stage a validated restore from a backup database or export bundle.", RestoreBackup_Click),
             new("Health Check", "Check database connection, record counts, photos, low stock and overdue jobs.", HealthCheck_Click),
+            new("Data Integrity", "Preview a read-only report for orphaned links, missing files and inconsistent workflow records.", DataIntegrityCheck_Click),
             new("Export Bundle", "Create a private ZIP with database snapshot, settings, photos and CSV exports.", ExportBundle_Click),
             new("Import CSV", "Import rows into the active record section from matching CSV headers.", ImportCsv_Click),
             new("Error Log", "Open a copy of the application error log.", ErrorLog_Click),
             new("User Guide", "Preview the built-in user guide.", UserGuide_Click),
             new("Release Notes", "Open the current OPALNOVA release notes.", ReleaseNotes_Click),
+            new("Release Readiness", "Preview packaging notes, validation gates and release checklist.", ReleaseReadiness_Click),
             new("About", "Show version, paths and app information.", About_Click),
         },
         "Hardware & POS Studio" => new ToolAction[]
         {
             new("DYMO Mini Label", "Create and print a mini label for the selected stock, stone, job or material using the Windows print dialog.", DymoMiniLabelSetup_Click),
+            new("Jeweller Tools", "Open ring-size, metal-weight and stone-carat reference calculators.", JewellerTools_Click),
             new("Camera & Scale Capture", "Import USB camera photos and pull scale readings into selected materials or stones.", DeviceCaptureSetup_Click),
             new("Market Operations Window", "Open a separate market POS/operator window with optional customer display on another monitor.", MarketOperationsWindow_Click),
             new("Device Setup Notes", "Preview setup notes for DYMO printers, USB scales, camera capture and multi-display market mode.", DeviceSetupNotes_Click),
@@ -2154,6 +2163,17 @@ public partial class MainWindow : Window
         StatusText.Text = $"Applied saved view: {section} • {_activeFilterPreset}";
     }
 
+    public void OpenWorkflowCommand(string targetSection, string searchText = "", string filterPreset = "All Records")
+    {
+        if (string.IsNullOrWhiteSpace(targetSection)) return;
+        SetTopFilter(string.IsNullOrWhiteSpace(filterPreset) ? "All Records" : filterPreset);
+        SearchBox.Text = searchText ?? string.Empty;
+        SelectNavigationSection(targetSection, preserveSearchAndFilter: true);
+        if (_sectionTypes.ContainsKey(targetSection))
+            RefreshCurrentSection();
+        StatusText.Text = $"Opened workflow: {targetSection}.";
+    }
+
     private void SelectRecordById(int recordId)
     {
         if (_currentRecords == null) return;
@@ -2778,44 +2798,65 @@ public partial class MainWindow : Window
         var selected = RecordsGrid.SelectedItem;
         if (selected == null || CurrentSection == "Dashboard")
         {
-            MessageBox.Show("Select a record first, then click Add Photo.", "Add Photo", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Select a record first, then click Add Photos.", "Add Photos", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var selectedType = selected.GetType();
         if (selectedType == typeof(PhotoRecord))
         {
-            MessageBox.Show("Use Edit on the photo record to change its file path or caption.", "Add Photo", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Use Edit on the photo record to change its file path or caption.", "Add Photos", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var id = (int)selectedType.GetProperty("Id")!.GetValue(selected)!;
         var dialog = new OpenFileDialog
         {
-            Title = "Choose jewellery, stone, job, or material photo",
-            Filter = "Image files|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.webp|All files|*.*"
+            Title = "Choose jewellery, stone, job, or material photos",
+            Filter = "Image files|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.webp|All files|*.*",
+            Multiselect = true
         };
 
         if (dialog.ShowDialog(this) != true) return;
 
         try
         {
-            var storedPath = PhotoStorageService.CopyPhotoToAppFolder(dialog.FileName, selectedType.Name, id);
-            using var db = new AppDbContext();
-            db.PhotoRecords.Add(new PhotoRecord
+            var selectedFiles = dialog.FileNames
+                .Where(PhotoStorageService.LooksLikeImage)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            if (selectedFiles.Count == 0)
             {
-                EntityType = selectedType.Name,
-                EntityId = id,
-                FilePath = storedPath,
-                Caption = $"Photo for {selectedType.Name} #{id}"
-            });
+                MessageBox.Show("Choose at least one supported image file.", "Add Photos", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var storedPaths = new List<string>();
+            using var db = new AppDbContext();
+            foreach (var sourcePath in selectedFiles)
+            {
+                var storedPath = PhotoStorageService.CopyPhotoToAppFolder(sourcePath, selectedType.Name, id);
+                storedPaths.Add(storedPath);
+                db.PhotoRecords.Add(new PhotoRecord
+                {
+                    EntityType = selectedType.Name,
+                    EntityId = id,
+                    FilePath = storedPath,
+                    Caption = selectedFiles.Count == 1
+                        ? $"Photo for {selectedType.Name} #{id}"
+                        : $"Batch photo {storedPaths.Count} of {selectedFiles.Count} for {selectedType.Name} #{id}"
+                });
+            }
             db.SaveChanges();
-            MessageBox.Show($"Photo attached and copied to app storage:\n{storedPath}", "Photo added", MessageBoxButton.OK, MessageBoxImage.Information);
+            var message = storedPaths.Count == 1
+                ? $"Photo attached and copied to app storage:\n{storedPaths[0]}"
+                : $"{storedPaths.Count} photos attached and copied to app storage for {selectedType.Name} #{id}.";
+            MessageBox.Show(message, "Photos added", MessageBoxButton.OK, MessageBoxImage.Information);
             RefreshCurrentSection();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Could not attach the photo.\n\n{ex.Message}", "Photo error", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Could not attach the selected photos.\n\n{ex.Message}", "Photo error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -4214,6 +4255,20 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ProductionCapacityReport_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DocumentExportService.CreateProductionCapacityReport();
+            OpenReportInApp(path, "Production Capacity Snapshot");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create production capacity report");
+            MessageBox.Show($"Could not create the production capacity report.\n\n{ex.Message}", "Production Capacity error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void MarketReport_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -4468,6 +4523,20 @@ public partial class MainWindow : Window
         }
     }
 
+    private void JewellerTools_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var window = new JewellerToolsWindow { Owner = this };
+            window.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open jeweller tools");
+            MessageBox.Show($"Could not open jeweller tools.\n\n{ex.Message}", "Jeweller Tools", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
 
     private void DashboardProductionBoard_Click(object sender, RoutedEventArgs e) => ProductionBoard_Click(sender, e);
 
@@ -4565,6 +4634,20 @@ public partial class MainWindow : Window
         }
     }
 
+    private void DataIntegrityCheck_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DataSafetyService.CreateDataIntegrityReport();
+            OpenReportInApp(path, "OPALNOVA Data Integrity Check");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Data integrity check");
+            MessageBox.Show($"Could not complete the data integrity check.\n\n{ex.Message}", "Data Integrity error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void ExportBundle_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -4649,6 +4732,20 @@ public partial class MainWindow : Window
         {
             ErrorLogService.Log(ex, "Open release notes");
             MessageBox.Show($"Could not open the release notes.\n\n{ex.Message}", "Release Notes error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void ReleaseReadiness_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DataSafetyService.CreateReleaseReadinessReport();
+            OpenReportInApp(path, "OPALNOVA Release Readiness");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open release readiness report");
+            MessageBox.Show($"Could not open the release readiness report.\n\n{ex.Message}", "Release Readiness error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

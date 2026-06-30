@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.80.0 Stability Milestone
+Current baseline: V1.90.0 Stability Milestone
 
 ## Purpose
 
@@ -74,6 +74,7 @@ Ease:
 | Proposal email templates and payment schedule display | P1 | S-M | Template-driven message text and deposit/final-balance clarity are high-value and fit the existing quote/proposal flow. | V1.50 |
 | Guided first-run/setup checklist | P1 | S-M | Dashboard, settings, tasks, and backup services already exist. Implemented as dashboard setup readiness in V1.51.0. | V1.51 |
 | Proposal PDF export | P2 | M-L | Best done after the HTML proposal is stable. Needs render/export verification. | V1.50 |
+| Proposal revision / PDF-ready polish | P2 | S-M | Started in V1.85.0 with revisioned proposal HTML snapshots and browser Print / Save as PDF guidance without adding a PDF renderer dependency. | V1.85 |
 | Proposal centre / sent proposal queue | P2 | M | Implemented in V1.64.0 as a focused Proposal Pipeline for prepared, sent, due, accepted and converted proposals. | V1.64 |
 | Quote measurements, occasion, and internal note polish | P2 | S-M | Implemented in V1.65.0 with additive quote context fields, customer-facing proposal details, internal notes and required-by next-action guidance. | V1.65 |
 | Preferred ring size / metal / stone in quote workflow | P2 | S | Started in V1.67.0 with an explicit customer-preference fill action that copies blank quote preference fields from the selected customer profile. | V1.67 |
@@ -94,20 +95,24 @@ Ease:
 | Job completion checklist and stock consume/release wizard | P2 | L | Implemented in V1.52.0 as an explicit completion checklist that consumes reserved materials, marks reserved stones set, releases unconsumed reservations, and writes material movement audit entries. | V1.52 |
 | Production stage checklist, waiting flags, and job files | P2 | M-L | Started in V1.76.0 with a generated stage checklist covering readiness, waits, quote context, reservations, supplier diamonds, payments, tasks and linked job photos/files. | V1.76 |
 | Stock lifecycle clarity | P2 | M-L | Strengthened in V1.79.0 with shared lifecycle guidance for status changes, supplier diamonds and inventory reports. | V1.52, V1.79 |
-| Stability milestone and redundancy check | P0 | S-M | Completed in V1.80.0 as a validation and consistency checkpoint across V1.76-V1.79 before the milestone commit/push. | V1.80 |
-| External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
+| Stability milestone and redundancy check | P0 | S-M | Completed in V1.80.0 across V1.76-V1.79 and repeated in V1.90.0 across V1.81-V1.89 before the milestone commit/push. | V1.80, V1.90 |
+| External diamond refresh availability/price | P3 | M-L | API search exists; live refresh still needs confirmed credential/schema behavior. V1.83.0 adds local replacement-search copy from saved diamond data and close saved alternatives. | V1.83+ |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
 | Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; profitability reporting is implemented in V1.59.0; tax/GST summary is implemented in V1.60.0; visual charts are implemented in V1.61.0. | V1.54, V1.58, V1.59, V1.60, V1.61 |
 | Customer profile dashboard and timeline | P3 | M | Customer timeline implemented in V1.56.0 using existing quote, proposal, job, sale, payment and task records; V1.75 adds value guidance and communication templates. | V1.56, V1.75 |
 | Client import polish | P3 | M | Useful from the transcript, but OPALNOVA's proposal/production flow has higher immediate value. | V1.54-V1.55 |
-| Market/POS speed polish | P3 | M | Existing market windows exist. Should follow core quote/payment/inventory improvements. | V1.55 |
-| Automated backup schedule | P3 | L | Health indicator is easy; true scheduling is OS/app lifecycle work. | V1.55 |
-| Installer, shortcut, version check, user guide | P3 | L-XL | Release notes viewer implemented in V1.55.0; installer/shortcut/version check remain later release work. | V1.55+ |
-| Built-in help/searchable guide | P3 | M-L | The built-in user guide was refreshed in V1.62.0 into a practical local manual; searchable/paginated help remains later. | V1.62+ |
-| Command palette/global command bar | P4 | M-L | Useful, but not as important as fixing workflow surfaces first. | Later |
+| Market/POS speed polish | P3 | M | Implemented in V1.81.0 by routing Market Operations sales through shared sale/reconciliation logic and improving packed/sold/returned state handling. | V1.81 |
+| Inventory media and batch workflow | P3 | S-M | Started in V1.82.0 with multi-select batch photo import through the existing record detail photo workflow and `PhotoRecord` storage. | V1.82 |
+| Production time, capacity, and scheduling | P3 | M-L | Started in V1.84.0 with a no-schema Production Capacity Snapshot using existing due dates, labour hours and active production batches. | V1.84 |
+| Data integrity check | P0 | S-M | Started in V1.86.0 as a read-only report for orphaned links, missing files, inconsistent market stock states and incomplete payment links. | V1.86 |
+| Automated backup schedule | P3 | L | Health indicator is easy; true scheduling is OS/app lifecycle work. V1.86.0 deferred true scheduling until app lifecycle or installer support is explicitly chosen. | V1.55+ |
+| Installer, shortcut, version check, user guide | P3 | L-XL | Release notes viewer implemented in V1.55.0; V1.89.0 adds release-readiness packaging notes and validation gates while leaving installer/shortcut/update-channel decisions explicit. | V1.55, V1.89 |
+| Built-in help/searchable guide | P3 | M-L | The built-in user guide was refreshed in V1.62.0 into a practical local manual; V1.87.0 starts findability by adding workflow actions to Search All. | V1.62, V1.87 |
+| Command palette/global command bar | P4 | M-L | V1.87.0 starts a low-risk version by extending Search All with workflow-action navigation instead of adding a new command data model. | V1.87+ |
 | Complex capacity/calendar view | P4 | L-XL | Needs better production stage/checklist data first. | Later |
 | Scheduled reports | P4 | XL | Requires background scheduling and report stability. | Later |
-| Advanced hardware tools | P4 | M-XL | Current foundations exist, but hardware support can sprawl quickly. | Later |
+| Practical jeweller calculators | P3 | S-M | Started in V1.88.0 with local ring-size, metal-weight and stone-carat tools that do not depend on hardware devices or schema changes. | V1.88 |
+| Advanced hardware tools | P4 | M-XL | Current foundations exist, but hardware support can sprawl quickly. V1.88.0 intentionally keeps this pass to no-hardware local calculators. | Later |
 | API-level Nivoda hold/order | P4 | XL | Must wait for confirmed accessible schema and production credentials. | Later |
 
 ## Recommended Build Sequence
@@ -380,7 +385,7 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start the next local build with this ticket. Keep changes uncommitted until the next whole-number milestone requested for git, such as V1.90.
+Start the next local build with this ticket. Keep changes uncommitted until the next whole-number milestone requested for git, such as V2.0.
 
 Title: V1.81 Market / POS Speed Polish
 

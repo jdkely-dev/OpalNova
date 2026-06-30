@@ -16,6 +16,7 @@
                         <TextBlock Text="Market Event" FontWeight="SemiBold" FontSize="16" />
                         <ComboBox x:Name="MarketBox" DisplayMemberPath="Display" SelectedValuePath="Id" Margin="0,8,0,4" SelectionChanged="MarketBox_SelectionChanged" />
                         <TextBlock x:Name="MarketInfoText" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
+                        <TextBlock x:Name="ReconciliationGuidanceText" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,6,0,0" />
                     </StackPanel>
                 </Border>
 
@@ -30,13 +31,13 @@
                             <TextBlock Text="Opening Float" FontWeight="SemiBold" />
                             <TextBox x:Name="OpeningFloatBox" Margin="0,6,0,12" />
                             <TextBlock Text="Cash Sales" FontWeight="SemiBold" />
-                            <TextBox x:Name="CashSalesBox" Margin="0,6,0,12" />
+                            <TextBox x:Name="CashSalesBox" Margin="0,6,0,12" TextChanged="MoneyBox_TextChanged" />
                             <TextBlock Text="Card Sales" FontWeight="SemiBold" />
-                            <TextBox x:Name="CardSalesBox" Margin="0,6,0,0" />
+                            <TextBox x:Name="CardSalesBox" Margin="0,6,0,0" TextChanged="MoneyBox_TextChanged" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="10,0,10,0">
                             <TextBlock Text="Other Sales" FontWeight="SemiBold" />
-                            <TextBox x:Name="OtherSalesBox" Margin="0,6,0,12" />
+                            <TextBox x:Name="OtherSalesBox" Margin="0,6,0,12" TextChanged="MoneyBox_TextChanged" />
                             <TextBlock Text="Stall Fee" FontWeight="SemiBold" />
                             <TextBox x:Name="StallFeeBox" Margin="0,6,0,12" />
                             <TextBlock Text="Travel Cost" FontWeight="SemiBold" />

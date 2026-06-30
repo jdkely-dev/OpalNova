@@ -18,6 +18,12 @@ public partial class SupplierDiamondWorkflowWindow : Window
         string Status,
         string Lifecycle,
         string DiamondSummary,
+        string Shape,
+        decimal Carat,
+        string Color,
+        string Clarity,
+        string Lab,
+        bool IsLabGrown,
         string CertificateNumber,
         decimal SupplierPrice,
         string Currency,
@@ -75,6 +81,12 @@ public partial class SupplierDiamondWorkflowWindow : Window
                 status,
                 StockLifecycleService.DescribeExternalDiamondStatus(status),
                 BuildSummary(d),
+                d.Shape,
+                d.Carat,
+                d.Color,
+                d.Clarity,
+                d.Lab,
+                d.IsLabGrown,
                 d.CertificateNumber,
                 d.SupplierPrice,
                 d.Currency,
@@ -319,6 +331,59 @@ public partial class SupplierDiamondWorkflowWindow : Window
         db.SaveChanges();
         StatusText.Text = $"Created reminder task {task.TaskCode}.";
         MessageBox.Show($"Reminder task {task.TaskCode} created.", "Supplier Diamond Workflow", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void CopyReplacementSearch_Click(object sender, RoutedEventArgs e)
+    {
+        var row = SelectedRow();
+        if (row == null)
+        {
+            MessageBox.Show("Select an external diamond first.", "Supplier Diamond Workflow", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var localCandidates = FindLocalReplacementCandidates(row).ToList();
+        var type = row.IsLabGrown ? "lab-grown" : "natural";
+        var lowCarat = Math.Max(0m, row.Carat - 0.15m);
+        var highCarat = row.Carat + 0.15m;
+        var lines = new List<string>
+        {
+            $"Replacement search for {row.DiamondSummary}",
+            $"Type: {type}",
+            $"Shape: {row.Shape}",
+            $"Carat range: {lowCarat:0.###}ct to {highCarat:0.###}ct",
+            $"Colour/clarity target: {row.Color} {row.Clarity}",
+            $"Lab target: {row.Lab}",
+            $"Original certificate: {row.CertificateNumber}",
+            $"Quote/customer: {row.QuoteCode} {row.Customer}".Trim(),
+            string.Empty,
+            localCandidates.Count == 0
+                ? "No close saved alternatives are currently in OPALNOVA. Run a supplier diamond search with the criteria above and save suitable replacements."
+                : "Close saved alternatives already in OPALNOVA:"
+        };
+
+        lines.AddRange(localCandidates.Select((candidate, index) =>
+            $"{index + 1}. {candidate.DiamondSummary} | Cert {candidate.CertificateNumber} | {candidate.SupplierPrice:0.00} {candidate.Currency} | Status {candidate.Status}"));
+
+        Clipboard.SetText(string.Join(Environment.NewLine, lines));
+        StatusText.Text = localCandidates.Count == 0
+            ? "Replacement search criteria copied. No close saved alternatives found locally."
+            : $"Replacement search copied with {localCandidates.Count} close saved alternative(s).";
+    }
+
+    private IEnumerable<DiamondWorkflowRow> FindLocalReplacementCandidates(DiamondWorkflowRow selected)
+    {
+        var lowCarat = Math.Max(0m, selected.Carat - 0.15m);
+        var highCarat = selected.Carat + 0.15m;
+        return _rows
+            .Where(x => x.ExternalDiamondId != selected.ExternalDiamondId)
+            .Where(x => x.IsLabGrown == selected.IsLabGrown)
+            .Where(x => string.Equals(x.Shape, selected.Shape, StringComparison.OrdinalIgnoreCase))
+            .Where(x => selected.Carat <= 0 || (x.Carat >= lowCarat && x.Carat <= highCarat))
+            .Where(x => x.Status is not "Declined" and not "Released" and not "Converted To Owned Inventory")
+            .OrderBy(x => Math.Abs(x.Carat - selected.Carat))
+            .ThenBy(x => x.SupplierPrice <= 0 ? decimal.MaxValue : x.SupplierPrice)
+            .Take(5);
     }
 
     private void Refresh_Click(object sender, RoutedEventArgs e) => LoadRows();
