@@ -35,7 +35,8 @@ public static class CustomerRelationshipService
         var lifetimeSales = sales.Sum(s => s.SaleAmount);
         var outstandingBalance = activeJobs.Sum(j => Math.Max(0, j.BalanceOwing));
         var valueProfile = BuildCustomerValueProfile(customer, jobs, quotes, sales, payments, tasks);
-        var templates = BuildCommunicationTemplates(customer, jobs, quotes, sales, tasks, valueProfile);
+        var segmentProfile = BuildCustomerSegmentProfile(customer, jobs, quotes, sales, tasks, valueProfile);
+        var templates = BuildCommunicationTemplates(customer, jobs, quotes, sales, tasks, valueProfile, segmentProfile);
 
         var fileName = SafeFileName($"CustomerSummary_{customer.FullName}_{customer.Id}.html");
         var path = Path.Combine(PrintoutFolder, fileName);
@@ -59,9 +60,10 @@ public static class CustomerRelationshipService
         html.AppendLine(Tile("Open Follow-ups", openTasks.Count.ToString(CultureInfo.InvariantCulture), nextFollowUp?.DueDate?.ToShortDateString() ?? "None due"));
         html.AppendLine(Tile("Outstanding Balance", Money(outstandingBalance), "Active jobs only"));
         html.AppendLine(Tile("Lifetime Value", Money(valueProfile.LifetimeValue), valueProfile.ValueTier));
+        html.AppendLine(Tile("Segment", segmentProfile.PrimarySegment, segmentProfile.Confidence));
         html.AppendLine(Tile("Last Activity", MostRecentDate(lastSale?.SaleDate, lastJob?.DateReceived, lastPayment?.PaymentDate), "Sale, job or payment"));
         html.AppendLine("</div>");
-        AppendRelationshipGuidance(html, valueProfile);
+        AppendRelationshipGuidance(html, valueProfile, segmentProfile);
         html.AppendLine("<h2>Preferences</h2>");
         html.AppendLine(Row("Ring Sizes", customer.RingSizes ?? string.Empty));
         html.AppendLine(Row("Preferred Metals", customer.PreferredMetals ?? string.Empty));
@@ -100,6 +102,7 @@ public static class CustomerRelationshipService
         var openTasks = tasks.Where(t => t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled).ToList();
         var outstandingBalance = activeJobs.Sum(j => Math.Max(0, j.BalanceOwing));
         var valueProfile = BuildCustomerValueProfile(customer, jobs, quotes, sales, payments, tasks);
+        var segmentProfile = BuildCustomerSegmentProfile(customer, jobs, quotes, sales, tasks, valueProfile);
 
         var fileName = SafeFileName($"CustomerTimeline_{customer.FullName}_{customer.Id}.html");
         var path = Path.Combine(PrintoutFolder, fileName);
@@ -116,8 +119,9 @@ public static class CustomerRelationshipService
         html.AppendLine(Tile("Active Jobs", activeJobs.Count.ToString(CultureInfo.InvariantCulture), Money(outstandingBalance)));
         html.AppendLine(Tile("Open Follow-ups", openTasks.Count.ToString(CultureInfo.InvariantCulture), openTasks.OrderBy(t => t.DueDate ?? DateTime.MaxValue).FirstOrDefault()?.DueDate?.ToShortDateString() ?? "None due"));
         html.AppendLine(Tile("Lifetime Value", Money(valueProfile.LifetimeValue), valueProfile.ValueTier));
+        html.AppendLine(Tile("Segment", segmentProfile.PrimarySegment, segmentProfile.Confidence));
         html.AppendLine("</div>");
-        AppendRelationshipGuidance(html, valueProfile);
+        AppendRelationshipGuidance(html, valueProfile, segmentProfile);
         html.AppendLine("<h2>Preferences</h2>");
         html.AppendLine(Row("Ring Sizes", customer.RingSizes ?? string.Empty));
         html.AppendLine(Row("Preferred Metals", customer.PreferredMetals ?? string.Empty));
@@ -151,7 +155,7 @@ public static class CustomerRelationshipService
         html.AppendLine(Row("Customers with open follow-ups", customers.Count(c => tasks.Any(t => t.CustomerId == c.Id && t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled)).ToString(CultureInfo.InvariantCulture)));
         html.AppendLine(Row("Customers with active jobs", customers.Count(c => jobs.Any(j => j.CustomerId == c.Id && j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled)).ToString(CultureInfo.InvariantCulture)));
         html.AppendLine("<h2>Customer Overview</h2>");
-        html.AppendLine("<table><tr><th>Customer</th><th>Contact</th><th>Jobs</th><th>Active Jobs</th><th>Sales</th><th>Lifetime Value</th><th>Value Guidance</th><th>Open Follow-ups</th><th>Last Activity</th><th>Next Follow-up</th><th>Suggested Next Step</th></tr>");
+        html.AppendLine("<table><tr><th>Customer</th><th>Contact</th><th>Segment</th><th>Jobs</th><th>Active Jobs</th><th>Sales</th><th>Lifetime Value</th><th>Value Guidance</th><th>Open Follow-ups</th><th>Last Activity</th><th>Next Follow-up</th><th>Suggested Next Step</th><th>Reminder Opportunity</th></tr>");
         foreach (var customer in customers)
         {
             var customerJobs = jobs.Where(j => j.CustomerId == customer.Id).ToList();
@@ -161,7 +165,75 @@ public static class CustomerRelationshipService
             var customerTasks = tasks.Where(t => t.CustomerId == customer.Id && t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled).OrderBy(t => t.DueDate ?? DateTime.MaxValue).ToList();
             var lastActivity = MostRecentDate(customerSales.Select(s => s.SaleDate).Concat(customerJobs.Select(j => j.DateReceived)).Concat(customerPayments.Select(p => p.PaymentDate)).ToArray());
             var valueProfile = BuildCustomerValueProfile(customer, customerJobs, customerQuotes, customerSales, customerPayments, tasks.Where(t => t.CustomerId == customer.Id).ToList());
-            html.AppendLine($"<tr><td>{Html(customer.FullName)}</td><td>{Html(CompactContact(customer))}</td><td>{customerJobs.Count}</td><td>{customerJobs.Count(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled)}</td><td>{customerSales.Count}</td><td>{Money(valueProfile.LifetimeValue)}</td><td>{Html(valueProfile.ValueTier)}</td><td>{customerTasks.Count}</td><td>{Html(lastActivity)}</td><td>{Html(customerTasks.FirstOrDefault()?.DueDate?.ToShortDateString() ?? string.Empty)}</td><td>{Html(valueProfile.SuggestedNextStep)}</td></tr>");
+            var segmentProfile = BuildCustomerSegmentProfile(customer, customerJobs, customerQuotes, customerSales, tasks.Where(t => t.CustomerId == customer.Id).ToList(), valueProfile);
+            html.AppendLine($"<tr><td>{Html(customer.FullName)}</td><td>{Html(CompactContact(customer))}</td><td>{Html(segmentProfile.PrimarySegment)}</td><td>{customerJobs.Count}</td><td>{customerJobs.Count(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled)}</td><td>{customerSales.Count}</td><td>{Money(valueProfile.LifetimeValue)}</td><td>{Html(valueProfile.ValueTier)}</td><td>{customerTasks.Count}</td><td>{Html(lastActivity)}</td><td>{Html(customerTasks.FirstOrDefault()?.DueDate?.ToShortDateString() ?? string.Empty)}</td><td>{Html(valueProfile.SuggestedNextStep)}</td><td>{Html(segmentProfile.ReminderOpportunity)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
+    public static string CreateCustomerSegmentReport()
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+
+        var customers = db.Customers.AsNoTracking().AsEnumerable().OrderBy(c => c.FullName).ToList();
+        var jobs = db.Jobs.AsNoTracking().AsEnumerable().ToList();
+        var quotes = db.CustomQuotes.AsNoTracking().AsEnumerable().ToList();
+        var sales = db.Sales.AsNoTracking().AsEnumerable().ToList();
+        var tasks = db.BusinessTasks.AsNoTracking().AsEnumerable().ToList();
+        var payments = db.Payments.AsNoTracking().AsEnumerable().ToList();
+        var path = Path.Combine(PrintoutFolder, $"CustomerSegmentReport_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+
+        var rows = customers.Select(customer =>
+        {
+            var customerJobs = jobs.Where(j => j.CustomerId == customer.Id).ToList();
+            var customerQuotes = quotes.Where(q => q.CustomerId == customer.Id).ToList();
+            var customerSales = sales.Where(s => s.CustomerId == customer.Id).ToList();
+            var customerPayments = payments.Where(p => p.CustomerId == customer.Id || customerJobs.Any(j => p.JobId == j.Id) || customerSales.Any(s => p.SaleId == s.Id)).ToList();
+            var customerTasks = tasks.Where(t => t.CustomerId == customer.Id).ToList();
+            var valueProfile = BuildCustomerValueProfile(customer, customerJobs, customerQuotes, customerSales, customerPayments, customerTasks);
+            var segmentProfile = BuildCustomerSegmentProfile(customer, customerJobs, customerQuotes, customerSales, customerTasks, valueProfile);
+            var nextFollowUp = customerTasks
+                .Where(t => t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled)
+                .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
+                .FirstOrDefault();
+            var lastActivity = MostRecentDate(customerSales.Select(s => s.SaleDate).Concat(customerJobs.Select(j => j.DateReceived)).Concat(customerPayments.Select(p => p.PaymentDate)).ToArray());
+            return new
+            {
+                Customer = customer,
+                Value = valueProfile,
+                Segment = segmentProfile,
+                NextFollowUp = nextFollowUp,
+                LastActivity = lastActivity
+            };
+        }).ToList();
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Customer Segment Report"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Customer Segment Report</h1>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}</p>");
+        html.AppendLine("<div class='summary-grid'>");
+        html.AppendLine(Tile("Customers", customers.Count.ToString(CultureInfo.InvariantCulture), "All customer records"));
+        html.AppendLine(Tile("Repeat / High Value", rows.Count(r => r.Value.ValueTier.Contains("repeat", StringComparison.OrdinalIgnoreCase)).ToString(CultureInfo.InvariantCulture), "Repeat guidance"));
+        html.AppendLine(Tile("Reminder Opportunities", rows.Count(r => HasSpecificReminderOpportunity(r.Segment.ReminderOpportunity)).ToString(CultureInfo.InvariantCulture), "Notes mention dates, gifts or after-care"));
+        html.AppendLine("</div>");
+        html.AppendLine("<h2>Segment Overview</h2>");
+        html.AppendLine("<table><tr><th>Segment</th><th>Customers</th><th>Total Lifetime Value</th><th>Open Follow-ups</th></tr>");
+        foreach (var group in rows.GroupBy(r => r.Segment.PrimarySegment).OrderByDescending(g => g.Count()).ThenBy(g => g.Key))
+        {
+            html.AppendLine($"<tr><td>{Html(group.Key)}</td><td>{group.Count()}</td><td>{Money(group.Sum(r => r.Value.LifetimeValue))}</td><td>{group.Sum(r => r.Value.OpenTasksCount)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+        html.AppendLine("<h2>Customer Follow-Up Angles</h2>");
+        html.AppendLine("<table><tr><th>Customer</th><th>Contact</th><th>Segment</th><th>Confidence</th><th>Rationale</th><th>Value Guidance</th><th>Next Follow-up</th><th>Follow-up Angle</th><th>Reminder Opportunity</th></tr>");
+        foreach (var row in rows.OrderBy(r => r.Segment.PrimarySegment).ThenByDescending(r => r.Value.LifetimeValue).ThenBy(r => r.Customer.FullName))
+        {
+            html.AppendLine($"<tr><td>{Html(row.Customer.FullName)}</td><td>{Html(CompactContact(row.Customer))}</td><td>{Html(row.Segment.PrimarySegment)}</td><td>{Html(row.Segment.Confidence)}</td><td>{Html(row.Segment.Rationale)}</td><td>{Html(row.Value.ValueTier)}</td><td>{Html(row.NextFollowUp?.DueDate?.ToShortDateString() ?? string.Empty)}</td><td>{Html(row.Segment.FollowUpAngle)}</td><td>{Html(row.Segment.ReminderOpportunity)}</td></tr>");
         }
         html.AppendLine("</table>");
         html.AppendLine("</section>");
@@ -181,7 +253,8 @@ public static class CustomerRelationshipService
         var payments = db.Payments.AsNoTracking().AsEnumerable().Where(p => p.CustomerId == customer.Id || jobs.Any(j => p.JobId == j.Id) || sales.Any(s => p.SaleId == s.Id)).OrderByDescending(p => p.PaymentDate).ToList();
         var tasks = db.BusinessTasks.AsNoTracking().AsEnumerable().Where(t => t.CustomerId == customer.Id).OrderBy(t => t.DueDate ?? DateTime.MaxValue).ToList();
         var valueProfile = BuildCustomerValueProfile(customer, jobs, quotes, sales, payments, tasks);
-        var templates = BuildCommunicationTemplates(customer, jobs, quotes, sales, tasks, valueProfile);
+        var segmentProfile = BuildCustomerSegmentProfile(customer, jobs, quotes, sales, tasks, valueProfile);
+        var templates = BuildCommunicationTemplates(customer, jobs, quotes, sales, tasks, valueProfile, segmentProfile);
 
         var fileName = SafeFileName($"CustomerCommunicationTemplates_{customer.FullName}_{customer.Id}.html");
         var path = Path.Combine(PrintoutFolder, fileName);
@@ -194,8 +267,10 @@ public static class CustomerRelationshipService
         html.AppendLine(Row("Customer", customer.FullName));
         html.AppendLine(Row("Contact", CompactContact(customer)));
         html.AppendLine(Row("Value Guidance", valueProfile.ValueTier));
+        html.AppendLine(Row("Customer Segment", $"{segmentProfile.PrimarySegment} ({segmentProfile.Confidence})"));
+        html.AppendLine(Row("Segment Follow-up Angle", segmentProfile.FollowUpAngle));
         html.AppendLine(Row("Suggested Next Step", valueProfile.SuggestedNextStep));
-        AppendRelationshipGuidance(html, valueProfile);
+        AppendRelationshipGuidance(html, valueProfile, segmentProfile);
         AppendCommunicationTemplates(html, templates, "Message Starters");
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
@@ -212,7 +287,8 @@ public static class CustomerRelationshipService
         var payments = db.Payments.AsNoTracking().AsEnumerable().Where(p => p.CustomerId == customer.Id || jobs.Any(j => p.JobId == j.Id) || sales.Any(s => p.SaleId == s.Id)).ToList();
         var tasks = db.BusinessTasks.AsNoTracking().AsEnumerable().Where(t => t.CustomerId == customer.Id).ToList();
         var valueProfile = BuildCustomerValueProfile(customer, jobs, quotes, sales, payments, tasks);
-        var templates = BuildCommunicationTemplates(customer, jobs, quotes, sales, tasks, valueProfile);
+        var segmentProfile = BuildCustomerSegmentProfile(customer, jobs, quotes, sales, tasks, valueProfile);
+        var templates = BuildCommunicationTemplates(customer, jobs, quotes, sales, tasks, valueProfile, segmentProfile);
 
         return new BusinessTask
         {
@@ -225,13 +301,14 @@ public static class CustomerRelationshipService
             ReminderDate = DateTime.Today.AddDays(1),
             CustomerId = customer.Id,
             Description = "Customer relationship follow-up. Add the reason, next step, quote reminder, collection reminder or after-sale check-in details.",
-            FollowUpNotes = BuildFollowUpNotes(customer, valueProfile, templates),
+            FollowUpNotes = BuildFollowUpNotes(customer, valueProfile, segmentProfile, templates),
             ShowOnDashboard = true
         };
     }
 
     private sealed record CustomerTimelineEvent(DateTime Date, string Type, string Title, string Detail, string Status, decimal? Amount);
     private sealed record CustomerValueProfile(decimal LifetimeValue, decimal PaymentsRecorded, decimal OutstandingBalance, int JobsCount, int ActiveJobsCount, int SalesCount, int OpenQuotesCount, int OpenTasksCount, string ValueTier, string SuggestedNextStep, string RepeatFollowUpSuggestion);
+    private sealed record CustomerSegmentProfile(string PrimarySegment, string Confidence, string Rationale, string FollowUpAngle, string ReminderOpportunity);
     private sealed record CommunicationTemplate(string Title, string Body);
 
     private static CustomerValueProfile BuildCustomerValueProfile(
@@ -296,13 +373,128 @@ public static class CustomerRelationshipService
             repeatFollowUp);
     }
 
-    private static List<CommunicationTemplate> BuildCommunicationTemplates(
+    private static CustomerSegmentProfile BuildCustomerSegmentProfile(
         Customer customer,
         List<Job> jobs,
         List<CustomQuote> quotes,
         List<Sale> sales,
         List<BusinessTask> tasks,
         CustomerValueProfile profile)
+    {
+        var text = BuildSegmentText(customer, jobs, quotes, sales, tasks);
+        var notesText = customer.Notes ?? string.Empty;
+        var hasGiftMarker = ContainsAny(notesText, "birthday", "anniversary", "gift", "occasion", "christmas", "valentine", "wedding");
+        var hasAfterCareMarker = ContainsAny(text, "after-care", "aftercare", "clean", "polish", "resize", "repair", "check");
+        var lastActivity = MostRecentActivityDate(jobs, sales, new List<Payment>(), tasks);
+
+        string reminderOpportunity;
+        if (hasGiftMarker)
+        {
+            reminderOpportunity = "Customer notes mention a birthday, anniversary, gift or occasion. Check timing before contacting.";
+        }
+        else if (profile.LifetimeValue > 0m && lastActivity.HasValue && lastActivity.Value.Date <= DateTime.Today.AddDays(-90))
+        {
+            reminderOpportunity = "Past purchase is old enough for an after-care, cleaning or fit check-in.";
+        }
+        else if (profile.OpenQuotesCount > 0)
+        {
+            reminderOpportunity = "Open quote or proposal can be followed up before the customer goes cold.";
+        }
+        else
+        {
+            reminderOpportunity = "No explicit occasion marker found. Ask permission before adding personal reminder notes.";
+        }
+
+        if (ContainsAny(text, "wholesale", "trade", "stockist", "gallery", "retailer"))
+        {
+            return new CustomerSegmentProfile(
+                "Wholesale / Trade",
+                "Notes-based",
+                "Customer notes or activity mention wholesale, trade, stockist, gallery or retail context.",
+                "Focus on supply timing, repeatable styles, margins and reliable delivery expectations.",
+                reminderOpportunity);
+        }
+
+        if (sales.Any(s => s.SaleLocation == SaleLocation.Market) || ContainsAny(text, "market", "stall", "show", "fair"))
+        {
+            return new CustomerSegmentProfile(
+                "Market Customer",
+                "Activity-based",
+                "Customer has market sale history or market-related notes.",
+                "Use a short, practical follow-up around care, sizing, matching items or the next market appearance.",
+                reminderOpportunity);
+        }
+
+        if (ContainsAny(text, "collector", "collection", "collecting") ||
+            ((profile.SalesCount >= 2 || profile.LifetimeValue >= 2500m) && ContainsAny(text, "opal", "gemstone", "diamond", "sapphire", "ruby", "emerald", "stone")))
+        {
+            return new CustomerSegmentProfile(
+                "Collector",
+                "Preference-based",
+                "Customer history or preferences suggest repeated interest in stones, opals, diamonds or collection building.",
+                "Lead with new stones, provenance, matching pieces and collection-aware design ideas.",
+                reminderOpportunity);
+        }
+
+        if (jobs.Any(j => j.Type is JobType.CustomOrder or JobType.Remake or JobType.StoneSetting) ||
+            quotes.Count > 0 ||
+            ContainsAny(text, "custom", "bespoke", "engagement", "wedding", "remake", "setting", "design"))
+        {
+            return new CustomerSegmentProfile(
+                "Custom Customer",
+                "Workflow-based",
+                "Customer has custom quote, remake, stone-setting or design workflow history.",
+                "Focus on design progress, option comparison, budget clarity and next approval steps.",
+                reminderOpportunity);
+        }
+
+        if (jobs.Any(j => j.Type is JobType.Repair or JobType.Resize or JobType.CleanAndPolish) ||
+            ContainsAny(text, "repair", "resize", "clean", "polish", "maintenance"))
+        {
+            return new CustomerSegmentProfile(
+                "Repair Customer",
+                "Workflow-based",
+                "Customer history includes repair, resize, clean/polish or maintenance work.",
+                "Keep communication simple: intake status, timing, approval needs, care advice and pickup readiness.",
+                reminderOpportunity);
+        }
+
+        if (profile.SalesCount >= 2 || profile.JobsCount >= 2 || profile.ValueTier.Contains("repeat", StringComparison.OrdinalIgnoreCase))
+        {
+            return new CustomerSegmentProfile(
+                "Repeat Customer",
+                "Activity-based",
+                "Customer has multiple sales, jobs or repeat-value guidance.",
+                "Thank them for repeat business and suggest after-care, matching pieces or occasion-led future work.",
+                reminderOpportunity);
+        }
+
+        if (profile.OpenQuotesCount > 0)
+        {
+            return new CustomerSegmentProfile(
+                "Quote / Enquiry Customer",
+                "Workflow-based",
+                "Customer has an open quote or proposal without a converted job.",
+                "Focus on clarifying the preferred option, budget, timing and approval path.",
+                reminderOpportunity);
+        }
+
+        return new CustomerSegmentProfile(
+            "New / Early Relationship",
+            "Default",
+            "Not enough linked activity exists yet to infer a stronger segment.",
+            "Confirm preferences, contact method, ring size, stone/metal interests and upcoming occasions.",
+            reminderOpportunity);
+    }
+
+    private static List<CommunicationTemplate> BuildCommunicationTemplates(
+        Customer customer,
+        List<Job> jobs,
+        List<CustomQuote> quotes,
+        List<Sale> sales,
+        List<BusinessTask> tasks,
+        CustomerValueProfile profile,
+        CustomerSegmentProfile segment)
     {
         var name = FirstName(customer);
         var preferences = BuildPreferenceSummary(customer);
@@ -346,6 +538,10 @@ public static class CustomerRelationshipService
             "Repeat customer / preference prompt",
             $"Hi {name},\n\nI was reviewing your preferences and thought it would be useful to check whether anything has changed for future pieces.\n\n{(string.IsNullOrWhiteSpace(preferences) ? "If you have preferred stones, metals, ring sizes or upcoming occasions, I can keep those in mind." : preferences)}\n\n{profile.RepeatFollowUpSuggestion}\n\nKind regards"));
 
+        templates.Add(new CommunicationTemplate(
+            $"{segment.PrimarySegment} follow-up",
+            $"Hi {name},\n\nI was reviewing your recent OPALNOVA notes and wanted to check the best next step.\n\n{segment.FollowUpAngle}\n\n{segment.ReminderOpportunity}\n\nKind regards"));
+
         if (nextTask != null)
         {
             templates.Add(new CommunicationTemplate(
@@ -356,12 +552,16 @@ public static class CustomerRelationshipService
         return templates;
     }
 
-    private static void AppendRelationshipGuidance(StringBuilder html, CustomerValueProfile profile)
+    private static void AppendRelationshipGuidance(StringBuilder html, CustomerValueProfile profile, CustomerSegmentProfile segment)
     {
         html.AppendLine("<h2>Relationship Guidance</h2>");
         html.AppendLine(Row("Lifetime Value", Money(profile.LifetimeValue)));
         html.AppendLine(Row("Payments Recorded", Money(profile.PaymentsRecorded)));
         html.AppendLine(Row("Value Guidance", profile.ValueTier));
+        html.AppendLine(Row("Customer Segment", $"{segment.PrimarySegment} ({segment.Confidence})"));
+        html.AppendLine(Row("Segment Rationale", segment.Rationale));
+        html.AppendLine(Row("Segment Follow-up Angle", segment.FollowUpAngle));
+        html.AppendLine(Row("Reminder Opportunity", segment.ReminderOpportunity));
         html.AppendLine(Row("Suggested Next Step", profile.SuggestedNextStep));
         html.AppendLine(Row("Repeat Follow-up Suggestion", profile.RepeatFollowUpSuggestion));
     }
@@ -378,7 +578,7 @@ public static class CustomerRelationshipService
         }
     }
 
-    private static string BuildFollowUpNotes(Customer customer, CustomerValueProfile profile, List<CommunicationTemplate> templates)
+    private static string BuildFollowUpNotes(Customer customer, CustomerValueProfile profile, CustomerSegmentProfile segment, List<CommunicationTemplate> templates)
     {
         var sb = new StringBuilder();
         var preferences = BuildPreferenceSummary(customer);
@@ -389,6 +589,10 @@ public static class CustomerRelationshipService
         }
 
         sb.AppendLine($"Value guidance: {profile.ValueTier}");
+        sb.AppendLine($"Customer segment: {segment.PrimarySegment} ({segment.Confidence})");
+        sb.AppendLine($"Segment rationale: {segment.Rationale}");
+        sb.AppendLine($"Follow-up angle: {segment.FollowUpAngle}");
+        sb.AppendLine($"Reminder opportunity: {segment.ReminderOpportunity}");
         sb.AppendLine($"Suggested next step: {profile.SuggestedNextStep}");
         sb.AppendLine($"Repeat follow-up suggestion: {profile.RepeatFollowUpSuggestion}");
 
@@ -412,6 +616,32 @@ public static class CustomerRelationshipService
             .ToList();
         return dates.Count == 0 ? null : dates.Max();
     }
+
+    private static string BuildSegmentText(Customer customer, List<Job> jobs, List<CustomQuote> quotes, List<Sale> sales, List<BusinessTask> tasks)
+    {
+        var parts = new List<string?>
+        {
+            customer.FullName,
+            customer.RingSizes,
+            customer.PreferredMetals,
+            customer.PreferredStones,
+            customer.Notes
+        };
+        parts.AddRange(jobs.Select(j => $"{j.JobCode} {j.JobTitle} {j.Type} {j.Status} {j.DesignNotes} {j.CustomerApprovalNotes} {j.InternalNotes}"));
+        parts.AddRange(quotes.Select(q => $"{q.QuoteCode} {q.Title} {q.Status} {q.Occasion} {q.BudgetRange} {q.PreferredMetal} {q.PreferredStone} {q.CustomerNotes} {q.InternalNotes}"));
+        parts.AddRange(sales.Select(s => $"{s.SaleLocation} {s.Notes}"));
+        parts.AddRange(tasks.Select(t => $"{t.Title} {t.Category} {t.Description} {t.FollowUpNotes}"));
+        return string.Join(" ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
+    }
+
+    private static bool ContainsAny(string? text, params string[] terms)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        return terms.Any(term => text.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool HasSpecificReminderOpportunity(string reminderOpportunity) =>
+        !reminderOpportunity.StartsWith("No explicit", StringComparison.OrdinalIgnoreCase);
 
     private static string FirstName(Customer customer)
     {

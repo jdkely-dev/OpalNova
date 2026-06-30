@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.90.0 Stability Milestone
+Current baseline: V1.91.0 Nivoda Staging Readiness
 
 ## Purpose
 
@@ -96,7 +96,7 @@ Ease:
 | Production stage checklist, waiting flags, and job files | P2 | M-L | Started in V1.76.0 with a generated stage checklist covering readiness, waits, quote context, reservations, supplier diamonds, payments, tasks and linked job photos/files. | V1.76 |
 | Stock lifecycle clarity | P2 | M-L | Strengthened in V1.79.0 with shared lifecycle guidance for status changes, supplier diamonds and inventory reports. | V1.52, V1.79 |
 | Stability milestone and redundancy check | P0 | S-M | Completed in V1.80.0 across V1.76-V1.79 and repeated in V1.90.0 across V1.81-V1.89 before the milestone commit/push. | V1.80, V1.90 |
-| External diamond refresh availability/price | P3 | M-L | API search exists; live refresh still needs confirmed credential/schema behavior. V1.83.0 adds local replacement-search copy from saved diamond data and close saved alternatives. | V1.83+ |
+| External diamond refresh availability/price | P3 | M-L | API search exists; live refresh still needs confirmed credential/schema behavior. V1.83.0 adds local replacement-search copy from saved diamond data and close saved alternatives. V1.91.0 adds staging handoff/schema diagnostics so Nivoda can confirm the accessible fields and mutations. | V1.83+ / V1.91 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
 | Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; profitability reporting is implemented in V1.59.0; tax/GST summary is implemented in V1.60.0; visual charts are implemented in V1.61.0. | V1.54, V1.58, V1.59, V1.60, V1.61 |
 | Customer profile dashboard and timeline | P3 | M | Customer timeline implemented in V1.56.0 using existing quote, proposal, job, sale, payment and task records; V1.75 adds value guidance and communication templates. | V1.56, V1.75 |
@@ -113,7 +113,7 @@ Ease:
 | Scheduled reports | P4 | XL | Requires background scheduling and report stability. | Later |
 | Practical jeweller calculators | P3 | S-M | Started in V1.88.0 with local ring-size, metal-weight and stone-carat tools that do not depend on hardware devices or schema changes. | V1.88 |
 | Advanced hardware tools | P4 | M-XL | Current foundations exist, but hardware support can sprawl quickly. V1.88.0 intentionally keeps this pass to no-hardware local calculators. | Later |
-| API-level Nivoda hold/order | P4 | XL | Must wait for confirmed accessible schema and production credentials. | Later |
+| API-level Nivoda hold/order | P4 | XL | Must wait for confirmed accessible schema and production credentials. V1.91.0 adds a staging handoff and mutation discovery report to unblock that confirmation step. | Later |
 
 ## Recommended Build Sequence
 

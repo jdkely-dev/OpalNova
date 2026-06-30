@@ -32,6 +32,8 @@ public partial class DiamondSupplierWindow : Window
 
     private void LoadSettings()
     {
+        EnvironmentBox.Text = string.IsNullOrWhiteSpace(_settings.NivodaEnvironmentName) ? "Staging" : _settings.NivodaEnvironmentName;
+        ReviewUrlBox.Text = _settings.NivodaStagingReviewUrl;
         EndpointBox.Text = string.IsNullOrWhiteSpace(_settings.NivodaEndpoint) ? NivodaDiamondApiService.DefaultEndpoint : _settings.NivodaEndpoint;
         GraphiQlBox.Text = string.IsNullOrWhiteSpace(_settings.NivodaGraphiQlUrl) ? NivodaDiamondApiService.DefaultGraphiQlUrl : _settings.NivodaGraphiQlUrl;
         UsernameBox.Text = _settings.NivodaUsername;
@@ -51,6 +53,8 @@ public partial class DiamondSupplierWindow : Window
     private bool ApplySettings()
     {
         if (!TryReadDecimal(MarkupBox.Text, "Retail markup", out var markup)) return false;
+        _settings.NivodaEnvironmentName = string.IsNullOrWhiteSpace(EnvironmentBox.Text) ? "Staging" : EnvironmentBox.Text.Trim();
+        _settings.NivodaStagingReviewUrl = ReviewUrlBox.Text.Trim();
         _settings.NivodaEndpoint = EndpointBox.Text.Trim();
         _settings.NivodaGraphiQlUrl = GraphiQlBox.Text.Trim();
         _settings.NivodaUsername = UsernameBox.Text.Trim();
@@ -77,6 +81,7 @@ public partial class DiamondSupplierWindow : Window
 
     private void UseDefaultNivodaEndpoints_Click(object sender, RoutedEventArgs e)
     {
+        EnvironmentBox.Text = "Staging";
         EndpointBox.Text = NivodaDiamondApiService.DefaultEndpoint;
         GraphiQlBox.Text = NivodaDiamondApiService.DefaultGraphiQlUrl;
         StatusText.Text = "Default Nivoda endpoints filled. Enter your own Nivoda credentials before testing or searching.";
@@ -100,6 +105,29 @@ public partial class DiamondSupplierWindow : Window
             ErrorLogService.Log(ex, "Nivoda connection test");
             StatusText.Text = "Connection test failed.";
             MessageBox.Show($"Could not connect to Nivoda.\n\n{ex.Message}", "Nivoda Connection", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+        }
+    }
+
+    private async void StagingHandoff_Click(object sender, RoutedEventArgs e)
+    {
+        if (!ApplySettings()) return;
+        try
+        {
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            BusinessSettingsService.Save(_settings);
+            var path = await NivodaStagingHandoffService.CreateHandoffReportAsync();
+            StatusText.Text = "Nivoda staging handoff report generated.";
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create Nivoda staging handoff");
+            StatusText.Text = "Could not create Nivoda staging handoff report.";
+            MessageBox.Show($"Could not create the Nivoda staging handoff report.\n\n{ex.Message}", "Nivoda Staging Handoff", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {

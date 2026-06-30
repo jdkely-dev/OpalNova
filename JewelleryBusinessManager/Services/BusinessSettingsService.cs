@@ -79,6 +79,7 @@ public static class BusinessSettingsService
             MetalPriceSourceNote = "Manual prices. Add an API key in Metal Prices to refresh live spot pricing.",
             NivodaEndpoint = "https://intg-customer-staging.nivodaapi.net/api/diamonds",
             NivodaGraphiQlUrl = "https://intg-customer-staging.nivodaapi.net/api/diamonds-graphiql",
+            NivodaEnvironmentName = "Staging",
             ExternalDiamondDefaultCurrency = "AUD",
             ExternalDiamondDefaultMarkupPercent = 35m,
             NivodaLastConnectionNote = "Not tested yet."

@@ -34,6 +34,8 @@ public class BusinessSettings
 
     public string NivodaEndpoint { get; set; } = "https://intg-customer-staging.nivodaapi.net/api/diamonds";
     public string NivodaGraphiQlUrl { get; set; } = "https://intg-customer-staging.nivodaapi.net/api/diamonds-graphiql";
+    public string NivodaEnvironmentName { get; set; } = "Staging";
+    public string NivodaStagingReviewUrl { get; set; } = string.Empty;
     public string NivodaUsername { get; set; } = string.Empty;
     public string NivodaPassword { get; set; } = string.Empty;
     public decimal ExternalDiamondDefaultMarkupPercent { get; set; } = 35m;

@@ -1,7 +1,7 @@
 # OPALNOVA One-Time Future Change Plan By Expected Version
 
 Snapshot created: 2026-06-30
-Current stable baseline: V1.90.0 Stability Milestone
+Current local baseline: V1.91.0 Nivoda Staging Readiness
 
 This is a one-time planning snapshot, not a locked contract. Versions can move if a change proves easier, riskier, or more useful than expected. The current working rule is to commit and push only at whole-number milestone versions such as V1.90 and V2.0 unless explicitly requested.
 
@@ -169,19 +169,20 @@ Why here:
 - This follows the user's whole-number git rule.
 - It creates a stable checkpoint before larger V2.0 decisions.
 
-## V1.91 - Customer And Follow-Up Refinement
+## V1.91 - Nivoda Staging Readiness And Customer Segment Guidance
 
 Expected focus:
 
-- Improve customer segmentation: collector, repair customer, custom customer, wholesale, market customer, and repeat customer.
-- Strengthen birthday, anniversary, gift, and after-care reminder fields only if they are useful in real daily work.
-- Add better customer value and repeat-purchase guidance using existing sales, quotes, jobs, payments, and tasks.
-- Improve communication templates based on customer type and recent activity.
+- Generate a non-secret Nivoda staging handoff report with endpoint, GraphiQL, optional external review URL, authentication status and accessible GraphQL schema fields. Started in V1.91.0.
+- Add environment and review URL settings to the Nivoda supplier window without hardcoded credentials. Started in V1.91.0.
+- Add a ready-to-host static handoff page under `docs/nivoda-staging/` and a manual GitHub Pages workflow for a future externally shareable URL. Started in V1.91.0.
+- Keep live Nivoda hold/order API actions gated until Nivoda confirms account-specific mutation names and payloads.
+- Improve customer segmentation and reminder guidance using existing customer, sales, quotes, jobs, payments and task data. Started in V1.91.0 as no-schema guidance in existing customer outputs.
 
 Why here:
 
-- Customer timeline, communication templates, lifetime value guidance, and follow-up task creation already exist.
-- This should refine customer relationship work after the next stability milestone.
+- The user needs Nivoda staging setup to move forward with API access and review.
+- Customer timeline, communication templates, lifetime value guidance, and follow-up task creation already exist, so customer refinement can continue without schema changes.
 
 ## V1.92 - Advanced Reports And Scheduled Outputs
 

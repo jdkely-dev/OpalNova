@@ -17,6 +17,7 @@
                     <Button Content="Use Default Endpoints" Click="UseDefaultNivodaEndpoints_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Reset the API URLs only. Credentials must be entered by the user." />
                     <Button Content="Open GraphiQL" Click="OpenGraphiQl_Click" Style="{StaticResource ToolbarButtonStyle}" />
                     <Button Content="Test Connection" Click="TestConnection_Click" Style="{StaticResource ToolbarButtonStyle}" />
+                    <Button Content="Staging Handoff" Click="StagingHandoff_Click" Style="{StaticResource ToolbarButtonStyle}" />
                     <Button Content="Save Settings" Click="SaveSettings_Click" Style="{StaticResource AccentButtonStyle}" />
                     <Button Content="Close" Click="Close_Click" />
                 </StackPanel>
@@ -44,17 +45,24 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Grid.ColumnSpan="4" Text="API Settings" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="4,0,4,10" />
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Endpoint" Margin="4" VerticalAlignment="Center" />
-                    <TextBox x:Name="EndpointBox" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="4" />
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Username" Margin="4" VerticalAlignment="Center" />
-                    <TextBox x:Name="UsernameBox" Grid.Row="2" Grid.Column="1" Margin="4" />
-                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Password" Margin="4" VerticalAlignment="Center" />
-                    <PasswordBox x:Name="PasswordBox" Grid.Row="2" Grid.Column="3" Margin="4" />
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="GraphiQL" Margin="4" VerticalAlignment="Center" />
-                    <TextBox x:Name="GraphiQlBox" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Margin="4" />
-                    <TextBlock Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Margin="4,6,4,0" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Text="Enter your Nivoda credentials, then save settings and test the connection. The default endpoint button resets API URLs only and never fills a password." />
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Environment" Margin="4" VerticalAlignment="Center" />
+                    <TextBox x:Name="EnvironmentBox" Grid.Row="1" Grid.Column="1" Margin="4" />
+                    <TextBlock Grid.Row="1" Grid.Column="2" Text="Review URL" Margin="4" VerticalAlignment="Center" />
+                    <TextBox x:Name="ReviewUrlBox" Grid.Row="1" Grid.Column="3" Margin="4" ToolTip="Optional external staging link, such as a private build share or hosted handoff page." />
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Endpoint" Margin="4" VerticalAlignment="Center" />
+                    <TextBox x:Name="EndpointBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="4" />
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Username" Margin="4" VerticalAlignment="Center" />
+                    <TextBox x:Name="UsernameBox" Grid.Row="3" Grid.Column="1" Margin="4" />
+                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Password" Margin="4" VerticalAlignment="Center" />
+                    <PasswordBox x:Name="PasswordBox" Grid.Row="3" Grid.Column="3" Margin="4" />
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="GraphiQL" Margin="4" VerticalAlignment="Center" />
+                    <TextBox x:Name="GraphiQlBox" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Margin="4" />
+                    <TextBlock Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Margin="4,6,4,0" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Text="Enter your Nivoda credentials, then save settings and test the connection. The default endpoint button resets API URLs only and never fills a password." />
+                    <TextBlock Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Margin="4,2,4,0" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Text="Use Staging Handoff to generate a non-secret report with endpoints, GraphiQL, auth/schema status and fields Nivoda needs to confirm for hold/order actions." />
                 </Grid>
             </Border>
 

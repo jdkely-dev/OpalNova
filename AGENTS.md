@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.90.0 Stability Milestone
+- Current workspace version: V1.91.0 Nivoda Staging Readiness
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,28 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.91.0 State
+
+V1.91.0 pivots to Nivoda staging/API readiness so Nivoda setup can move forward:
+
+- Bumped visible/project version metadata to 1.91.0.
+- Added Nivoda environment and optional external review URL settings to the Diamond Supplier API window.
+- Added `NivodaDiamondApiService.CreateDiagnosticsAsync(...)` to authenticate with user-entered credentials and introspect the accessible GraphQL query/mutation schema.
+- Added `NivodaStagingHandoffService.CreateHandoffReportAsync(...)`.
+- Added Nivoda Staging Handoff actions in Diamonds and Diamond Supplier Studio, plus a button inside the Nivoda search window.
+- Added a ready-to-host non-secret static page at `docs/nivoda-staging/index.html`.
+- Added a GitHub Pages workflow at `.github/workflows/nivoda-staging-pages.yml` for publishing the handoff page after push.
+- Kept Nivoda username/password user-entered only; no credentials are included in generated handoff reports.
+- Kept live API hold/order actions gated until Nivoda confirms account-specific mutation names and required payloads.
+- Started no-schema customer segment guidance in existing customer summaries, timelines, templates and follow-up notes.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.91 remains uncommitted until a whole-number milestone unless explicitly requested.
 
 ## V1.90.0 State
 
@@ -40,7 +62,7 @@ Validation completed:
 - Debug build succeeds with zero warnings and zero errors.
 - Release publish succeeds through `win-x64-self-contained`.
 - Published `OPALNOVA.exe` launches and closes cleanly.
-- V1.90 is the next whole-number milestone and should be committed/pushed after validation.
+- V1.90 was committed and pushed after validation as the whole-number milestone.
 
 ## V1.89.0 State
 

@@ -1190,6 +1190,7 @@ public partial class MainWindow : Window
             new("Nivoda Diamond Search", "Search external supplier diamonds and save useful results.", DiamondSupplier_Click),
             new("Saved External Diamonds", "Open saved external diamond records.", ExternalDiamondRegister_Click),
             new("Supplier Holds & Orders", "Track holds, orders, arrivals, releases and expiring supplier diamonds.", SupplierDiamondWorkflow_Click),
+            new("Nivoda Staging Handoff", "Generate non-secret endpoint, GraphiQL and schema diagnostics for Nivoda API setup.", NivodaStagingHandoff_Click),
             new("Custom Quote Builder", "Link saved external diamonds to quote options.", CustomQuoteBuilder_Click),
             new("External Diamonds", "Open the raw external diamond record list.", (_, _) => SelectNavigationSection("External Diamonds")),
         },
@@ -1236,6 +1237,7 @@ public partial class MainWindow : Window
         "Diamond Supplier Studio" => new ToolAction[]
         {
             new("Nivoda Diamond Search", "Search Nivoda supplier diamonds using user-entered credentials and save external diamond records.", DiamondSupplier_Click),
+            new("Nivoda Staging Handoff", "Generate a non-secret staging report for Nivoda API review and schema confirmation.", NivodaStagingHandoff_Click),
             new("Supplier Holds & Orders", "Track linked external diamonds through hold requested, hold confirmed, ordered, received or released.", SupplierDiamondWorkflow_Click),
             new("Saved External Diamonds", "Open saved supplier diamond records that are not yet owned inventory.", ExternalDiamondRegister_Click),
         },
@@ -1743,6 +1745,8 @@ public partial class MainWindow : Window
     private static readonly Dictionary<string, HelpGuide> HelpGuides = new(StringComparer.OrdinalIgnoreCase)
     {
         ["Diamond Supplier Studio|Nivoda Diamond Search"] = new("Nivoda Diamond Search", "Search supplier diamonds.", "Uses the Nivoda GraphQL endpoint with username/password authentication to retrieve matching diamond rows.", "Start with broad filters, then tighten carat/lab/shape once the result set is working.", "If GraphQL errors appear, open GraphiQL and check whether the schema field names have changed.", "Search results are external supplier options, not physical owned inventory."),
+        ["Diamond Supplier Studio|Nivoda Staging Handoff"] = new("Nivoda Staging Handoff", "Prepare Nivoda API review.", "Generates a non-secret HTML handoff report with the configured endpoint, GraphiQL URL, optional external review URL, authentication status and discovered GraphQL query/mutation fields.", "Enter the staging endpoint, GraphiQL URL, credentials and optional review link in Nivoda Diamond Search, save settings, then generate the handoff.", "Use this when asking Nivoda to confirm search, hold, order, price refresh and availability schema details.", "The report does not include credentials. Live hold/order actions should stay local-only until Nivoda confirms account-specific mutation names and payloads."),
+        ["Diamonds|Nivoda Staging Handoff"] = new("Nivoda Staging Handoff", "Prepare Nivoda API review.", "Creates the same non-secret Nivoda staging handoff from the Diamonds workspace.", "Generate it after entering current Nivoda settings so the report can include live schema diagnostics.", "Share the generated HTML or its hosted copy with Nivoda for API review.", "A local desktop app does not expose a public callback URL unless a separate hosted component is deliberately added."),
         ["Diamond Supplier Studio|Saved External Diamonds"] = new("Saved External Diamonds", "Review saved supplier stones.", "Shows external diamond records saved from the API search.", "Use this to compare supplier stones, prices, certificates and quote candidates later.", "Saved external diamonds should move through hold/order/received statuses before being treated as in-house stock.", "Saving a result does not reserve it with the supplier."),
         ["Pricing Studio|Metal Prices"] = new("Metal Prices", "Update metal prices used by pricing tools.", "Lets you refresh or enter current gold, silver, platinum and palladium price assumptions.", "Open the tool, review the values, update them if needed, then refresh pricing calculations.", "Update before quoting or repricing stock.", "Market metal prices move. Old prices can make quotes inaccurate."),
         ["Pricing Studio|Pricing Helper"] = new("Pricing Helper", "Estimate retail pricing.", "Combines material, stone, labour and margin assumptions into a suggested retail figure.", "Enter the cost inputs, labour time and markup settings, then compare the suggested price with your judgement.", "Use consistent labour rates and write down why you override the suggestion.", "High-value opals, custom risk and difficult repairs may need manual pricing."),
@@ -5464,6 +5468,20 @@ public partial class MainWindow : Window
         };
         window.CloseRequested += (_, _) => CloseWorkspaceTab(tab);
         tab = OpenWindowInWorkspaceTab("Diamond Search", window, "workflow:diamond-search", RefreshAfterWorkspaceTabClosed);
+    }
+
+    private async void NivodaStagingHandoff_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = await NivodaStagingHandoffService.CreateHandoffReportAsync();
+            OpenReportInApp(path, "Nivoda Staging Handoff");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create Nivoda staging handoff");
+            MessageBox.Show($"Could not create the Nivoda staging handoff report.\n\n{ex.Message}", "Nivoda Staging Handoff", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void SupplierDiamondWorkflow_Click(object sender, RoutedEventArgs e)

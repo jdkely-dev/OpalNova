@@ -24,6 +24,28 @@ public sealed class DiamondSearchResponse
     public string Note { get; set; } = string.Empty;
 }
 
+public sealed class NivodaSchemaField
+{
+    public string Name { get; set; } = string.Empty;
+    public string Signature { get; set; } = string.Empty;
+}
+
+public sealed class NivodaApiDiagnostics
+{
+    public string EnvironmentName { get; set; } = "Staging";
+    public string Endpoint { get; set; } = string.Empty;
+    public string GraphiQlUrl { get; set; } = string.Empty;
+    public string ReviewUrl { get; set; } = string.Empty;
+    public bool CredentialsEntered { get; set; }
+    public bool Authenticated { get; set; }
+    public string AuthenticationStatus { get; set; } = string.Empty;
+    public string SchemaStatus { get; set; } = string.Empty;
+    public List<NivodaSchemaField> QueryFields { get; set; } = new();
+    public List<NivodaSchemaField> MutationFields { get; set; } = new();
+    public List<NivodaSchemaField> DiamondFields { get; set; } = new();
+    public List<NivodaSchemaField> HoldOrderFields { get; set; } = new();
+}
+
 public static class NivodaDiamondApiService
 {
     public const string DefaultEndpoint = "https://intg-customer-staging.nivodaapi.net/api/diamonds";
@@ -40,6 +62,60 @@ query Authenticate($username: String!, $password: String!) {
   }
 }";
 
+    private const string IntrospectionQuery = @"
+query OpalNovaNivodaSchema {
+  __schema {
+    queryType {
+      fields {
+        name
+        args {
+          name
+          type {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+                ofType {
+                  kind
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    mutationType {
+      fields {
+        name
+        args {
+          name
+          type {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+                ofType {
+                  kind
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}";
+
     public static async Task<string> TestConnectionAsync(BusinessSettings settings, CancellationToken cancellationToken = default)
     {
         var token = await AuthenticateAsync(settings, cancellationToken);
@@ -51,6 +127,63 @@ query Authenticate($username: String!, $password: String!) {
         }
 
         return "Connection succeeded and authentication token was received, but no data field was returned.";
+    }
+
+    public static async Task<NivodaApiDiagnostics> CreateDiagnosticsAsync(BusinessSettings settings, CancellationToken cancellationToken = default)
+    {
+        var diagnostics = new NivodaApiDiagnostics
+        {
+            EnvironmentName = string.IsNullOrWhiteSpace(settings.NivodaEnvironmentName) ? "Staging" : settings.NivodaEnvironmentName.Trim(),
+            Endpoint = string.IsNullOrWhiteSpace(settings.NivodaEndpoint) ? DefaultEndpoint : settings.NivodaEndpoint.Trim(),
+            GraphiQlUrl = string.IsNullOrWhiteSpace(settings.NivodaGraphiQlUrl) ? DefaultGraphiQlUrl : settings.NivodaGraphiQlUrl.Trim(),
+            ReviewUrl = settings.NivodaStagingReviewUrl.Trim(),
+            CredentialsEntered = !string.IsNullOrWhiteSpace(settings.NivodaUsername) && !string.IsNullOrWhiteSpace(settings.NivodaPassword)
+        };
+
+        if (!diagnostics.CredentialsEntered)
+        {
+            diagnostics.AuthenticationStatus = "Credentials are not entered. Handoff report can still show configuration, but live schema checks require Nivoda staging credentials.";
+            diagnostics.SchemaStatus = "Schema not checked.";
+            return diagnostics;
+        }
+
+        try
+        {
+            var token = await AuthenticateAsync(settings, cancellationToken);
+            diagnostics.Authenticated = true;
+            diagnostics.AuthenticationStatus = "Authenticated successfully with user-entered credentials.";
+
+            using var document = await ExecuteRawAsync(settings, IntrospectionQuery, new { }, token, cancellationToken);
+            if (document.RootElement.TryGetProperty("data", out var data) &&
+                data.TryGetProperty("__schema", out var schema))
+            {
+                diagnostics.QueryFields = ReadSchemaFields(schema, "queryType");
+                diagnostics.MutationFields = ReadSchemaFields(schema, "mutationType");
+                diagnostics.DiamondFields = diagnostics.QueryFields
+                    .Concat(diagnostics.MutationFields)
+                    .Where(f => ContainsAny(f.Name, "diamond", "stone", "inventory", "certificate", "availability", "price"))
+                    .OrderBy(f => f.Name)
+                    .ToList();
+                diagnostics.HoldOrderFields = diagnostics.MutationFields
+                    .Where(f => ContainsAny(f.Name, "hold", "reserve", "order", "cart", "purchase", "checkout"))
+                    .OrderBy(f => f.Name)
+                    .ToList();
+                diagnostics.SchemaStatus = $"Schema introspection succeeded. Queries: {diagnostics.QueryFields.Count}. Mutations: {diagnostics.MutationFields.Count}.";
+            }
+            else
+            {
+                diagnostics.SchemaStatus = "Schema introspection returned no __schema data.";
+            }
+        }
+        catch (Exception ex)
+        {
+            diagnostics.AuthenticationStatus = diagnostics.Authenticated
+                ? diagnostics.AuthenticationStatus
+                : "Authentication or endpoint check failed.";
+            diagnostics.SchemaStatus = ex.Message;
+        }
+
+        return diagnostics;
     }
 
     public static async Task<DiamondSearchResponse> SearchDiamondsAsync(BusinessSettings settings, DiamondSearchRequest request, CancellationToken cancellationToken = default)
@@ -184,6 +317,71 @@ query {
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .ToHashSet();
     }
+
+    private static List<NivodaSchemaField> ReadSchemaFields(JsonElement schema, string typeName)
+    {
+        if (!schema.TryGetProperty(typeName, out var typeElement) ||
+            typeElement.ValueKind != JsonValueKind.Object ||
+            !typeElement.TryGetProperty("fields", out var fieldsElement) ||
+            fieldsElement.ValueKind != JsonValueKind.Array)
+        {
+            return new List<NivodaSchemaField>();
+        }
+
+        var fields = new List<NivodaSchemaField>();
+        foreach (var field in fieldsElement.EnumerateArray())
+        {
+            var name = GetString(field, "name");
+            if (string.IsNullOrWhiteSpace(name)) continue;
+            fields.Add(new NivodaSchemaField
+            {
+                Name = name,
+                Signature = BuildFieldSignature(field)
+            });
+        }
+
+        return fields.OrderBy(f => f.Name).ToList();
+    }
+
+    private static string BuildFieldSignature(JsonElement field)
+    {
+        var name = GetString(field, "name");
+        if (!field.TryGetProperty("args", out var argsElement) || argsElement.ValueKind != JsonValueKind.Array)
+            return name;
+
+        var args = argsElement
+            .EnumerateArray()
+            .Select(arg => $"{GetString(arg, "name")}: {GraphQlTypeName(arg.TryGetProperty("type", out var type) ? type : default)}")
+            .Where(x => !x.StartsWith(": ", StringComparison.Ordinal))
+            .ToList();
+
+        return args.Count == 0 ? name : $"{name}({string.Join(", ", args)})";
+    }
+
+    private static string GraphQlTypeName(JsonElement type)
+    {
+        if (type.ValueKind != JsonValueKind.Object)
+            return "Unknown";
+
+        var kind = GetString(type, "kind");
+        var name = GetString(type, "name");
+        if (!string.IsNullOrWhiteSpace(name))
+            return kind == "NON_NULL" ? name + "!" : name;
+
+        if (!type.TryGetProperty("ofType", out var ofType) || ofType.ValueKind != JsonValueKind.Object)
+            return string.IsNullOrWhiteSpace(kind) ? "Unknown" : kind;
+
+        var inner = GraphQlTypeName(ofType);
+        return kind switch
+        {
+            "NON_NULL" => inner + "!",
+            "LIST" => "[" + inner + "]",
+            _ => inner
+        };
+    }
+
+    private static bool ContainsAny(string text, params string[] terms) =>
+        terms.Any(term => text.Contains(term, StringComparison.OrdinalIgnoreCase));
 
     private static string EscapeGraphQlString(string value)
     {
