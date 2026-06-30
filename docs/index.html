@@ -6,19 +6,67 @@
   <meta http-equiv="refresh" content="0; url=./nivoda-staging/">
   <title>OPALNOVA Staging Handoff</title>
   <style>
-    body { margin: 0; font-family: Segoe UI, Arial, sans-serif; color: #1f2937; background: #f8fafc; line-height: 1.55; }
-    main { max-width: 760px; margin: 0 auto; padding: 48px 20px; }
-    .card { background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 20px; }
-    a { color: #0f766e; font-weight: 600; }
+    :root {
+      color-scheme: dark;
+      --app: #040813;
+      --panel: #0D1422;
+      --card: #121C2E;
+      --border: #29384F;
+      --gold: #CDA24A;
+      --text: #EFEAE0;
+      --muted: #B8AD9E;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      font-family: "Segoe UI Variable Display", "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: var(--app);
+    }
+
+    .card {
+      width: min(760px, 100%);
+      background: linear-gradient(135deg, #162238, #101827);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.32);
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+
+    .mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #111827;
+      font-size: 24px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #CDA24A, #A87A2B 58%, #7C5A1A);
+    }
+
+    h1 { margin: 0; font-size: 1.45rem; }
+    p { color: var(--muted); margin: 8px 0; }
+    a { color: var(--gold); font-weight: 700; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-<main>
-  <section class="card">
-    <h1>OPALNOVA Staging Handoff</h1>
-    <p>Redirecting to the Nivoda staging handoff page.</p>
-    <p><a href="./nivoda-staging/">Open OPALNOVA Nivoda Staging Handoff</a></p>
-  </section>
-</main>
+  <main class="card">
+    <div class="brand">
+      <div class="mark">O</div>
+      <h1>OPALNOVA Staging Handoff</h1>
+    </div>
+    <p>Redirecting to the Nivoda GraphiQL staging workbench.</p>
+    <p><a href="./nivoda-staging/">Open OPALNOVA Nivoda GraphiQL Staging</a></p>
+  </main>
 </body>
 </html>

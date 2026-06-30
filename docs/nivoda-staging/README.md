@@ -1,6 +1,6 @@
-# OPALNOVA Nivoda Staging Handoff Page
+# OPALNOVA Nivoda GraphiQL Staging Page
 
-This folder contains the non-secret static page that can be shared with Nivoda for API review.
+This folder contains the non-secret static GraphiQL staging workbench that can be shared with Nivoda for API review. It is styled to match the OPALNOVA desktop workspace while keeping credentials and customer data out of the public page.
 
 ## Hosted URL
 
