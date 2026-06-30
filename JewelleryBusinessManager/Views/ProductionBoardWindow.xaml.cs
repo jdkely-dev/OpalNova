@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -5,6 +6,7 @@ using System.Windows.Media;
 using Microsoft.EntityFrameworkCore;
 using JewelleryBusinessManager.Data;
 using JewelleryBusinessManager.Models;
+using JewelleryBusinessManager.Services;
 
 namespace JewelleryBusinessManager.Views;
 
@@ -12,6 +14,8 @@ public partial class ProductionBoardWindow : Window
 {
     private sealed record Lane(JobStatus Status, string Title, string Hint);
     private sealed record BoardJob(Job Job, string Customer, string QuoteCode);
+
+    public event Action<string, string>? ReportRequested;
 
     private static readonly Lane[] Lanes =
     {
@@ -73,7 +77,7 @@ public partial class ProductionBoardWindow : Window
             BoardPanel.Children.Add(CreateLane(new Lane(JobStatus.Cancelled, "Cancelled", "Closed without completion"), cancelled));
 
         var overdue = filtered.Count(x => IsOverdue(x.Job));
-        SummaryText.Text = $"{filtered.Count} job(s) shown  •  {overdue} overdue";
+        SummaryText.Text = $"{filtered.Count} job(s) shown - {overdue} overdue";
     }
 
     private IEnumerable<BoardJob> FilteredJobs()
@@ -160,14 +164,44 @@ public partial class ProductionBoardWindow : Window
         if (sender is not Border { Tag: BoardJob item }) return;
         _selected = item;
         var next = GetAdjacentStatus(item.Job.Status, 1);
-        SelectionText.Text = $"Selected: {item.Job.JobCode} {item.Job.JobTitle} • {item.Customer} • Current stage: {StageTitle(item.Job.Status)}" +
-                             (next != item.Job.Status ? $" • Next: {StageTitle(next)}" : string.Empty);
+        SelectionText.Text = $"Selected: {item.Job.JobCode} {item.Job.JobTitle} - {item.Customer} - Current stage: {StageTitle(item.Job.Status)}" +
+                             (next != item.Job.Status ? $" - Next: {StageTitle(next)}" : string.Empty);
         RenderBoard();
     }
 
     private void MoveForward_Click(object sender, RoutedEventArgs e) => MoveSelected(1);
     private void MoveBack_Click(object sender, RoutedEventArgs e) => MoveSelected(-1);
     private void CompleteSelected_Click(object sender, RoutedEventArgs e) => CompleteSelectedJob("Completed from Production Board.");
+
+    private void StageChecklist_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selected == null)
+        {
+            MessageBox.Show("Select a job card first.", "Production Board", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            using var db = new AppDbContext();
+            var job = db.Jobs.Find(_selected.Job.Id);
+            if (job == null) return;
+            var path = DocumentExportService.CreateProductionStageChecklist(job);
+            if (ReportRequested != null)
+            {
+                ReportRequested.Invoke(path, "Production Stage Checklist");
+            }
+            else
+            {
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Production stage checklist");
+            MessageBox.Show($"Could not create the production stage checklist.\n\n{ex.Message}", "Production Stage Checklist", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
 
     private void MoveSelected(int direction)
     {

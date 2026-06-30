@@ -28,6 +28,7 @@ public partial class InventoryStatusWindow : Window
         if (selectedRecord is JewelleryItem item)
         {
             CurrentStatusText.Text = $"Current jewellery status: {item.Status}";
+            CurrentLifecycleText.Text = StockLifecycleService.DescribeStockStatus(item.Status);
             StatusBox.ItemsSource = Enum.GetValues(typeof(StockStatus));
             StatusBox.SelectedItem = item.Status;
             NotesBox.Text = item.Notes ?? string.Empty;
@@ -35,10 +36,12 @@ public partial class InventoryStatusWindow : Window
         else if (selectedRecord is Stone stone)
         {
             CurrentStatusText.Text = $"Current stone status: {stone.Status}";
+            CurrentLifecycleText.Text = StockLifecycleService.DescribeStoneStatus(stone.Status);
             StatusBox.ItemsSource = Enum.GetValues(typeof(StoneStatus));
             StatusBox.SelectedItem = stone.Status;
             NotesBox.Text = stone.Notes ?? string.Empty;
         }
+        RefreshNewStatusLifecycleText();
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -74,6 +77,18 @@ public partial class InventoryStatusWindow : Window
     {
         var trimmed = text.Trim();
         return string.IsNullOrWhiteSpace(trimmed) ? existing : trimmed;
+    }
+
+    private void StatusBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) => RefreshNewStatusLifecycleText();
+
+    private void RefreshNewStatusLifecycleText()
+    {
+        NewStatusLifecycleText.Text = StatusBox.SelectedItem switch
+        {
+            StockStatus status => StockLifecycleService.DescribeStockStatus(status),
+            StoneStatus status => StockLifecycleService.DescribeStoneStatus(status),
+            _ => "Choose a status to see lifecycle guidance."
+        };
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e) => DialogResult = false;

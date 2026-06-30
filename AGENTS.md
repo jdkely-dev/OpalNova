@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.75.0 Customer Communication Templates
+- Current workspace version: V1.80.0 Stability Milestone
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -22,6 +22,98 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+
+## V1.80.0 State
+
+V1.80.0 is a milestone stability checkpoint:
+
+- Bumped visible/project version metadata to 1.80.0.
+- Completed a redundancy review across V1.76, V1.77, V1.78 and V1.79.
+- Confirmed repeated workflow labels such as Payment & Collection, Supplier Holds & Orders, Stage Checklist and Inventory Value are intentional cross-studio entry points rather than duplicate controls in the same surface.
+- Confirmed V1.78 payment schedule guidance is advisory and uses existing quote, job and job-linked payment records without changing payment totals.
+- Confirmed V1.79 stock lifecycle guidance is advisory/read-only in reports and does not change stock quantities, reservation states, supplier diamond states or sales.
+- Confirmed current metadata, release notes, roadmap and handoff align to the V1.80 baseline.
+- Created the V1.80 stability milestone note, redundancy audit and testing checklist.
+- Preserved database schema and existing payment, inventory, supplier diamond, job completion, report preview and workspace behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+
+## V1.79.0 State
+
+V1.79.0 continues inventory workflow clarity:
+
+- Bumped visible/project version metadata to 1.79.0.
+- Added shared `StockLifecycleService` guidance for jewellery stock, stones, quote reservation links and external supplier diamonds.
+- Change Inventory Status now explains the current lifecycle meaning and the selected new status before saving.
+- Inventory Value, Stock Ageing, Reserved Inventory and Opal / Stone Stock reports now include lifecycle guidance/columns.
+- Supplier Diamond Holds & Orders now shows lifecycle context in the grid, selected-diamond detail, search text and reminder task descriptions.
+- Cleaned the supplier diamond workflow status path text to plain ASCII.
+- Preserved existing stock quantities, reservation state changes, material transactions, supplier diamond conversion and sale/job completion behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+
+## V1.78.0 State
+
+V1.78.0 continues payment workflow polish:
+
+- Bumped visible/project version metadata to 1.78.0.
+- Added shared `PaymentScheduleService` and payment schedule summary models.
+- Payment schedules use existing quote, quote option, job and payment records without schema changes.
+- Quote totals now show deposit, final balance and remaining payment guidance.
+- Proposal output now includes staged payment schedule rows for deposit and final balance.
+- Payment & Collection now shows a Payment Schedule panel for the selected job using linked quote deposit percentage where available.
+- Job payment summary export now includes staged payment schedule rows before the payment ledger.
+- Added a one-time future change plan grouped by expected version numbers.
+- Preserved existing payment recording, invoice/receipt generation, handover, balance reminder and quote/job conversion behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+
+## V1.77.0 State
+
+V1.77.0 continues workspace navigation polish:
+
+- Bumped visible/project version metadata to 1.77.0.
+- Added a dashboard `Recent Work` panel for the current app session.
+- Recent Work tracks hosted workflow tabs, saved record editor tabs, and generated report previews.
+- Recent entries deduplicate automatically, show item type/context/time, can be cleared, and can reopen supported workflow tabs, reports, quote tabs and saved record editors.
+- Reopening saved record editors preserves the existing hosted editor unsaved-change protection.
+- Cleaned visible top-toolbar and touched preview separator text to plain ASCII.
+- Preserved database schema and existing tab close, report preview, record editor, quote, payment, production and dashboard behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+
+## V1.76.0 State
+
+V1.76.0 continues production workflow polish:
+
+- Bumped visible/project version metadata to 1.76.0.
+- Added `DocumentExportService.CreateProductionStageChecklist(...)`.
+- Added a `Stage Checklist` action to Production Board, Production studio, Production & Opal Studio and Documents Studio.
+- The checklist output reviews current stage, due date, customer contact, quote/accepted option context, payments, reservations, supplier diamond waits, open tasks, linked job photos/files, design notes, approval notes and bench notes.
+- Cleaned visible Production Board separator/title text in the touched screen.
+- Preserved database schema and existing production, payment, quote, inventory, photo and task behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
 
 ## V1.75.0 State
 

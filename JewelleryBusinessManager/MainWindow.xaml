@@ -22,21 +22,21 @@
                                 <TextBlock Text="Command Centre" Style="{StaticResource PillTextStyle}" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Version 1.75.0 - customer communication templates" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
+                        <TextBlock Text="Version 1.80.0 - stability milestone" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="#0B1220" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="14" Padding="8,4" Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="⌕" Foreground="{StaticResource AccentBrush}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,8,0" />
+                            <TextBlock Text="Search" Foreground="{StaticResource AccentBrush}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,8,0" />
                             <TextBox x:Name="SearchBox" Width="250" TextChanged="SearchBox_TextChanged" KeyDown="SearchBox_KeyDown" ToolTip="Search the current page as you type. Press Enter or click Search All to search every section. Shortcut: Ctrl+F" />
                         </StackPanel>
                     </Border>
                     <ComboBox x:Name="TopFilterCombo" Width="165" SelectionChanged="TopFilterCombo_SelectionChanged" ToolTip="Apply a quick filter from the main search bar." Margin="0,0,8,0" />
                     <Button Content="Search All" Click="SearchAll_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Open global search using the current search text and filter." />
                     <Button Content="Clear" Click="ClearSearch_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Clear search text and filters." />
-                    <Button Content="↻" Click="Refresh_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Reload the current page. Shortcut: F5" />
-                    <Button Content="⚙" Click="Settings_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Edit business details, logo, default pricing and document folders" />
+                    <Button Content="Refresh" Click="Refresh_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Reload the current page. Shortcut: F5" />
+                    <Button Content="Settings" Click="Settings_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Edit business details, logo, default pricing and document folders" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -113,9 +113,9 @@
                     <Button Content="Project Hub" Click="ProjectWorkbench_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Open the guided project workbench with next actions across quotes, diamonds, production and payments." />
                     <Button Content="Alert Centre" Click="AlertCentre_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Open urgent quote, job, payment, supplier diamond, stock and follow-up alerts." />
                     <Button Content="New Quote" Click="ToolbarNewQuote_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Open the custom quote builder in a workspace tab." />
-                    <Button Content="＋ Add" Click="Add_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Add a record to the active record section. Shortcut: Ctrl+N" />
-                    <Button Content="✎ Edit" Click="Edit_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Edit the selected record. Shortcut: Ctrl+E" />
-                    <Button Content="🗑 Delete" Click="Delete_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Delete the selected record. Shortcut: Delete" />
+                    <Button Content="+ Add" Click="Add_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Add a record to the active record section. Shortcut: Ctrl+N" />
+                    <Button Content="Edit" Click="Edit_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Edit the selected record. Shortcut: Ctrl+E" />
+                    <Button Content="Delete" Click="Delete_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Delete the selected record. Shortcut: Delete" />
                     <Border Width="1" Height="26" Background="{StaticResource BorderBrushStrong}" Margin="8,0" />
                     <Button Content="Production Board" Click="DashboardProductionBoard_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open production board in a workspace tab." />
                     <Button Content="Payments" Click="DashboardPaymentCollection_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open payment and collection workflow in a workspace tab." />
@@ -181,9 +181,9 @@
                             </WrapPanel>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="＋ Add" Click="Add_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Add a record to the active record section. Shortcut: Ctrl+N" />
-                            <Button Content="✎ Edit" Click="Edit_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Edit the selected record. Shortcut: Ctrl+E" />
-                            <Button Content="🗑 Delete" Click="Delete_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Delete the selected record. Shortcut: Delete" />
+                            <Button Content="+ Add" Click="Add_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Add a record to the active record section. Shortcut: Ctrl+N" />
+                            <Button Content="Edit" Click="Edit_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Edit the selected record. Shortcut: Ctrl+E" />
+                            <Button Content="Delete" Click="Delete_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Delete the selected record. Shortcut: Delete" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -217,7 +217,29 @@
                                     </Grid>
                                 </Border>
 
-
+                                <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="18" Margin="0,0,0,14" Effect="{StaticResource CardShadowEffect}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Recent Work" FontSize="22" FontWeight="Bold" />
+                                                <TextBlock Text="Reopen recent workflow tabs, reports and record editors from this session." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,3,0,0" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Content="Clear" Click="ClearRecentItems_Click" Style="{StaticResource ToolbarButtonStyle}" VerticalAlignment="Center" ToolTip="Clear the recent work list for this session." />
+                                        </Grid>
+                                        <StackPanel Grid.Row="1" Margin="0,12,0,0">
+                                            <TextBlock x:Name="RecentItemsEmptyText" Text="Recent work will appear here after you open a workspace tab, report or saved record editor." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
+                                            <StackPanel x:Name="RecentItemsPanel" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
 
                                 <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="18" Padding="18" Margin="0,0,0,14" Effect="{StaticResource CardShadowEffect}">
                                     <Grid>
@@ -283,7 +305,7 @@
                                     </Grid>
                                 </Border>
 
-                                <Expander Header="Command Centre — Today&apos;s Priorities" IsExpanded="True" Margin="0,0,0,12">
+                                <Expander Header="Command Centre - Today&apos;s Priorities" IsExpanded="True" Margin="0,0,0,12">
                                     <StackPanel Margin="0,8,0,0">
                                         <UniformGrid Columns="4">
                                             <Border Style="{StaticResource DashboardTileStyle}" MouseLeftButtonUp="DashboardTile_Click" Tag="Alert Centre"><StackPanel><TextBlock Text="Next Actions" Style="{StaticResource DashboardTileLabelStyle}"/><TextBlock x:Name="NextActionsText" Style="{StaticResource DashboardTileValueStyle}"/><TextBlock Text="urgent and high priority alerts" Style="{StaticResource DashboardTileHintStyle}"/></StackPanel></Border>
@@ -410,7 +432,7 @@
                                         <StackPanel>
                                             <TextBlock Text="No records to show" FontSize="26" FontWeight="Bold" TextAlignment="Center" />
                                             <TextBlock x:Name="RecordEmptyStateText" Text="Add your first record or clear the search box." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,10,0,0" />
-                                            <Button Content="＋ Add Record" Click="Add_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Center" Margin="0,16,0,0" />
+                                            <Button Content="+ Add Record" Click="Add_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Center" Margin="0,16,0,0" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -441,8 +463,8 @@
 
                                         <TextBlock Text="Quick Actions" FontSize="15" FontWeight="Bold" Margin="0,0,0,6" />
                                         <WrapPanel Margin="0,0,0,14">
-                                            <Button Content="✎ Edit" Click="Edit_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Edit this selected record" />
-                                            <Button Content="＋ Photo" Click="AddPhoto_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Attach a photo to this record" />
+                                            <Button Content="Edit" Click="Edit_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Edit this selected record" />
+                                            <Button Content="+ Photo" Click="AddPhoto_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Attach a photo to this record" />
                                             <Button Content="Trace" Click="TraceSelected_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Open traceability for the selected record" />
                                             <Button Content="Label" Click="GenerateSelectedScanLabel_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Generate a barcode label for this record" />
                                         </WrapPanel>

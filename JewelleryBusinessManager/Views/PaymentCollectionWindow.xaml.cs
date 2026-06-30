@@ -97,6 +97,7 @@ public partial class PaymentCollectionWindow : Window
             SelectedJobTitle.Text = "Select a job";
             SelectedJobDetails.Text = string.Empty;
             TotalAmountText.Text = PaidAmountText.Text = BalanceAmountText.Text = StatusText.Text = string.Empty;
+            PaymentScheduleText.Text = "Select a job to see deposit and final balance stages.";
             PaymentsGrid.ItemsSource = null;
             SyncHandoverChecklistForSelection(null);
             return;
@@ -106,9 +107,14 @@ public partial class PaymentCollectionWindow : Window
         var job = db.Jobs.AsNoTracking().First(x => x.Id == _selectedRow.JobId);
         var customer = job.CustomerId.HasValue ? db.Customers.AsNoTracking().FirstOrDefault(x => x.Id == job.CustomerId.Value) : null;
         var payments = db.Payments.AsNoTracking().Where(x => x.JobId == job.Id).OrderByDescending(x => x.PaymentDate).ThenByDescending(x => x.Id).ToList();
+        var linkedQuote = db.CustomQuotes.AsNoTracking()
+            .Where(x => x.LinkedJobId == job.Id)
+            .OrderByDescending(x => x.UpdatedAt)
+            .FirstOrDefault();
         var total = GetJobTotal(job);
         var paid = Math.Max(job.DepositPaid, payments.Sum(x => x.Amount));
         var balance = Math.Max(0, total - paid);
+        var schedule = PaymentScheduleService.BuildForJob(job, payments, linkedQuote);
 
         SelectedJobTitle.Text = $"{job.JobCode} {job.JobTitle}".Trim();
         SelectedJobDetails.Text = $"Customer: {customer?.FullName ?? "No customer linked"} - Due: {(job.DueDate.HasValue ? job.DueDate.Value.ToString("d MMM yyyy") : "Not set")} - Sale created: {(db.Sales.AsNoTracking().Any(x => x.JobId == job.Id) ? "Yes" : "No")}";
@@ -116,6 +122,7 @@ public partial class PaymentCollectionWindow : Window
         PaidAmountText.Text = paid.ToString("C", CultureInfo.CurrentCulture);
         BalanceAmountText.Text = balance.ToString("C", CultureInfo.CurrentCulture);
         StatusText.Text = job.Status.ToString();
+        PaymentScheduleText.Text = PaymentScheduleService.BuildPlainText(schedule);
         PaymentAmountBox.Text = balance > 0m ? balance.ToString("0.##") : string.Empty;
         PaymentsGrid.ItemsSource = payments;
         SyncHandoverChecklistForSelection(balance);

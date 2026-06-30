@@ -156,6 +156,10 @@
                             <Button Content="Create Pickup Reminder" Click="CreatePickupReminder_Click" />
                         </WrapPanel>
 
+                        <GroupBox Header="Payment Schedule">
+                            <TextBlock x:Name="PaymentScheduleText" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
+                        </GroupBox>
+
                         <GroupBox Header="Handover Actions">
                             <WrapPanel>
                                 <Button Content="Mark Ready For Collection" Click="MarkReadyForCollection_Click" />

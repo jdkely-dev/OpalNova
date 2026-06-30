@@ -14,14 +14,16 @@
                 <StackPanel>
                     <TextBlock x:Name="RecordText" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <TextBlock x:Name="CurrentStatusText" Foreground="{StaticResource MutedTextBrush}" Margin="0,4,0,12" />
+                    <TextBlock x:Name="CurrentLifecycleText" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
                     <TextBlock Text="New Status" FontWeight="SemiBold" />
-                    <ComboBox x:Name="StatusBox" Margin="0,6,0,12" />
+                    <ComboBox x:Name="StatusBox" Margin="0,6,0,8" SelectionChanged="StatusBox_SelectionChanged" />
+                    <TextBlock x:Name="NewStatusLifecycleText" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
                     <TextBlock Text="Notes" FontWeight="SemiBold" />
                     <TextBox x:Name="NotesBox" MinHeight="80" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,6,0,0" />
                 </StackPanel>
             </Border>
             <Border Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" Padding="12" Margin="0,0,0,12">
-                <TextBlock Text="Tip: use Reserved for customer holds, AtMarket for pieces packed for a stall, NeedsPhotos before listing online, and SetInJewellery when a loose stone has been used." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextBrush}" />
+                <TextBlock Text="Lifecycle tip: only use Sold or SetInJewellery when the item is no longer available. Use Reserved for customer commitments, AtMarket for packed stock, and NeedsPhotos before listing online." TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextBrush}" />
             </Border>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Save Status" Click="Save_Click" Style="{StaticResource AccentButtonStyle}" />

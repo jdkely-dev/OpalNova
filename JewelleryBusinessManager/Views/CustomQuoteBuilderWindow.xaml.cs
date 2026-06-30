@@ -219,7 +219,7 @@ public partial class CustomQuoteBuilderWindow : Window, IWorkspaceCloseGuard
         var labour = option.LabourHours * option.LabourRate;
         CostBreakdownText.Text = $"Labour {labour:C} | Metal/materials {option.MetalCost:C} | Stones {option.StoneCost:C} | Setting {option.SettingCost:C} | Findings {option.FindingsCost:C} | Other {option.OtherCost:C} | Markup {option.MarkupPercent:0.##}%";
         TotalPriceText.Text = option.TotalPrice.ToString("C");
-        DepositText.Text = $"Deposit {_quote.DepositPercent:0.##}%: {(option.TotalPrice * _quote.DepositPercent / 100m):C}";
+        DepositText.Text = PaymentScheduleService.BuildCompactText(PaymentScheduleService.BuildForQuote(_quote, option));
         RefreshLinkedInventory(option);
         RefreshQuoteOverview();
     }
@@ -1077,7 +1077,8 @@ public partial class CustomQuoteBuilderWindow : Window, IWorkspaceCloseGuard
     {
         var settings = BusinessSettingsService.Load();
         var basis = GetProposalBasisOption();
-        var deposit = basis == null ? 0m : basis.TotalPrice * _quote.DepositPercent / 100m;
+        var schedule = basis == null ? null : PaymentScheduleService.BuildForQuote(_quote, basis);
+        var deposit = schedule?.DepositTarget ?? 0m;
         return (template ?? string.Empty)
             .Replace("{CustomerName}", string.IsNullOrWhiteSpace(customer?.FullName) ? "there" : customer.FullName)
             .Replace("{QuoteCode}", _quote.QuoteCode)
@@ -1086,6 +1087,7 @@ public partial class CustomQuoteBuilderWindow : Window, IWorkspaceCloseGuard
             .Replace("{ProposalLink}", proposalPath)
             .Replace("{ProposalPath}", proposalPath)
             .Replace("{DepositAmount}", deposit.ToString("C"))
+            .Replace("{PaymentSchedule}", schedule == null ? string.Empty : PaymentScheduleService.BuildCompactText(schedule))
             .Replace("{ValidUntil}", _quote.ValidUntil?.ToString("dd MMM yyyy") ?? string.Empty);
     }
 
@@ -1270,7 +1272,8 @@ public partial class CustomQuoteBuilderWindow : Window, IWorkspaceCloseGuard
             job.LabourCost = selectedOption.LabourHours * selectedOption.LabourRate;
             job.MaterialCost = selectedOption.MetalCost + selectedOption.StoneCost + selectedOption.SettingCost + selectedOption.FindingsCost + selectedOption.OtherCost;
             job.DesignNotes = $"{selectedOption.OptionName}\n{selectedOption.Description}\nMetal: {selectedOption.MetalDetails}\nStone: {selectedOption.StoneDetails}\n\nInventory allocations:\n{allocationText}";
-            job.CustomerApprovalNotes = $"Accepted from quote {_quote.QuoteCode}. Owned inventory reservations retained until production completion or manual release. External diamonds must be confirmed/ordered through the supplier before setting.";
+            var schedule = PaymentScheduleService.BuildForQuote(_quote, selectedOption);
+            job.CustomerApprovalNotes = $"Accepted from quote {_quote.QuoteCode}. {PaymentScheduleService.BuildCompactText(schedule)}. Owned inventory reservations retained until production completion or manual release. External diamonds must be confirmed/ordered through the supplier before setting.";
             if (job.Id == 0) db.Jobs.Add(job);
             db.SaveChanges();
 

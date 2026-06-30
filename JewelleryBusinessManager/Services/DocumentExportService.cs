@@ -50,6 +50,103 @@ public static class DocumentExportService
         return path;
     }
 
+    public static string CreateProductionStageChecklist(Job job)
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+        var customer = job.CustomerId.HasValue ? db.Customers.Find(job.CustomerId.Value) : null;
+        var quote = db.CustomQuotes.AsEnumerable()
+            .Where(q => q.LinkedJobId == job.Id)
+            .OrderByDescending(q => q.UpdatedAt)
+            .FirstOrDefault();
+        var acceptedOption = quote?.AcceptedOptionId.HasValue == true
+            ? db.QuoteOptions.Find(quote.AcceptedOptionId.Value)
+            : quote == null
+                ? null
+                : db.QuoteOptions.AsEnumerable()
+                    .Where(o => o.CustomQuoteId == quote.Id)
+                    .OrderByDescending(o => o.IsRecommended)
+                    .ThenByDescending(o => o.UpdatedAt)
+                    .FirstOrDefault();
+        var materialLinks = acceptedOption == null
+            ? new List<QuoteOptionMaterialLink>()
+            : db.QuoteOptionMaterialLinks.AsEnumerable().Where(l => l.QuoteOptionId == acceptedOption.Id).ToList();
+        var stoneLinks = acceptedOption == null
+            ? new List<QuoteOptionStoneLink>()
+            : db.QuoteOptionStoneLinks.AsEnumerable().Where(l => l.QuoteOptionId == acceptedOption.Id).ToList();
+        var diamondLinks = acceptedOption == null
+            ? new List<QuoteOptionExternalDiamondLink>()
+            : db.QuoteOptionExternalDiamondLinks.AsEnumerable().Where(l => l.QuoteOptionId == acceptedOption.Id).ToList();
+        var payments = db.Payments.AsEnumerable()
+            .Where(p => p.JobId == job.Id || (job.CustomerId.HasValue && p.CustomerId == job.CustomerId))
+            .OrderBy(p => p.PaymentDate)
+            .ToList();
+        var tasks = db.BusinessTasks.AsEnumerable()
+            .Where(t => t.Status != BusinessTaskStatus.Completed
+                && t.Status != BusinessTaskStatus.Cancelled
+                && (t.JobId == job.Id || (job.CustomerId.HasValue && t.CustomerId == job.CustomerId)))
+            .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
+            .ThenByDescending(t => t.Priority)
+            .ToList();
+        var photos = db.PhotoRecords.AsEnumerable()
+            .Where(p => p.EntityType == nameof(Job) && p.EntityId == job.Id)
+            .OrderByDescending(p => p.UpdatedAt)
+            .ToList();
+
+        var price = JobPrice(job);
+        var paid = Math.Max(job.DepositPaid, payments.Sum(p => p.Amount));
+        var balance = Math.Max(Math.Max(0, price - paid), Math.Max(0, job.BalanceOwing));
+        var checklist = BuildProductionStageChecklist(job, customer, quote, acceptedOption, materialLinks, stoneLinks, diamondLinks, payments, tasks, photos, balance);
+        var blockers = checklist.Count(i => i.Status is "Waiting" or "Review");
+        var stage = ProductionStageTitle(job.Status);
+        var fileName = SafeFileName($"ProductionStageChecklist_{job.JobCode}_{job.Id}_{DateTime.Now:yyyyMMdd-HHmmss}.html");
+        var path = Path.Combine(PrintoutFolder, fileName);
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Production Stage Checklist"));
+        html.AppendLine("<section class='card premium-document'>");
+        AppendDocumentHero(html, "Production Stage Checklist", $"{job.JobCode} {job.JobTitle}".Trim(), stage);
+        AppendFinancialSummary(html,
+            ("Current stage", stage, ProductionStageGuidance(job.Status)),
+            ("Due date", job.DueDate?.ToShortDateString() ?? "Not set", ProductionDueGuidance(job)),
+            ("Items to review", blockers.ToString(CultureInfo.InvariantCulture), blockers == 0 ? "No blockers detected" : "Review before moving stage"));
+
+        html.AppendLine("<div class='document-columns'>");
+        html.AppendLine("<div>");
+        html.AppendLine("<h2>Job</h2>");
+        html.AppendLine(Row("Job", $"{job.JobCode} {job.JobTitle}".Trim()));
+        html.AppendLine(Row("Type", job.Type.ToString()));
+        html.AppendLine(Row("Status", job.Status.ToString()));
+        html.AppendLine(Row("Received", job.DateReceived.ToShortDateString()));
+        html.AppendLine(Row("Due", job.DueDate?.ToShortDateString() ?? "To be confirmed"));
+        html.AppendLine(Row("Quote / final price", Money(price)));
+        html.AppendLine(Row("Balance", Money(balance)));
+        html.AppendLine("</div><div>");
+        html.AppendLine("<h2>Customer / Quote</h2>");
+        html.AppendLine(Row("Customer", customer?.FullName ?? "Not linked"));
+        html.AppendLine(Row("Phone", customer?.Phone ?? string.Empty));
+        html.AppendLine(Row("Email", customer?.Email ?? string.Empty));
+        html.AppendLine(Row("Quote", quote?.ToString() ?? "No linked quote"));
+        html.AppendLine(Row("Proposal status", quote?.ProposalStatus ?? "Not recorded"));
+        html.AppendLine(Row("Accepted option", acceptedOption?.OptionName ?? "Not recorded"));
+        html.AppendLine("</div></div>");
+
+        AppendDocumentNotice(html, "Recommended next action", BuildProductionRecommendedAction(job, checklist, balance));
+        AppendProductionChecklistTable(html, checklist);
+        AppendProductionReservationTable(html, materialLinks, stoneLinks, diamondLinks);
+        AppendProductionTaskTable(html, tasks);
+        AppendProductionPhotoTable(html, photos);
+        html.AppendLine(NotesBlock("Design Notes", job.DesignNotes));
+        html.AppendLine(NotesBlock("Customer Approval Notes", job.CustomerApprovalNotes));
+        html.AppendLine(NotesBlock("Internal Bench Notes", job.InternalNotes));
+        html.AppendLine(SignatureBlock("Bench check"));
+        html.AppendLine(SignatureBlock("Quality / handover check"));
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
     public static string CreateStockLabel(JewelleryItem item)
     {
         Directory.CreateDirectory(PrintoutFolder);
@@ -443,7 +540,9 @@ public static class DocumentExportService
         Directory.CreateDirectory(PrintoutFolder);
         using var db = new AppDbContext();
         var customer = job.CustomerId.HasValue ? db.Customers.Find(job.CustomerId.Value) : null;
-        var payments = db.Payments.AsEnumerable().Where(p => p.JobId == job.Id || (job.CustomerId.HasValue && p.CustomerId == job.CustomerId)).OrderByDescending(p => p.PaymentDate).ToList();
+        var payments = db.Payments.AsEnumerable().Where(p => p.JobId == job.Id).OrderByDescending(p => p.PaymentDate).ToList();
+        var linkedQuote = db.CustomQuotes.AsEnumerable().Where(q => q.LinkedJobId == job.Id).OrderByDescending(q => q.UpdatedAt).FirstOrDefault();
+        var schedule = PaymentScheduleService.BuildForJob(job, payments, linkedQuote);
         var amount = job.FinalPrice > 0 ? job.FinalPrice : job.QuoteAmount;
         var fileName = SafeFileName($"PaymentSummary_Job_{job.JobCode}_{job.Id}.html");
         var path = Path.Combine(PrintoutFolder, fileName);
@@ -457,6 +556,7 @@ public static class DocumentExportService
         html.AppendLine(Row("Job Amount", Money(amount)));
         html.AppendLine(Row("Payments Recorded", Money(payments.Sum(p => p.Amount))));
         html.AppendLine(Row("Balance Remaining", Money(Math.Max(0, amount - Math.Max(job.DepositPaid, payments.Sum(p => p.Amount))))));
+        AppendPaymentScheduleTable(html, schedule);
         AppendPaymentsTable(html, payments);
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
@@ -1128,13 +1228,14 @@ public static class DocumentExportService
         html.Append(HtmlHeader("Inventory Value Report"));
         html.AppendLine("<section class='card'>");
         html.AppendLine("<h1>Inventory Value Report</h1>");
+        AppendStockLifecycleSummary(html);
         AppendInventoryValueTable(html, jewellery, stones, materials);
         html.AppendLine("<h2>Finished jewellery stock</h2>");
-        html.AppendLine("<table><tr><th>Stock</th><th>Status</th><th>Cost</th><th>Retail</th><th>Potential Profit</th><th>Margin</th></tr>");
+        html.AppendLine("<table><tr><th>Stock</th><th>Status</th><th>Lifecycle</th><th>Cost</th><th>Retail</th><th>Potential Profit</th><th>Margin</th></tr>");
         foreach (var item in jewellery.OrderBy(i => i.Status).ThenBy(i => i.StockCode))
         {
             var cost = PricingService.CalculateJewelleryCost(item);
-            html.AppendLine($"<tr><td>{Html(item.ToString())}</td><td>{Html(item.Status.ToString())}</td><td>{Money(cost)}</td><td>{Money(item.RetailPrice)}</td><td>{Money(item.RetailPrice - cost)}</td><td>{Percent(PricingService.CalculateProfitMargin(item.RetailPrice, cost))}</td></tr>");
+            html.AppendLine($"<tr><td>{Html(item.ToString())}</td><td>{Html(item.Status.ToString())}</td><td>{Html(StockLifecycleService.DescribeStockStatus(item.Status))}</td><td>{Money(cost)}</td><td>{Money(item.RetailPrice)}</td><td>{Money(item.RetailPrice - cost)}</td><td>{Percent(PricingService.CalculateProfitMargin(item.RetailPrice, cost))}</td></tr>");
         }
         html.AppendLine("</table>");
         html.AppendLine("</section>");
@@ -1155,6 +1256,7 @@ public static class DocumentExportService
                 i.StockCode,
                 i.Name,
                 i.Status.ToString(),
+                StockLifecycleService.DescribeStockStatus(i.Status),
                 InventoryAgeDays(i.CreatedAt, today),
                 i.RetailPrice,
                 i.CreatedAt,
@@ -1166,6 +1268,7 @@ public static class DocumentExportService
                 s.StoneCode,
                 s.StoneType,
                 s.Status.ToString(),
+                StockLifecycleService.DescribeStoneStatus(s.Status),
                 InventoryAgeDays(s.CreatedAt, today),
                 s.EstimatedValue,
                 s.CreatedAt,
@@ -1179,6 +1282,7 @@ public static class DocumentExportService
         html.AppendLine("<section class='card'>");
         html.AppendLine("<h1>Stock Ageing and Slow-Moving Inventory</h1>");
         html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}. This report is read-only and does not change stock status.</p>");
+        AppendStockLifecycleSummary(html);
         html.AppendLine(Row("Available stock records", rows.Count.ToString(CultureInfo.InvariantCulture)));
         html.AppendLine(Row("Available stock value", Money(rows.Sum(r => r.Value))));
         html.AppendLine(Row("Slow-moving records (180+ days)", slowMoving.Count.ToString(CultureInfo.InvariantCulture)));
@@ -1202,6 +1306,7 @@ public static class DocumentExportService
         html.Append(HtmlHeader("Reserved Inventory Report"));
         html.AppendLine("<section class='card'>");
         html.AppendLine("<h1>Reserved Inventory Report</h1>");
+        AppendStockLifecycleSummary(html);
         AppendReservedInventoryTable(html, stoneLinks, materialLinks);
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
@@ -1242,11 +1347,12 @@ public static class DocumentExportService
         html.AppendLine(Row("Stone records", stones.Count.ToString(CultureInfo.InvariantCulture)));
         html.AppendLine(Row("Loose / available value", Money(stones.Where(s => s.Status == StoneStatus.Loose || s.Status == StoneStatus.Polished || s.Status == StoneStatus.Rough).Sum(s => s.EstimatedValue))));
         html.AppendLine(Row("Reserved stones", stones.Count(s => s.Status == StoneStatus.Reserved || s.Status == StoneStatus.SelectedForDesign).ToString(CultureInfo.InvariantCulture)));
-        html.AppendLine("<table><tr><th>Stone</th><th>Type</th><th>Status</th><th>Weight</th><th>Dimensions</th><th>Brightness</th><th>Colours</th><th>Value</th><th>Parcel</th></tr>");
+        AppendStockLifecycleSummary(html);
+        html.AppendLine("<table><tr><th>Stone</th><th>Type</th><th>Status</th><th>Lifecycle</th><th>Weight</th><th>Dimensions</th><th>Brightness</th><th>Colours</th><th>Value</th><th>Parcel</th></tr>");
         foreach (var stone in stones)
         {
             parcels.TryGetValue(stone.OpalParcelId ?? 0, out var parcel);
-            html.AppendLine($"<tr><td>{Html(stone.ToString())}</td><td>{Html(stone.StoneType)}</td><td>{Html(stone.Status.ToString())}</td><td>{Number(stone.WeightCarats)} ct</td><td>{Html(stone.Dimensions ?? string.Empty)}</td><td>{Html(stone.Brightness ?? string.Empty)}</td><td>{Html(stone.MainColours ?? string.Empty)}</td><td>{Money(stone.EstimatedValue)}</td><td>{Html(parcel?.ToString() ?? string.Empty)}</td></tr>");
+            html.AppendLine($"<tr><td>{Html(stone.ToString())}</td><td>{Html(stone.StoneType)}</td><td>{Html(stone.Status.ToString())}</td><td>{Html(StockLifecycleService.DescribeStoneStatus(stone.Status))}</td><td>{Number(stone.WeightCarats)} ct</td><td>{Html(stone.Dimensions ?? string.Empty)}</td><td>{Html(stone.Brightness ?? string.Empty)}</td><td>{Html(stone.MainColours ?? string.Empty)}</td><td>{Money(stone.EstimatedValue)}</td><td>{Html(parcel?.ToString() ?? string.Empty)}</td></tr>");
         }
         html.AppendLine("</table>");
         html.AppendLine("</section>");
@@ -1670,7 +1776,222 @@ public static class DocumentExportService
             html.AppendLine("<p class='small'>Showing the latest 80 financial-year sales.</p>");
     }
 
+    private sealed record ProductionChecklistItem(string Check, string Status, string Detail);
+
     private sealed record ChartRow(string Label, decimal Value, string DisplayValue, string Detail);
+
+    private static List<ProductionChecklistItem> BuildProductionStageChecklist(
+        Job job,
+        Customer? customer,
+        CustomQuote? quote,
+        QuoteOption? acceptedOption,
+        List<QuoteOptionMaterialLink> materialLinks,
+        List<QuoteOptionStoneLink> stoneLinks,
+        List<QuoteOptionExternalDiamondLink> diamondLinks,
+        List<Payment> payments,
+        List<BusinessTask> tasks,
+        List<PhotoRecord> photos,
+        decimal balance)
+    {
+        var items = new List<ProductionChecklistItem>
+        {
+            new("Customer linked", customer == null ? "Review" : "Ready", customer == null ? "Link the job to a customer before production communication." : $"{customer.FullName} is linked."),
+            new("Customer contact", HasCustomerContact(customer) ? "Ready" : "Review", HasCustomerContact(customer) ? "At least one phone or email is recorded." : "Add phone or email before sending updates."),
+            new("Due date", job.DueDate.HasValue ? (job.DueDate.Value.Date < DateTime.Today && job.Status is not JobStatus.Completed and not JobStatus.Cancelled ? "Waiting" : "Ready") : "Review", ProductionDueGuidance(job)),
+            new("Design notes", string.IsNullOrWhiteSpace(job.DesignNotes) ? "Review" : "Ready", string.IsNullOrWhiteSpace(job.DesignNotes) ? "Add enough design/repair detail for bench work." : "Design notes are recorded."),
+            new("Linked quote", quote == null ? "Review" : "Ready", quote == null ? "No linked custom quote was found." : $"{quote.QuoteCode} - {quote.Status}, proposal {quote.ProposalStatus}."),
+            new("Accepted option", acceptedOption == null ? "Review" : "Ready", acceptedOption == null ? "No accepted or recommended quote option found." : $"{acceptedOption.OptionName} at {Money(acceptedOption.TotalPrice)}."),
+            new("Payment position", balance > 0 && job.Status is JobStatus.ReadyForPickup or JobStatus.ReadyToShip or JobStatus.Completed ? "Waiting" : "Ready", balance <= 0 ? "No balance currently owing from recorded payments." : $"Balance still owing: {Money(balance)}."),
+            new("Linked payments", payments.Count > 0 || job.DepositPaid > 0 ? "Ready" : "Review", payments.Count > 0 ? $"{payments.Count} linked payment record(s)." : job.DepositPaid > 0 ? "Deposit is recorded on the job." : "No linked payment records found."),
+            new("Job photos/files", photos.Count > 0 ? "Ready" : "Review", photos.Count > 0 ? $"{photos.Count} job photo/file record(s) linked." : "Attach design, before-work, progress or completion photos where useful."),
+            new("Open tasks", tasks.Count == 0 ? "Ready" : tasks.Any(t => t.IsOverdue) ? "Waiting" : "Review", tasks.Count == 0 ? "No open linked tasks." : $"{tasks.Count} open linked task(s), {tasks.Count(t => t.IsOverdue)} overdue.")
+        };
+
+        AddStageSpecificChecks(items, job, quote, materialLinks, stoneLinks, diamondLinks, balance);
+        return items;
+    }
+
+    private static void AddStageSpecificChecks(
+        List<ProductionChecklistItem> items,
+        Job job,
+        CustomQuote? quote,
+        List<QuoteOptionMaterialLink> materialLinks,
+        List<QuoteOptionStoneLink> stoneLinks,
+        List<QuoteOptionExternalDiamondLink> diamondLinks,
+        decimal balance)
+    {
+        var materialReservations = materialLinks.Count(l => l.ReservationStatus.Equals("Reserved", StringComparison.OrdinalIgnoreCase) || l.ReservationStatus.Equals("Consumed", StringComparison.OrdinalIgnoreCase));
+        var stoneReservations = stoneLinks.Count(l => l.ReservationStatus.Equals("Reserved", StringComparison.OrdinalIgnoreCase) || l.ReservationStatus.Equals("Consumed", StringComparison.OrdinalIgnoreCase));
+        var supplierWaiting = diamondLinks.Any(l => !l.LinkStatus.Contains("Received", StringComparison.OrdinalIgnoreCase)
+            && !l.LinkStatus.Contains("Converted", StringComparison.OrdinalIgnoreCase)
+            && !l.LinkStatus.Contains("Released", StringComparison.OrdinalIgnoreCase));
+
+        switch (job.Status)
+        {
+            case JobStatus.Enquiry:
+            case JobStatus.Quoted:
+                items.Add(new("Customer approval", quote?.AcceptedOptionId.HasValue == true ? "Ready" : "Waiting", quote?.AcceptedOptionId.HasValue == true ? "Accepted quote option is recorded." : "Wait for customer approval before production commitment."));
+                break;
+            case JobStatus.Approved:
+            case JobStatus.DepositPaid:
+                items.Add(new("Production planning", materialLinks.Count + stoneLinks.Count + diamondLinks.Count > 0 ? "Ready" : "Review", "Check required materials, stones, supplier diamonds and bench notes before moving to materials or production."));
+                break;
+            case JobStatus.AwaitingMaterials:
+                items.Add(new("Reserved stock", materialReservations + stoneReservations > 0 ? "Ready" : "Waiting", materialReservations + stoneReservations > 0 ? $"{materialReservations} material and {stoneReservations} stone reservation(s) ready or consumed." : "No reserved material or stone links found for the accepted option."));
+                items.Add(new("Supplier diamonds", supplierWaiting ? "Waiting" : "Ready", supplierWaiting ? "One or more linked supplier diamonds still needs hold/order/receive action." : "No unresolved supplier diamond wait detected."));
+                break;
+            case JobStatus.InProgress:
+            case JobStatus.Setting:
+            case JobStatus.Polishing:
+                items.Add(new("Bench stage notes", string.IsNullOrWhiteSpace(job.InternalNotes) ? "Review" : "Ready", string.IsNullOrWhiteSpace(job.InternalNotes) ? "Add bench progress notes if the job needs handover between makers." : "Internal bench notes are recorded."));
+                break;
+            case JobStatus.QualityCheck:
+                items.Add(new("Quality-control review", string.IsNullOrWhiteSpace(job.InternalNotes) ? "Review" : "Ready", "Confirm stone security, finish, size, cleanliness, packaging and customer-facing presentation."));
+                items.Add(new("Handover payment", balance > 0 ? "Waiting" : "Ready", balance > 0 ? $"Collect or schedule remaining balance of {Money(balance)} before release." : "Payment is clear for handover."));
+                break;
+            case JobStatus.AwaitingCustomerApproval:
+                items.Add(new("Customer decision", string.IsNullOrWhiteSpace(job.CustomerApprovalNotes) ? "Waiting" : "Review", string.IsNullOrWhiteSpace(job.CustomerApprovalNotes) ? "Record what the customer needs to approve or answer." : "Customer approval notes are recorded; confirm latest decision."));
+                break;
+            case JobStatus.ReadyForPickup:
+            case JobStatus.ReadyToShip:
+                items.Add(new("Final handover", balance > 0 ? "Waiting" : "Ready", balance > 0 ? "Balance remains before collection/shipping." : "Ready for receipt, collection/shipping confirmation and final follow-up."));
+                break;
+        }
+    }
+
+    private static bool HasCustomerContact(Customer? customer)
+        => customer != null && (!string.IsNullOrWhiteSpace(customer.Phone) || !string.IsNullOrWhiteSpace(customer.Email));
+
+    private static string BuildProductionRecommendedAction(Job job, List<ProductionChecklistItem> checklist, decimal balance)
+    {
+        var firstWaiting = checklist.FirstOrDefault(i => i.Status == "Waiting");
+        if (firstWaiting != null)
+            return $"{firstWaiting.Check}: {firstWaiting.Detail}";
+
+        if (balance > 0 && job.Status is JobStatus.QualityCheck or JobStatus.ReadyForPickup or JobStatus.ReadyToShip)
+            return $"Confirm payment plan or collect {Money(balance)} before release.";
+
+        return job.Status switch
+        {
+            JobStatus.Enquiry or JobStatus.Quoted => "Confirm quote acceptance, required date and customer expectations before moving forward.",
+            JobStatus.Approved or JobStatus.DepositPaid => "Confirm materials, supplier stones and production notes, then move to materials or bench work.",
+            JobStatus.AwaitingMaterials => "Resolve material, stone or supplier waits before moving into production.",
+            JobStatus.InProgress => "Continue bench work and record progress notes if another person may pick up the job.",
+            JobStatus.Setting => "Complete setting checks, then move to polishing when secure.",
+            JobStatus.Polishing => "Finish polish and presentation, then move to quality check.",
+            JobStatus.QualityCheck => "Complete quality control, document final condition, then move to collection or shipping.",
+            JobStatus.AwaitingCustomerApproval => "Contact the customer and record the approval decision.",
+            JobStatus.ReadyForPickup => "Prepare receipt, handover confirmation, care notes and customer collection.",
+            JobStatus.ReadyToShip => "Confirm address, postage method, tracking and insurance before dispatch.",
+            JobStatus.Completed => "No production action required; keep documents and photos with the job record.",
+            JobStatus.Cancelled => "No production action required unless refund, release or cleanup tasks remain.",
+            _ => "Review job details and move to the next appropriate production stage."
+        };
+    }
+
+    private static string ProductionStageTitle(JobStatus status) => status switch
+    {
+        JobStatus.Enquiry => "Enquiry",
+        JobStatus.Quoted => "Awaiting Approval",
+        JobStatus.Approved => "Approved",
+        JobStatus.DepositPaid => "Deposit Paid",
+        JobStatus.AwaitingMaterials => "Materials Required",
+        JobStatus.InProgress => "In Production",
+        JobStatus.Setting => "Setting",
+        JobStatus.Polishing => "Polishing",
+        JobStatus.QualityCheck => "Quality Check",
+        JobStatus.AwaitingCustomerApproval => "Customer Check",
+        JobStatus.ReadyForPickup => "Ready for Collection",
+        JobStatus.ReadyToShip => "Ready to Ship",
+        JobStatus.Completed => "Completed",
+        JobStatus.Cancelled => "Cancelled",
+        _ => status.ToString()
+    };
+
+    private static string ProductionStageGuidance(JobStatus status) => status switch
+    {
+        JobStatus.Enquiry or JobStatus.Quoted => "Customer and quote stage",
+        JobStatus.Approved or JobStatus.DepositPaid => "Planning and deposit stage",
+        JobStatus.AwaitingMaterials => "Waiting on stock or supplier input",
+        JobStatus.InProgress or JobStatus.Setting or JobStatus.Polishing => "Active workshop stage",
+        JobStatus.QualityCheck => "Final inspection stage",
+        JobStatus.AwaitingCustomerApproval => "Waiting on customer decision",
+        JobStatus.ReadyForPickup or JobStatus.ReadyToShip => "Handover stage",
+        JobStatus.Completed => "Closed job",
+        JobStatus.Cancelled => "Closed without completion",
+        _ => "Review stage"
+    };
+
+    private static string ProductionDueGuidance(Job job)
+    {
+        if (!job.DueDate.HasValue)
+            return "Set a due date if the customer expects timing.";
+        if (job.Status is JobStatus.Completed or JobStatus.Cancelled)
+            return "Closed job.";
+        var days = (job.DueDate.Value.Date - DateTime.Today).Days;
+        return days < 0 ? $"{Math.Abs(days)} day(s) overdue." : days == 0 ? "Due today." : $"{days} day(s) remaining.";
+    }
+
+    private static void AppendProductionChecklistTable(StringBuilder html, List<ProductionChecklistItem> items)
+    {
+        html.AppendLine("<h2>Stage Readiness Checklist</h2>");
+        html.AppendLine("<table><tr><th>Check</th><th>Status</th><th>Detail</th></tr>");
+        foreach (var item in items)
+            html.AppendLine($"<tr><td>{Html(item.Check)}</td><td>{Html(item.Status)}</td><td>{Html(item.Detail)}</td></tr>");
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendProductionReservationTable(StringBuilder html, List<QuoteOptionMaterialLink> materialLinks, List<QuoteOptionStoneLink> stoneLinks, List<QuoteOptionExternalDiamondLink> diamondLinks)
+    {
+        html.AppendLine("<h2>Linked Materials, Stones and Supplier Diamonds</h2>");
+        if (materialLinks.Count + stoneLinks.Count + diamondLinks.Count == 0)
+        {
+            html.AppendLine("<p>No quote-option material, stone or supplier diamond links were found for this job.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Type</th><th>Code / Source</th><th>Description</th><th>Quantity</th><th>Value</th><th>Status</th></tr>");
+        foreach (var link in materialLinks)
+            html.AppendLine($"<tr><td>Material</td><td>{Html(link.MaterialCodeSnapshot)}</td><td>{Html(link.MaterialNameSnapshot)}</td><td>{Number(link.Quantity)} {Html(link.UnitTypeSnapshot)}</td><td>{Money(link.LineCost)}</td><td>{Html(link.ReservationStatus)}</td></tr>");
+        foreach (var link in stoneLinks)
+            html.AppendLine($"<tr><td>Stone</td><td>{Html(link.StoneCodeSnapshot)}</td><td>{Html(link.DescriptionSnapshot)}</td><td>1</td><td>{Money(link.UnitCost)}</td><td>{Html(link.ReservationStatus)}</td></tr>");
+        foreach (var link in diamondLinks)
+            html.AppendLine($"<tr><td>Supplier diamond</td><td>{Html(link.SourceSystemSnapshot)} {Html(link.SupplierDiamondIdSnapshot)}</td><td>{Html(link.DiamondSummarySnapshot)}</td><td>1</td><td>{Money(link.RetailPriceSnapshot > 0 ? link.RetailPriceSnapshot : link.SupplierPrice)}</td><td>{Html(link.LinkStatus)}</td></tr>");
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendProductionTaskTable(StringBuilder html, List<BusinessTask> tasks)
+    {
+        html.AppendLine("<h2>Open Linked Tasks</h2>");
+        if (tasks.Count == 0)
+        {
+            html.AppendLine("<p>No open linked tasks.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Task</th><th>Priority</th><th>Status</th><th>Due</th><th>Notes</th></tr>");
+        foreach (var task in tasks)
+            html.AppendLine($"<tr><td>{Html(task.ToString())}</td><td>{Html(task.Priority.ToString())}</td><td>{Html(task.Status.ToString())}</td><td>{Html(task.DueDate?.ToShortDateString() ?? string.Empty)}</td><td>{Html(task.FollowUpNotes ?? task.Description ?? string.Empty)}</td></tr>");
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendProductionPhotoTable(StringBuilder html, List<PhotoRecord> photos)
+    {
+        html.AppendLine("<h2>Linked Job Photos / Files</h2>");
+        if (photos.Count == 0)
+        {
+            html.AppendLine("<p>No job photos or files are linked yet.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Caption</th><th>File</th><th>Status</th></tr>");
+        foreach (var photo in photos)
+        {
+            var exists = !string.IsNullOrWhiteSpace(photo.FilePath) && File.Exists(photo.FilePath);
+            html.AppendLine($"<tr><td>{Html(photo.Caption ?? $"Photo #{photo.Id}")}</td><td>{Html(photo.FilePath)}</td><td>{Html(exists ? "File found" : "Missing file")}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
 
     private static void AppendHorizontalBarChart(StringBuilder html, string title, List<ChartRow> rows)
     {
@@ -1714,6 +2035,15 @@ public static class DocumentExportService
         html.AppendLine("</table>");
     }
 
+    private static void AppendStockLifecycleSummary(StringBuilder html)
+    {
+        html.AppendLine("<h2>Stock Lifecycle Guide</h2>");
+        html.AppendLine("<table><tr><th>Lifecycle</th><th>Meaning</th></tr>");
+        foreach (var row in StockLifecycleService.SummaryRows)
+            html.AppendLine($"<tr><td>{Html(row.Label)}</td><td>{Html(row.Guidance)}</td></tr>");
+        html.AppendLine("</table>");
+    }
+
     private static void AppendInventoryValueTable(StringBuilder html, List<JewelleryItem> jewellery, List<Stone> stones, List<Material> materials)
     {
         var unsold = jewellery.Where(i => i.Status != StockStatus.Sold).ToList();
@@ -1725,7 +2055,7 @@ public static class DocumentExportService
         html.AppendLine("</table>");
     }
 
-    private sealed record StockAgeRow(string Type, string Code, string Name, string Status, int AgeDays, decimal Value, DateTime CreatedAt, DateTime UpdatedAt);
+    private sealed record StockAgeRow(string Type, string Code, string Name, string Status, string Lifecycle, int AgeDays, decimal Value, DateTime CreatedAt, DateTime UpdatedAt);
 
     private static void AppendStockAgeBucketTable(StringBuilder html, List<StockAgeRow> rows)
     {
@@ -1757,9 +2087,9 @@ public static class DocumentExportService
             return;
         }
 
-        html.AppendLine("<table><tr><th>Type</th><th>Code</th><th>Name</th><th>Status</th><th>Age</th><th>Value</th><th>Created</th><th>Updated</th></tr>");
+        html.AppendLine("<table><tr><th>Type</th><th>Code</th><th>Name</th><th>Status</th><th>Lifecycle</th><th>Age</th><th>Value</th><th>Created</th><th>Updated</th></tr>");
         foreach (var row in rows.OrderByDescending(r => r.AgeDays).ThenByDescending(r => r.Value).Take(120))
-            html.AppendLine($"<tr><td>{Html(row.Type)}</td><td>{Html(row.Code)}</td><td>{Html(row.Name)}</td><td>{Html(row.Status)}</td><td>{row.AgeDays} days</td><td>{Money(row.Value)}</td><td>{Html(row.CreatedAt.ToShortDateString())}</td><td>{Html(row.UpdatedAt.ToShortDateString())}</td></tr>");
+            html.AppendLine($"<tr><td>{Html(row.Type)}</td><td>{Html(row.Code)}</td><td>{Html(row.Name)}</td><td>{Html(row.Status)}</td><td>{Html(row.Lifecycle)}</td><td>{row.AgeDays} days</td><td>{Money(row.Value)}</td><td>{Html(row.CreatedAt.ToShortDateString())}</td><td>{Html(row.UpdatedAt.ToShortDateString())}</td></tr>");
         html.AppendLine("</table>");
         if (rows.Count > 120)
             html.AppendLine($"<p class='small'>Showing the 120 oldest records from {rows.Count} slow-moving items.</p>");
@@ -1845,11 +2175,11 @@ public static class DocumentExportService
         html.AppendLine("<h2>Reserved Inventory</h2>");
         html.AppendLine(Row("Reserved stone value", Money(stoneLinks.Where(l => l.ReservationStatus.Equals("Reserved", StringComparison.OrdinalIgnoreCase)).Sum(l => l.UnitCost))));
         html.AppendLine(Row("Reserved material value", Money(materialLinks.Where(l => l.ReservationStatus.Equals("Reserved", StringComparison.OrdinalIgnoreCase)).Sum(l => l.LineCost))));
-        html.AppendLine("<table><tr><th>Type</th><th>Code</th><th>Name / Description</th><th>Quantity</th><th>Value</th><th>Status</th><th>Quote Option</th></tr>");
+        html.AppendLine("<table><tr><th>Type</th><th>Code</th><th>Name / Description</th><th>Quantity</th><th>Value</th><th>Status</th><th>Lifecycle</th><th>Quote Option</th></tr>");
         foreach (var link in stoneLinks.Where(l => l.ReservationStatus.Equals("Reserved", StringComparison.OrdinalIgnoreCase)).OrderBy(l => l.StoneCodeSnapshot))
-            html.AppendLine($"<tr><td>Stone</td><td>{Html(link.StoneCodeSnapshot)}</td><td>{Html(link.DescriptionSnapshot)}</td><td>1</td><td>{Money(link.UnitCost)}</td><td>{Html(link.ReservationStatus)}</td><td>{link.QuoteOptionId}</td></tr>");
+            html.AppendLine($"<tr><td>Stone</td><td>{Html(link.StoneCodeSnapshot)}</td><td>{Html(link.DescriptionSnapshot)}</td><td>1</td><td>{Money(link.UnitCost)}</td><td>{Html(link.ReservationStatus)}</td><td>{Html(StockLifecycleService.DescribeReservationStatus(link.ReservationStatus))}</td><td>{link.QuoteOptionId}</td></tr>");
         foreach (var link in materialLinks.Where(l => l.ReservationStatus.Equals("Reserved", StringComparison.OrdinalIgnoreCase)).OrderBy(l => l.MaterialNameSnapshot))
-            html.AppendLine($"<tr><td>Material</td><td>{Html(link.MaterialCodeSnapshot)}</td><td>{Html(link.MaterialNameSnapshot)}</td><td>{Number(link.Quantity)} {Html(link.UnitTypeSnapshot)}</td><td>{Money(link.LineCost)}</td><td>{Html(link.ReservationStatus)}</td><td>{link.QuoteOptionId}</td></tr>");
+            html.AppendLine($"<tr><td>Material</td><td>{Html(link.MaterialCodeSnapshot)}</td><td>{Html(link.MaterialNameSnapshot)}</td><td>{Number(link.Quantity)} {Html(link.UnitTypeSnapshot)}</td><td>{Money(link.LineCost)}</td><td>{Html(link.ReservationStatus)}</td><td>{Html(StockLifecycleService.DescribeReservationStatus(link.ReservationStatus))}</td><td>{link.QuoteOptionId}</td></tr>");
         html.AppendLine("</table>");
     }
 
@@ -1889,6 +2219,16 @@ public static class DocumentExportService
         html.AppendLine("<table class='payment-ledger'><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th></tr>");
         foreach (var payment in payments)
             html.AppendLine($"<tr><td>{Html(payment.PaymentDate.ToShortDateString())}</td><td>{Money(payment.Amount)}</td><td>{Html(payment.Method.ToString())}</td><td>{Html(payment.Reference ?? string.Empty)}</td><td>{Html(payment.Notes ?? string.Empty)}</td></tr>");
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendPaymentScheduleTable(StringBuilder html, PaymentScheduleSummary schedule)
+    {
+        html.AppendLine("<h2>Payment Schedule</h2>");
+        html.AppendLine($"<p class='notice'>{Html(schedule.Guidance)}</p>");
+        html.AppendLine("<table><tr><th>Stage</th><th>Target</th><th>Paid</th><th>Remaining</th><th>Due</th><th>Status</th></tr>");
+        foreach (var line in schedule.Lines)
+            html.AppendLine($"<tr><td>{Html(line.Stage)}</td><td>{Money(line.TargetAmount)}</td><td>{Money(line.PaidAmount)}</td><td>{Money(line.RemainingAmount)}</td><td>{Html(line.DueText)}</td><td>{Html(line.Status)}</td></tr>");
         html.AppendLine("</table>");
     }
 

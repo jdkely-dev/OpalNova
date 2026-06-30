@@ -16,6 +16,7 @@ public partial class SupplierDiamondWorkflowWindow : Window
     private sealed record DiamondWorkflowRow(
         int ExternalDiamondId,
         string Status,
+        string Lifecycle,
         string DiamondSummary,
         string CertificateNumber,
         decimal SupplierPrice,
@@ -72,6 +73,7 @@ public partial class SupplierDiamondWorkflowWindow : Window
             return new DiamondWorkflowRow(
                 d.Id,
                 status,
+                StockLifecycleService.DescribeExternalDiamondStatus(status),
                 BuildSummary(d),
                 d.CertificateNumber,
                 d.SupplierPrice,
@@ -142,7 +144,7 @@ public partial class SupplierDiamondWorkflowWindow : Window
         var search = SearchBox.Text.Trim();
         if (!string.IsNullOrWhiteSpace(search))
         {
-            query = query.Where(x => $"{x.Status} {x.DiamondSummary} {x.CertificateNumber} {x.QuoteCode} {x.Customer} {x.SupplierReference} {x.OwnedStoneCode}".Contains(search, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(x => $"{x.Status} {x.Lifecycle} {x.DiamondSummary} {x.CertificateNumber} {x.QuoteCode} {x.Customer} {x.SupplierReference} {x.OwnedStoneCode}".Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
         var list = query.ToList();
@@ -164,7 +166,7 @@ public partial class SupplierDiamondWorkflowWindow : Window
         }
 
         var ownedLine = string.IsNullOrWhiteSpace(row.OwnedStoneCode) ? string.Empty : $"\nOwned stone: {row.OwnedStoneCode}";
-        SelectedDiamondText.Text = $"{row.DiamondSummary}\nCert: {row.CertificateNumber}\nQuote: {row.QuoteCode} {row.OptionName}\nCustomer: {row.Customer}\nStatus: {row.Status}{ownedLine}";
+        SelectedDiamondText.Text = $"{row.DiamondSummary}\nCert: {row.CertificateNumber}\nQuote: {row.QuoteCode} {row.OptionName}\nCustomer: {row.Customer}\nStatus: {row.Status}\nLifecycle: {row.Lifecycle}{ownedLine}";
         SupplierReferenceBox.Text = row.SupplierReference;
         HoldExpiryPicker.SelectedDate = row.HoldExpiresAt?.Date;
         ExpectedArrivalPicker.SelectedDate = row.ExpectedArrivalDate?.Date;
@@ -310,7 +312,7 @@ public partial class SupplierDiamondWorkflowWindow : Window
             Status = BusinessTaskStatus.ToDo,
             DueDate = row.HoldExpiresAt?.Date ?? row.ExpectedArrivalDate?.Date ?? DateTime.Today.AddDays(1),
             ReminderDate = DateTime.Today,
-            Description = $"External diamond {row.DiamondSummary}\nCertificate: {row.CertificateNumber}\nQuote: {row.QuoteCode}\nCustomer: {row.Customer}\nCurrent status: {row.Status}\nSupplier reference: {row.SupplierReference}\nNotes: {ActionNotesBox.Text.Trim()}",
+            Description = $"External diamond {row.DiamondSummary}\nCertificate: {row.CertificateNumber}\nQuote: {row.QuoteCode}\nCustomer: {row.Customer}\nCurrent status: {row.Status}\nLifecycle: {row.Lifecycle}\nSupplier reference: {row.SupplierReference}\nNotes: {ActionNotesBox.Text.Trim()}",
             ShowOnDashboard = true
         };
         db.BusinessTasks.Add(task);

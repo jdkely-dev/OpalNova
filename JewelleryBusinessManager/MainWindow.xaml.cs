@@ -85,7 +85,14 @@ public partial class MainWindow : Window
     {
         public override string ToString() => string.IsNullOrWhiteSpace(Label) ? "Select record" : Label;
     }
+    private sealed record RecentWorkspaceItem(string Kind, string Key, string Title, string Subtitle, DateTime OpenedAt)
+    {
+        public string TimeLabel => OpenedAt.ToString("g");
+    }
     private sealed record WorkspaceTabState(string Key, Window? HostWindow, Action? OnClosed);
+
+    private const int MaxRecentItems = 8;
+    private readonly List<RecentWorkspaceItem> _recentItems = new();
 
     private Window? _hoverHelpWindow;
     private string? _hoverHelpKey;
@@ -260,6 +267,7 @@ public partial class MainWindow : Window
                 WorkspaceTabs.Visibility = Visibility.Visible;
                 WorkspaceTabs.SelectedItem = existing;
                 ShowWorkspaceTabsOnly();
+                TrackRecentWorkspaceTab(title, key, "Existing workspace tab");
                 StatusText.Text = $"Switched to existing tab: {title}.";
                 return existing;
             }
@@ -285,6 +293,7 @@ public partial class MainWindow : Window
         WorkspaceTabs.Visibility = Visibility.Visible;
         WorkspaceTabs.SelectedItem = tab;
         ShowWorkspaceTabsOnly();
+        TrackRecentWorkspaceTab(title, key, "Workspace tab");
         StatusText.Text = $"Opened tab: {title}. Use the tab close button when finished.";
         return tab;
     }
@@ -336,6 +345,206 @@ public partial class MainWindow : Window
         if (tab.Header is StackPanel panel && panel.Children.Count > 0 && panel.Children[0] is TextBlock text)
             return text.Text;
         return "Workspace";
+    }
+
+    private void TrackRecentWorkspaceTab(string title, string key, string subtitle)
+    {
+        if (string.IsNullOrWhiteSpace(key) || key.EndsWith(":new", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (key.StartsWith("entity:", StringComparison.OrdinalIgnoreCase))
+        {
+            TrackRecentItem("Record", key, title, BuildRecentEntitySubtitle(key));
+            return;
+        }
+
+        TrackRecentItem("Workspace", key, title, subtitle);
+    }
+
+    private void TrackRecentReport(string title, string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return;
+        TrackRecentItem("Report", path, title, "Generated report");
+    }
+
+    private void TrackRecentItem(string kind, string key, string title, string subtitle)
+    {
+        _recentItems.RemoveAll(item => item.Kind.Equals(kind, StringComparison.OrdinalIgnoreCase)
+            && item.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+        _recentItems.Insert(0, new RecentWorkspaceItem(kind, key, title, subtitle, DateTime.Now));
+        if (_recentItems.Count > MaxRecentItems)
+            _recentItems.RemoveRange(MaxRecentItems, _recentItems.Count - MaxRecentItems);
+        RefreshRecentItemsPanel();
+    }
+
+    private static string BuildRecentEntitySubtitle(string key)
+    {
+        var parts = key.Split(':');
+        if (parts.Length >= 3)
+            return $"{parts[1]} record #{parts[2]}";
+        return "Record editor";
+    }
+
+    private void RefreshRecentItemsPanel()
+    {
+        if (RecentItemsPanel == null || RecentItemsEmptyText == null)
+            return;
+
+        RecentItemsPanel.Children.Clear();
+        RecentItemsEmptyText.Visibility = _recentItems.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        foreach (var item in _recentItems)
+        {
+            var button = new WpfButton
+            {
+                Tag = item,
+                Style = (Style)FindResource("ToolbarButtonStyle"),
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                Padding = new Thickness(12, 9, 12, 9),
+                Margin = new Thickness(0, 0, 0, 7),
+                ToolTip = $"Reopen {item.Kind.ToLowerInvariant()}: {item.Title}"
+            };
+            button.Click += RecentItem_Click;
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var textStack = new StackPanel();
+            textStack.Children.Add(new TextBlock
+            {
+                Text = item.Title,
+                FontWeight = FontWeights.SemiBold,
+                TextWrapping = TextWrapping.Wrap
+            });
+            textStack.Children.Add(new TextBlock
+            {
+                Text = $"{item.Kind} - {item.Subtitle}",
+                FontSize = 12,
+                TextWrapping = TextWrapping.Wrap,
+                Opacity = 0.76
+            });
+
+            var timeText = new TextBlock
+            {
+                Text = item.TimeLabel,
+                FontSize = 11,
+                Opacity = 0.7,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(14, 0, 0, 0)
+            };
+            Grid.SetColumn(timeText, 1);
+            grid.Children.Add(textStack);
+            grid.Children.Add(timeText);
+            button.Content = grid;
+            RecentItemsPanel.Children.Add(button);
+        }
+    }
+
+    private void RecentItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is WpfButton { Tag: RecentWorkspaceItem item })
+            OpenRecentItem(item);
+    }
+
+    private void ClearRecentItems_Click(object sender, RoutedEventArgs e)
+    {
+        _recentItems.Clear();
+        RefreshRecentItemsPanel();
+        StatusText.Text = "Recent work cleared for this session.";
+    }
+
+    private void OpenRecentItem(RecentWorkspaceItem item)
+    {
+        try
+        {
+            if (item.Kind.Equals("Report", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!File.Exists(item.Key))
+                {
+                    MessageBox.Show("The recent report file is no longer available.", "Recent Work", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                OpenReportInApp(item.Key, item.Title);
+                return;
+            }
+
+            if (item.Key.StartsWith("entity:", StringComparison.OrdinalIgnoreCase))
+            {
+                OpenRecentEntityEditor(item.Key);
+                return;
+            }
+
+            OpenRecentWorkspace(item.Key);
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open recent work item");
+            MessageBox.Show($"Could not reopen the recent item.\n\n{ex.Message}", "Recent Work", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void OpenRecentEntityEditor(string key)
+    {
+        var parts = key.Split(':');
+        if (parts.Length < 3 || !_sectionTypes.TryGetValue(parts[1], out var type) || !int.TryParse(parts[2], out var id))
+        {
+            MessageBox.Show("This recent record can no longer be resolved.", "Recent Work", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        using var db = new AppDbContext();
+        var entity = db.Find(type, id);
+        if (entity == null)
+        {
+            MessageBox.Show("This recent record was not found. It may have been deleted.", "Recent Work", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        OpenEntityEditorTab($"Edit {SplitPascalCase(type.Name)} #{id}", entity, isNewRecord: false, sectionKey: parts[1]);
+        StatusText.Text = $"Reopened recent record: {parts[1]} #{id}.";
+    }
+
+    private void OpenRecentWorkspace(string key)
+    {
+        if (key.StartsWith("workflow:custom-quotes:", StringComparison.OrdinalIgnoreCase)
+            && int.TryParse(key["workflow:custom-quotes:".Length..], out var quoteId))
+        {
+            OpenCustomQuoteBuilder(quoteId);
+            return;
+        }
+
+        switch (key)
+        {
+            case "workflow:project-workbench":
+                ProjectWorkbench_Click(this, new RoutedEventArgs());
+                break;
+            case "workflow:alert-centre":
+                AlertCentre_Click(this, new RoutedEventArgs());
+                break;
+            case "workflow:proposal-pipeline":
+                ProposalPipeline_Click(this, new RoutedEventArgs());
+                break;
+            case "workflow:production-board":
+                ProductionBoard_Click(this, new RoutedEventArgs());
+                break;
+            case "workflow:custom-quotes":
+                CustomQuoteBuilder_Click(this, new RoutedEventArgs());
+                break;
+            case "workflow:diamond-search":
+                DiamondSupplier_Click(this, new RoutedEventArgs());
+                break;
+            case "workflow:diamond-holds":
+                SupplierDiamondWorkflow_Click(this, new RoutedEventArgs());
+                break;
+            case "workflow:payment-collection":
+                PaymentCollection_Click(this, new RoutedEventArgs());
+                break;
+            default:
+                MessageBox.Show("This recent workspace cannot be reopened from the dashboard yet.", "Recent Work", MessageBoxButton.OK, MessageBoxImage.Information);
+                break;
+        }
     }
 
 
@@ -447,7 +656,7 @@ public partial class MainWindow : Window
         CurrentPageHintText.Text = "";
     }
 
-    private void OpenEntityEditorTab(string title, object entity, bool isNewRecord)
+    private void OpenEntityEditorTab(string title, object entity, bool isNewRecord, string? sectionKey = null)
     {
         var editor = new EditEntityWindow(entity) { IsHostedInTab = true };
         TabItem? tab = null;
@@ -475,7 +684,8 @@ public partial class MainWindow : Window
         editor.Cancelled += (_, _) => CloseWorkspaceTab(tab);
         var content = editor.Content;
         editor.Content = null;
-        var key = $"entity:{CurrentSection}:{(isNewRecord ? "new" : entity.GetType().GetProperty("Id")?.GetValue(entity)?.ToString() ?? Guid.NewGuid().ToString())}";
+        var keySection = string.IsNullOrWhiteSpace(sectionKey) ? CurrentSection : sectionKey;
+        var key = $"entity:{keySection}:{(isNewRecord ? "new" : entity.GetType().GetProperty("Id")?.GetValue(entity)?.ToString() ?? Guid.NewGuid().ToString())}";
         tab = OpenContentInWorkspaceTab(title, content, key, editor);
     }
 
@@ -605,6 +815,7 @@ public partial class MainWindow : Window
         }
 
         _currentReportPath = path;
+        TrackRecentReport(title, path);
         if (ToolWorkspacePanel.Visibility == Visibility.Visible)
         {
             ToolPreviewTitleText.Text = title;
@@ -947,6 +1158,7 @@ public partial class MainWindow : Window
         "Production" => new ToolAction[]
         {
             new("Production Board", "Open the visual job pipeline for current bench work.", ProductionBoard_Click),
+            new("Stage Checklist", "Preview stage readiness, waiting warnings, linked tasks and job files for a selected job.", ProductionStageChecklistSetup_Click),
             new("Jobs", "Open job records for detailed editing.", (_, _) => SelectNavigationSection("Jobs")),
             new("Payment & Collection", "Finish pickup, shipping, receipts and balances from completed jobs.", PaymentCollection_Click),
             new("Production Batches", "Open batch records and collection/making runs.", (_, _) => SelectNavigationSection("Production Batches")),
@@ -1048,6 +1260,7 @@ public partial class MainWindow : Window
         "Production & Opal Studio" => new ToolAction[]
         {
             new("Production Board", "Open the visual workshop job pipeline with due dates, customer links and quick status movement.", ProductionBoard_Click),
+            new("Stage Checklist", "Preview job stage readiness, waiting warnings, reservations, tasks and linked files.", ProductionStageChecklistSetup_Click),
             new("Payment & Collection", "Finish the handover stage with balance tracking, pickup/shipping status and sale creation.", PaymentCollection_Click),
             new("New Batch", "Create a production batch or collection plan.", NewBatch_Click),
             new("Add To Batch", "Add selected jewellery, stone or job to a production batch.", AddToBatchSetup_Click),
@@ -1101,6 +1314,7 @@ public partial class MainWindow : Window
             new("Custom Quote Builder", "Build a multi-option customer proposal and convert the accepted option into a production job.", CustomQuoteBuilder_Click),
             new("Payment & Collection", "Record job payments, generate invoice/receipt paperwork and finish customer handover.", PaymentCollection_Click),
             new("Job Card", "Preview a bench job card for the selected job.", JobCardSetup_Click),
+            new("Production Stage Checklist", "Preview stage readiness and production handoff checks for a selected job.", ProductionStageChecklistSetup_Click),
             new("Stock Label", "Preview a printable stock/price label.", StockLabelSetup_Click),
             new("Quote", "Preview a customer quote for the selected job.", QuoteSetup_Click),
             new("Invoice / Receipt", "Preview an invoice or receipt from a job or sale.", InvoiceReceiptSetup_Click),
@@ -1207,7 +1421,7 @@ public partial class MainWindow : Window
             {
                 _hoverHelpPinned = true;
                 _hoverHelpSource = element;
-                _hoverHelpWindow.Title = _hoverHelpWindow.Title.Replace(" — preview", " — pinned");
+                _hoverHelpWindow.Title = _hoverHelpWindow.Title.Replace(" - preview", " - pinned");
             }
             return;
         }
@@ -1234,7 +1448,7 @@ public partial class MainWindow : Window
             {
                 _hoverHelpPinned = true;
                 _hoverHelpSource = sourceElement;
-                _hoverHelpWindow.Title = _hoverHelpWindow.Title.Replace(" — preview", " — pinned");
+                _hoverHelpWindow.Title = _hoverHelpWindow.Title.Replace(" - preview", " - pinned");
             }
             return;
         }
@@ -1247,7 +1461,7 @@ public partial class MainWindow : Window
         var guide = GetHelpGuide(key);
         var helpWindow = new Window
         {
-            Title = $"OPALNOVA Mini Guide — {guide.Title} — {(pinned ? "pinned" : "preview")}",
+            Title = $"OPALNOVA Mini Guide - {guide.Title} - {(pinned ? "pinned" : "preview")}",
             Owner = this,
             Width = 390,
             Height = 360,
@@ -1374,7 +1588,7 @@ public partial class MainWindow : Window
         var guide = GetHelpGuide(key);
         var helpWindow = new Window
         {
-            Title = $"OPALNOVA Help — {guide.Title}",
+            Title = $"OPALNOVA Help - {guide.Title}",
             Owner = this,
             Width = 420,
             Height = 540,
@@ -1696,6 +1910,7 @@ public partial class MainWindow : Window
         HighPriorityTasksText.Text = openTasks.Count(t => t.Priority == BusinessTaskPriority.High || t.Priority == BusinessTaskPriority.Urgent).ToString();
         RefreshSetupReadiness(db, settings, today);
         RefreshDashboardDataSafety(settings, today);
+        RefreshRecentItemsPanel();
         StatusText.Text = $"Database: {DatabaseBootstrapper.DatabasePath}";
     }
 
@@ -2069,21 +2284,21 @@ public partial class MainWindow : Window
     {
         Customer c => c.FullName,
         Supplier s => s.Name,
-        Material m => string.IsNullOrWhiteSpace(m.MaterialCode) ? m.Name : $"{m.MaterialCode} — {m.Name}",
+        Material m => string.IsNullOrWhiteSpace(m.MaterialCode) ? m.Name : $"{m.MaterialCode} - {m.Name}",
         Stone s => string.IsNullOrWhiteSpace(s.StoneCode) ? $"{s.StoneType} stone #{s.Id}" : s.StoneCode,
         OpalParcel p => string.IsNullOrWhiteSpace(p.ParcelCode) ? $"Opal parcel #{p.Id}" : p.ParcelCode,
-        JewelleryItem j => string.IsNullOrWhiteSpace(j.StockCode) ? j.Name : $"{j.StockCode} — {j.Name}",
-        Job j => string.IsNullOrWhiteSpace(j.JobCode) ? j.JobTitle : $"{j.JobCode} — {j.JobTitle}",
-        Sale s => $"Sale #{s.Id} — {s.SaleAmount:C}",
-        Payment p => $"Payment #{p.Id} — {p.Amount:C}",
+        JewelleryItem j => string.IsNullOrWhiteSpace(j.StockCode) ? j.Name : $"{j.StockCode} - {j.Name}",
+        Job j => string.IsNullOrWhiteSpace(j.JobCode) ? j.JobTitle : $"{j.JobCode} - {j.JobTitle}",
+        Sale s => $"Sale #{s.Id} - {s.SaleAmount:C}",
+        Payment p => $"Payment #{p.Id} - {p.Amount:C}",
         MarketEvent m => m.Name,
         MarketStock m => $"Market stock #{m.Id}",
-        ProductionBatch b => string.IsNullOrWhiteSpace(b.BatchCode) ? b.Name : $"{b.BatchCode} — {b.Name}",
+        ProductionBatch b => string.IsNullOrWhiteSpace(b.BatchCode) ? b.Name : $"{b.BatchCode} - {b.Name}",
         ProductionBatchItem i => i.ItemName,
         OnlineListing l => string.IsNullOrWhiteSpace(l.SeoTitle) ? $"Listing #{l.Id}" : l.SeoTitle,
         PurchaseOrder p => string.IsNullOrWhiteSpace(p.PurchaseOrderCode) ? $"Purchase order #{p.Id}" : p.PurchaseOrderCode,
         PurchaseOrderItem i => i.ItemName,
-        BusinessTask t => string.IsNullOrWhiteSpace(t.TaskCode) ? t.Title : $"{t.TaskCode} — {t.Title}",
+        BusinessTask t => string.IsNullOrWhiteSpace(t.TaskCode) ? t.Title : $"{t.TaskCode} - {t.Title}",
         PhotoRecord p => string.IsNullOrWhiteSpace(p.Caption) ? $"Photo #{p.Id}" : p.Caption,
         _ => record.ToString() ?? record.GetType().Name
     };
@@ -3587,6 +3802,29 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ProductionStageChecklist_Click(object sender, RoutedEventArgs e)
+    {
+        if (RecordsGrid.SelectedItem is not Job selectedJob)
+        {
+            MessageBox.Show("Select a job first, then click Stage Checklist.", "Production Stage Checklist", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            using var db = new AppDbContext();
+            var jobForChecklist = db.Jobs.Find(selectedJob.Id);
+            if (jobForChecklist == null) return;
+            var path = DocumentExportService.CreateProductionStageChecklist(jobForChecklist);
+            OpenReportInApp(path, "Production Stage Checklist");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Production stage checklist");
+            MessageBox.Show($"Could not create the production stage checklist.\n\n{ex.Message}", "Production Stage Checklist", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void StockLabel_Click(object sender, RoutedEventArgs e)
     {
         if (RecordsGrid.SelectedItem is not JewelleryItem selectedItem)
@@ -5008,6 +5246,9 @@ public partial class MainWindow : Window
     private void JobCardSetup_Click(object sender, RoutedEventArgs e) =>
         ShowSingleRecordToolPanel("Job Card", "Choose a job to preview a bench job card.", new[] { "Jobs" }, JobCard_Click, "Generate Job Card");
 
+    private void ProductionStageChecklistSetup_Click(object sender, RoutedEventArgs e) =>
+        ShowSingleRecordToolPanel("Production Stage Checklist", "Choose a job to preview stage readiness, waiting warnings, linked tasks and job files.", new[] { "Jobs" }, ProductionStageChecklist_Click, "Generate Stage Checklist");
+
     private void StockLabelSetup_Click(object sender, RoutedEventArgs e) =>
         ShowSingleRecordToolPanel("Stock Label", "Choose a jewellery stock item for a printable price/stock label.", new[] { "Jewellery Stock" }, StockLabel_Click, "Generate Stock Label");
 
@@ -5091,6 +5332,7 @@ public partial class MainWindow : Window
     private void ProductionBoard_Click(object sender, RoutedEventArgs e)
     {
         var window = new ProductionBoardWindow();
+        window.ReportRequested += (path, title) => OpenReportInApp(path, title);
         OpenWindowInWorkspaceTab("Production Board", window, "workflow:production-board", RefreshAfterWorkspaceTabClosed);
     }
 

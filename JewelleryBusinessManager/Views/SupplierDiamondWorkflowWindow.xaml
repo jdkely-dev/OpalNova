@@ -72,6 +72,7 @@
                         <DataGrid x:Name="DiamondsGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionChanged="DiamondsGrid_SelectionChanged">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="135" />
+                                <DataGridTextColumn Header="Lifecycle" Binding="{Binding Lifecycle}" Width="210" />
                                 <DataGridTextColumn Header="Diamond" Binding="{Binding DiamondSummary}" Width="260" />
                                 <DataGridTextColumn Header="Cert" Binding="{Binding CertificateNumber}" Width="110" />
                                 <DataGridTextColumn Header="Price" Binding="{Binding SupplierPrice, StringFormat=C}" Width="90" />
@@ -109,13 +110,13 @@
                         <Button Content="Create Reminder Task" Click="CreateReminderTask_Click" Style="{StaticResource ToolbarButtonStyle}" />
 
                         <Border Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,14,0,0">
-                            <TextBlock Text="Tip: when a customer accepts a quote using an external diamond, move it to Hold Requested immediately, then Ordered once the supplier confirms availability or invoice details." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
+                            <TextBlock Text="Tip: supplier diamonds are not owned stock until received and converted into an owned stone record. Use holds and orders to protect customer-approved stones before conversion." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
                         </Border>
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <TextBlock Grid.Row="2" Text="Workflow statuses: Customer Interested → Hold Requested → Hold Confirmed → Ordered → Received, or Declined/Released if the customer or supplier moves away from the stone." Foreground="{StaticResource MutedTextBrush}" Margin="4,10,0,0" TextWrapping="Wrap" />
+            <TextBlock Grid.Row="2" Text="Workflow statuses: Customer Interested -> Hold Requested -> Hold Confirmed -> Ordered -> Received -> Converted To Owned Inventory, or Declined/Released if the customer or supplier moves away from the stone." Foreground="{StaticResource MutedTextBrush}" Margin="4,10,0,0" TextWrapping="Wrap" />
         </Grid>
     </DockPanel>
 </Window>

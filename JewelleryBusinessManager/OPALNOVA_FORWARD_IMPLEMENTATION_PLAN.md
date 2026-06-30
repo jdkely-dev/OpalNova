@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.75.0 Customer Communication Templates
+Current baseline: V1.80.0 Stability Milestone
 
 ## Purpose
 
@@ -79,9 +79,9 @@ Ease:
 | Preferred ring size / metal / stone in quote workflow | P2 | S | Started in V1.67.0 with an explicit customer-preference fill action that copies blank quote preference fields from the selected customer profile. | V1.67 |
 | Universal next-action service | P2 | M-L | Implemented in V1.51.0 as a shared runtime service for Alert Centre and dashboard counts; Project Hub can be refactored to share it more deeply later. | V1.51 |
 | Alert centre | P2 | M | Implemented in V1.51.0 as a workspace-hosted alert list with filters, search, counts, details, and workflow actions. | V1.51 |
-| Recently opened tabs/items | P2 | S-M | Useful once tab lifecycle is stable. Can be local settings-backed first. | V1.51 |
+| Recently opened tabs/items | P2 | S-M | Implemented in V1.77.0 as a dashboard Recent Work panel for current-session workflow tabs, generated reports and saved record editors. | V1.77 |
 | Unsaved-change warnings for tab close | P2 | M-L | Started in V1.66.0 with Custom Quote Builder dirty tracking and broadened in V1.73.0 to hosted generic record editor tabs. | V1.66, V1.73 |
-| Payment schedule tracking | P2 | M | Supports quote approvals and handover. Should follow proposal/action changes. | V1.50-V1.51 |
+| Payment schedule tracking | P2 | M | Implemented in V1.78.0 as shared quote/job schedule guidance shown in proposals, job payment summaries and Payment & Collection. | V1.78 |
 | Polished invoice/receipt templates | P2 | M | Implemented in V1.57.0 for job invoices/receipts, sale receipts, deposit receipts and payment receipts. | V1.57 |
 | Balance reminder messages | P2 | S | Implemented in V1.68.0 through Payment & Collection copy-ready reminder text and duplicate-safe follow-up task creation. | V1.68 |
 | Reminder task consistency | P2 | S | Implemented in V1.69.0 through shared duplicate-safe open-task checks and consistent task-code generation across active reminder workflows. | V1.69 |
@@ -92,8 +92,9 @@ Ease:
 | Customer communication templates | P3 | S-M | Implemented in V1.75.0 as customer-specific quote, production, handover, after-care and repeat-customer message starters. | V1.75 |
 | Customer lifetime value and repeat follow-up guidance | P3 | S-M | Started in V1.75.0 through customer summary/timeline/report value guidance and generated follow-up notes. | V1.75 |
 | Job completion checklist and stock consume/release wizard | P2 | L | Implemented in V1.52.0 as an explicit completion checklist that consumes reserved materials, marks reserved stones set, releases unconsumed reservations, and writes material movement audit entries. | V1.52 |
-| Production stage checklist, waiting flags, and job files | P2 | M-L | The transcript shows these as central after proposal acceptance. Do this around the safe job-completion work. | V1.52 |
-| Stock lifecycle clarity | P2 | M-L | Started in V1.52.0 through consumed/released reservation states; broader stock lifecycle UI still needs later polish. | V1.52 |
+| Production stage checklist, waiting flags, and job files | P2 | M-L | Started in V1.76.0 with a generated stage checklist covering readiness, waits, quote context, reservations, supplier diamonds, payments, tasks and linked job photos/files. | V1.76 |
+| Stock lifecycle clarity | P2 | M-L | Strengthened in V1.79.0 with shared lifecycle guidance for status changes, supplier diamonds and inventory reports. | V1.52, V1.79 |
+| Stability milestone and redundancy check | P0 | S-M | Completed in V1.80.0 as a validation and consistency checkpoint across V1.76-V1.79 before the milestone commit/push. | V1.80 |
 | External diamond refresh availability/price | P3 | M-L | API search exists; refresh needs careful schema/API behavior and no hardcoded assumptions. | V1.53 |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
 | Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; profitability reporting is implemented in V1.59.0; tax/GST summary is implemented in V1.60.0; visual charts are implemented in V1.61.0. | V1.54, V1.58, V1.59, V1.60, V1.61 |
@@ -379,25 +380,26 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start V1.63 with this ticket:
+Start the next local build with this ticket. Keep changes uncommitted until the next whole-number milestone requested for git, such as V1.90.
 
-Title: V1.63 Text Encoding and Document Copy Cleanup - remove stale artifacts
+Title: V1.81 Market / POS Speed Polish
 
 Tasks:
 
-- Scan generated documents, release notes, guide text and visible UI strings for stale mojibake or unclear legacy labels.
-- Replace corrupted punctuation with plain ASCII-safe text or existing project style.
-- Keep the cleanup limited to user-facing text and generated HTML copy.
-- Avoid changing business logic, database schema or workflow behavior.
-- Rebuild and smoke test after cleanup because encoded text can sit inside raw string literals.
+- Review current market sale, market packing, reconciliation and return-to-stock paths.
+- Improve the fastest market-sale workflow using existing market, sale and stock records first.
+- Add clearer end-of-day market reconciliation guidance if existing data supports it.
+- Add return-to-stock prompts or report guidance where packed-but-unsold stock can be confused with sold stock.
+- Keep market/POS changes no-schema unless a real workflow gap appears.
+- Preserve existing sale creation, stock status and payment method behavior.
 
 Validation:
 
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual text cleanup smoke:
-  - open User Guide and Release Notes.
-  - generate at least one common document and one report.
-  - confirm no corrupted punctuation is visible in touched outputs.
-  - confirm no business records are changed.
+- manual V1.81 smoke:
+  - process a test market sale path using test data only.
+  - confirm sold stock, returned stock and packed stock remain distinguishable.
+  - confirm sale totals, payment method and market reconciliation values remain correct.
+  - confirm no stock is marked sold or returned just by opening guidance/report screens.

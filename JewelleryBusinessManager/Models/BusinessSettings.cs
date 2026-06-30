@@ -18,7 +18,7 @@ public class BusinessSettings
     public string DocumentFooterText { get; set; } = "Thank you for supporting handmade jewellery.";
     public string TermsAndConditions { get; set; } = "Deposits may be required before work begins. Custom order timelines depend on material availability and customer approval. Final balance is due before pickup or shipping.";
     public string ProposalEmailSubjectTemplate { get; set; } = "Your jewellery proposal - {QuoteCode}";
-    public string ProposalEmailMessageTemplate { get; set; } = "Hi {CustomerName},\n\nThank you for the opportunity to prepare this jewellery proposal.\n\nYou can review the attached proposal or open it from this link:\n{ProposalLink}\n\nPlease let me know which option you prefer, or if you would like any changes.\n\nKind regards,\n{BusinessName}";
+    public string ProposalEmailMessageTemplate { get; set; } = "Hi {CustomerName},\n\nThank you for the opportunity to prepare this jewellery proposal.\n\nYou can review the attached proposal or open it from this link:\n{ProposalLink}\n\nPayment schedule: {PaymentSchedule}\n\nPlease let me know which option you prefer, or if you would like any changes.\n\nKind regards,\n{BusinessName}";
     public string BackupFolder { get; set; } = string.Empty;
     public string PrintoutFolder { get; set; } = string.Empty;
 

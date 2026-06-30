@@ -9,16 +9,16 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>OPALNOVA</AssemblyName>
     <RootNamespace>JewelleryBusinessManager</RootNamespace>
-    <Version>1.75.0</Version>
-    <AssemblyVersion>1.75.0.0</AssemblyVersion>
-    <FileVersion>1.75.0.0</FileVersion>
-    <InformationalVersion>1.75.0 OPALNOVA Customer Communication Templates</InformationalVersion>
+    <Version>1.80.0</Version>
+    <AssemblyVersion>1.80.0.0</AssemblyVersion>
+    <FileVersion>1.80.0.0</FileVersion>
+    <InformationalVersion>1.80.0 OPALNOVA Stability Milestone</InformationalVersion>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <Authors>Jack The Jeweller</Authors>
     <Company>Jack The Jeweller</Company>
     <Product>OPALNOVA</Product>
     <Description>Standalone jewellery business management app for customers, jobs, stock, stones, markets, documents and reports.</Description>
-    <Copyright>Copyright © Jack The Jeweller</Copyright>
+    <Copyright>Copyright (c) Jack The Jeweller</Copyright>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>

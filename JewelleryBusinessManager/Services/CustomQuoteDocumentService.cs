@@ -23,7 +23,7 @@ public static class CustomQuoteDocumentService
 
         var sb = new StringBuilder();
         sb.Append("<!doctype html><html><head><meta charset='utf-8'><title>Jewellery Proposal</title><style>");
-        sb.Append("body{font-family:Segoe UI,Arial;background:#eef2f4;color:#172033;margin:0;padding:34px}.page{max-width:940px;margin:auto;background:white;padding:44px;border-radius:18px;box-shadow:0 18px 55px #0002}.top{display:flex;justify-content:space-between;border-bottom:3px solid #d9a441;padding-bottom:18px}.brand{font-size:29px;font-weight:750}.muted{color:#687387}.hero{padding:26px 0 16px}.hero h1{font-size:34px;margin:0 0 10px}.badge{display:inline-block;background:#fff7e4;border:1px solid #e8c46d;color:#6d4a00;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;text-transform:uppercase}.option{border:1px solid #dce1e8;border-radius:15px;padding:22px;margin:18px 0;background:#fff}.recommended{border:2px solid #d9a441;box-shadow:0 8px 22px #d9a44122}.price{font-size:28px;font-weight:750}.option-img{width:100%;max-height:380px;object-fit:cover;border-radius:14px;margin:12px 0;border:1px solid #dce1e8}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.costs{width:100%;border-collapse:collapse}.costs td{padding:7px;border-bottom:1px solid #edf0f4}.payment,.steps{background:#f8fafc;border:1px solid #dde5ed;border-radius:14px;padding:18px;margin-top:18px}.right{text-align:right}.footer{margin-top:34px;border-top:1px solid #ddd;padding-top:18px;font-size:13px;color:#687387}@media print{body{background:white;padding:0}.page{box-shadow:none;border-radius:0}}");
+        sb.Append("body{font-family:Segoe UI,Arial;background:#eef2f4;color:#172033;margin:0;padding:34px}.page{max-width:940px;margin:auto;background:white;padding:44px;border-radius:18px;box-shadow:0 18px 55px #0002}.top{display:flex;justify-content:space-between;border-bottom:3px solid #d9a441;padding-bottom:18px}.brand{font-size:29px;font-weight:750}.muted{color:#687387}.hero{padding:26px 0 16px}.hero h1{font-size:34px;margin:0 0 10px}.badge{display:inline-block;background:#fff7e4;border:1px solid #e8c46d;color:#6d4a00;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;text-transform:uppercase}.option{border:1px solid #dce1e8;border-radius:15px;padding:22px;margin:18px 0;background:#fff}.recommended{border:2px solid #d9a441;box-shadow:0 8px 22px #d9a44122}.price{font-size:28px;font-weight:750}.option-img{width:100%;max-height:380px;object-fit:cover;border-radius:14px;margin:12px 0;border:1px solid #dce1e8}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.costs,.schedule{width:100%;border-collapse:collapse}.costs td,.schedule td,.schedule th{padding:7px;border-bottom:1px solid #edf0f4}.schedule th{text-align:left;color:#687387;font-size:12px;text-transform:uppercase}.payment,.steps{background:#f8fafc;border:1px solid #dde5ed;border-radius:14px;padding:18px;margin-top:18px}.right{text-align:right}.footer{margin-top:34px;border-top:1px solid #ddd;padding-top:18px;font-size:13px;color:#687387}@media print{body{background:white;padding:0}.page{box-shadow:none;border-radius:0}}");
         sb.Append("</style></head><body><div class='page'>");
 
         sb.Append($"<div class='top'><div><div class='brand'>{E(settings.BusinessName)}</div><div class='muted'>{E(settings.OwnerName)} &middot; {E(settings.Email)} &middot; {E(settings.Phone)}</div></div><div class='right'><b>PROPOSAL</b><br>{E(quote.QuoteCode)}<br>{quote.QuoteDate:dd MMM yyyy}</div></div>");
@@ -41,8 +41,8 @@ public static class CustomQuoteDocumentService
         var basis = accepted ?? options.FirstOrDefault(x => x.IsRecommended) ?? options.FirstOrDefault();
         if (basis != null)
         {
-            var deposit = basis.TotalPrice * quote.DepositPercent / 100m;
-            sb.Append($"<div class='payment'><h3>Payment schedule</h3><p>Deposit: {quote.DepositPercent:0.##}% ({Money(deposit)}) &middot; Balance before pickup or shipping.</p></div>");
+            var schedule = PaymentScheduleService.BuildForQuote(quote, basis);
+            AppendPaymentSchedule(sb, schedule, E, Money);
         }
 
         sb.Append("<div class='steps'><h3>Next steps</h3><ol><li>Review each option and let us know which direction feels right.</li><li>Request any changes before approval if the design, stone or budget needs adjustment.</li><li>Once accepted, we will confirm deposit/payment details and move the work into production.</li></ol></div>");
@@ -53,6 +53,20 @@ public static class CustomQuoteDocumentService
         sb.Append($"<h3>Terms</h3><p>{E(quote.Terms ?? settings.TermsAndConditions).Replace("\n", "<br>")}</p><div class='footer'>{E(settings.DocumentFooterText)}</div></div></body></html>");
         File.WriteAllText(path, sb.ToString());
         return path;
+    }
+
+    private static void AppendPaymentSchedule(
+        StringBuilder sb,
+        PaymentScheduleSummary schedule,
+        Func<string?, string> encode,
+        Func<decimal, string> money)
+    {
+        sb.Append("<div class='payment'><h3>Payment schedule</h3>");
+        sb.Append($"<p>{encode(schedule.Guidance)}</p>");
+        sb.Append("<table class='schedule'><tr><th>Stage</th><th>Target</th><th>Timing</th><th>Note</th></tr>");
+        foreach (var line in schedule.Lines)
+            sb.Append($"<tr><td>{encode(line.Stage)}</td><td>{money(line.TargetAmount)}</td><td>{encode(line.DueText)}</td><td>{encode(line.Note)}</td></tr>");
+        sb.Append("</table></div>");
     }
 
     private static void AppendProjectContext(StringBuilder sb, CustomQuote quote, Func<string?, string> encode)
