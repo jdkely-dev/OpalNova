@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OPALNOVA Nivoda Staging Handoff</title>
+  <style>
+    body { margin: 0; font-family: Segoe UI, Arial, sans-serif; color: #1f2937; background: #f8fafc; line-height: 1.55; }
+    main { max-width: 1040px; margin: 0 auto; padding: 32px 20px 48px; }
+    h1, h2 { color: #111827; }
+    h1 { margin-bottom: 4px; }
+    .meta { color: #6b7280; margin-top: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .card { background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 16px; margin: 14px 0; }
+    .warn { border-left: 5px solid #b45309; background: #fff7ed; }
+    .ok { border-left: 5px solid #047857; background: #ecfdf5; }
+    code { background: #e5e7eb; padding: 2px 5px; border-radius: 4px; word-break: break-all; }
+    li { margin: 5px 0; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>OPALNOVA Nivoda Staging Handoff</h1>
+  <p class="meta">Non-secret integration handoff page for Nivoda API review.</p>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Application</h2>
+      <p><b>Product:</b> OPALNOVA</p>
+      <p><b>Platform:</b> Windows desktop app, WPF / C#</p>
+      <p><b>Integration area:</b> External supplier diamond search, saved external diamonds, quote links, hold/order tracking and received-diamond conversion.</p>
+    </section>
+    <section class="card">
+      <h2>Default Staging Endpoint</h2>
+      <p><b>GraphQL endpoint:</b><br><code>https://intg-customer-staging.nivodaapi.net/api/diamonds</code></p>
+      <p><b>GraphiQL:</b><br><code>https://intg-customer-staging.nivodaapi.net/api/diamonds-graphiql</code></p>
+    </section>
+    <section class="card warn">
+      <h2>Credential Safety</h2>
+      <p>OPALNOVA does not hardcode or publish Nivoda credentials. Test credentials must be supplied directly to the local app by the account owner or through an approved secure channel.</p>
+    </section>
+    <section class="card">
+      <h2>Hosted Review URL</h2>
+      <p>This page is designed to be hosted from GitHub Pages using the repository workflow <code>Deploy Nivoda staging handoff</code>.</p>
+      <p>The final URL is shown by GitHub after deployment. For this repository it is expected to be either <code>https://jdkely-dev.github.io/OpalNova/</code> or <code>https://jdkely-dev.github.io/OpalNova/nivoda-staging/</code>, depending on the chosen Pages source.</p>
+    </section>
+  </div>
+
+  <section class="card ok">
+    <h2>Current Implemented Surface</h2>
+    <ul>
+      <li>Username/password authentication against the configured Nivoda GraphQL endpoint.</li>
+      <li>Diamond search using lab-grown/natural, shape and carat filters.</li>
+      <li>Mapping of supplier diamond id, certificate, shape, carat, colour, clarity, cut, lab, price, availability, video and certificate fields where present.</li>
+      <li>Saving search results as OPALNOVA External Diamond records separate from owned inventory.</li>
+      <li>Quote-option linking, local hold/order workflow tracking, received status and conversion to owned loose-stone inventory.</li>
+      <li>In-app staging handoff report that can authenticate, introspect the accessible schema and list query/mutation fields without exposing credentials.</li>
+      <li>Static GitHub Pages handoff page for non-secret external review.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Needs Nivoda Confirmation</h2>
+    <ol>
+      <li>Current staging and production endpoints for the diamond API.</li>
+      <li>Current search query and filter names for lab-grown/natural, shape, carat range, lab, price, availability, certificate and video fields.</li>
+      <li>Whether this account can access hold, reserve, cart, order, purchase or checkout mutations.</li>
+      <li>Required mutation payloads for requesting holds, confirming orders, refreshing availability/price and retrieving supplier order documents.</li>
+      <li>Any token lifetime, rate limit, permission, supplier visibility or account-region constraints.</li>
+      <li>Whether Nivoda requires a webhook/callback URL. OPALNOVA is currently a local desktop app and does not expose a public callback without a separately approved hosted component.</li>
+    </ol>
+  </section>
+
+  <section class="card warn">
+    <h2>Integration Boundary</h2>
+    <p>Until Nivoda confirms account-specific mutation names and payloads, OPALNOVA should keep hold/order actions as local workflow state and require confirmation in Nivoda. Once the schema is confirmed, the app can safely add API-backed hold/order actions without changing owned-stock records prematurely.</p>
+  </section>
+</main>
+</body>
+</html>
