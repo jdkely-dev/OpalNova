@@ -12,7 +12,7 @@ Expected GitHub Pages URL once deployed:
 
 `https://jdkely-dev.github.io/OpalNova/`
 
-If GitHub Pages is configured to publish directly from the `docs` folder instead of the workflow, the expected URL is:
+The root `docs/index.html` forwards to the Nivoda page. If GitHub Pages is configured to publish directly from the `docs` folder and you want the deep link, use:
 
 `https://jdkely-dev.github.io/OpalNova/nivoda-staging/`
 

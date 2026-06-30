@@ -33,6 +33,7 @@ V1.91.0 pivots to Nivoda staging/API readiness so Nivoda setup can move forward:
 - Added `NivodaStagingHandoffService.CreateHandoffReportAsync(...)`.
 - Added Nivoda Staging Handoff actions in Diamonds and Diamond Supplier Studio, plus a button inside the Nivoda search window.
 - Added a ready-to-host non-secret static page at `docs/nivoda-staging/index.html`.
+- Added `docs/index.html` as a Pages root entry point for the Nivoda staging handoff.
 - Added a GitHub Pages workflow at `.github/workflows/nivoda-staging-pages.yml` for publishing the handoff page after push.
 - Kept Nivoda username/password user-entered only; no credentials are included in generated handoff reports.
 - Kept live API hold/order actions gated until Nivoda confirms account-specific mutation names and required payloads.

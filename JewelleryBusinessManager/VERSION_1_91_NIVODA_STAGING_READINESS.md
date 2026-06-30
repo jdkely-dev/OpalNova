@@ -11,6 +11,7 @@ V1.91.0 prepares OPALNOVA for a proper Nivoda API setup review without hardcodin
 - Added `NivodaStagingHandoffService.CreateHandoffReportAsync(...)`.
 - Generated handoff reports include endpoint, GraphiQL URL, review URL, credential status, authentication/schema status, diamond-related fields and hold/order candidate mutations.
 - Added a ready-to-host static handoff page at `docs/nivoda-staging/index.html`.
+- Added `docs/index.html` as a Pages root entry point that redirects to the Nivoda staging handoff.
 - Added a GitHub Pages deployment workflow at `.github/workflows/nivoda-staging-pages.yml` for the handoff page.
 - Kept live hold/order API actions gated until Nivoda confirms account-specific mutation names and required payloads.
 - Started no-schema customer segment guidance in existing customer relationship outputs.

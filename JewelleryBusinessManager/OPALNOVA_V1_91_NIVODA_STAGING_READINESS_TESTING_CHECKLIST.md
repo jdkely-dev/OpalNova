@@ -16,6 +16,7 @@ Use this checklist against the published V1.91 build before sending Nivoda setup
 - Confirm no username or password appears in the generated handoff report.
 - Open `docs/nivoda-staging/index.html` locally and confirm it is a non-secret static page ready for external hosting.
 - Confirm `.github/workflows/nivoda-staging-pages.yml` exists for GitHub Pages deployment after push.
+- Confirm `docs/index.html` exists and links/redirects to `docs/nivoda-staging/`.
 - After pushing to `main`, confirm the `Deploy Nivoda staging handoff` workflow runs automatically, or run it manually from GitHub Actions if needed.
 - Paste the final GitHub Pages URL into the Nivoda `Review URL` field, save settings, and regenerate `Staging Handoff`.
 - Confirm search still works with valid Nivoda credentials and saved external diamonds remain separate from owned inventory.
