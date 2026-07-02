@@ -27,3 +27,4 @@ Do not add Nivoda username, password, bearer tokens, account IDs, private suppli
 - The hosted URL.
 - The generated in-app `Nivoda Staging Handoff` report if credentials are available and schema introspection succeeds.
 - A note that OPALNOVA is currently a local Windows desktop app and does not expose a public callback URL unless a separate hosted component is approved.
+- If using the API bridge, the production API-calling domain will be `https://api.jackthejeweller.com.au`, not this GitHub Pages page and not public Wix browser code.

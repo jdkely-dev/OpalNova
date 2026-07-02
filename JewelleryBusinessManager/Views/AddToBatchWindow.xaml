@@ -27,7 +27,7 @@
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Grid.Column="0" Text="Batch" VerticalAlignment="Center" Margin="4" />
-            <ComboBox x:Name="BatchCombo" Grid.Row="0" Grid.Column="1" Margin="4" DisplayMemberPath="Label" SelectedValuePath="Id" />
+            <ComboBox x:Name="BatchCombo" Grid.Row="0" Grid.Column="1" Margin="4" DisplayMemberPath="Label" SelectedValuePath="Id" Tag="Choose a batch" />
 
             <TextBlock Grid.Row="1" Grid.Column="0" Text="Item name" VerticalAlignment="Center" Margin="4" />
             <TextBox x:Name="ItemNameBox" Grid.Row="1" Grid.Column="1" Margin="4" />

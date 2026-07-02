@@ -49,10 +49,10 @@
                             <TextBlock Text="Choose your event and customer display screen before selling." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,14" />
 
                             <TextBlock Text="MARKET EVENT" Style="{StaticResource PillTextStyle}" />
-                            <ComboBox x:Name="MarketBox" DisplayMemberPath="Name" SelectionChanged="MarketBox_SelectionChanged" Margin="0,7,0,12" />
+                            <ComboBox x:Name="MarketBox" DisplayMemberPath="Name" SelectionChanged="MarketBox_SelectionChanged" Margin="0,7,0,12" Tag="Choose a market" />
 
                             <TextBlock Text="CUSTOMER DISPLAY SCREEN" Style="{StaticResource PillTextStyle}" />
-                            <ComboBox x:Name="ScreenBox" Margin="0,7,0,10" />
+                            <ComboBox x:Name="ScreenBox" Margin="0,7,0,10" Tag="Choose display screen" />
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                 <Button Content="Open Display" Click="OpenCustomerDisplay_Click" Style="{StaticResource AccentButtonStyle}" />
@@ -76,7 +76,7 @@
                             <TextBlock Text="SALE PRICE" Style="{StaticResource PillTextStyle}" />
                             <TextBox x:Name="SalePriceBox" Text="0.00" FontSize="28" FontWeight="Black" TextAlignment="Center" Margin="0,7,0,10" />
                             <TextBlock Text="PAYMENT METHOD" Style="{StaticResource PillTextStyle}" />
-                            <ComboBox x:Name="PaymentBox" Margin="0,7,0,12">
+                            <ComboBox x:Name="PaymentBox" Margin="0,7,0,12" Tag="Choose payment method">
                                 <ComboBoxItem Content="Card" IsSelected="True" />
                                 <ComboBoxItem Content="Cash" />
                                 <ComboBoxItem Content="Bank Transfer" />

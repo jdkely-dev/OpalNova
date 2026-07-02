@@ -14,7 +14,7 @@
                 <Border Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" Padding="14" Margin="0,0,0,12">
                     <StackPanel>
                         <TextBlock Text="Market Stock Item" FontWeight="SemiBold" FontSize="16" />
-                        <ComboBox x:Name="MarketStockBox" DisplayMemberPath="Display" SelectedValuePath="Id" Margin="0,8,0,4" SelectionChanged="MarketStockBox_SelectionChanged" />
+                        <ComboBox x:Name="MarketStockBox" DisplayMemberPath="Display" SelectedValuePath="Id" Margin="0,8,0,4" SelectionChanged="MarketStockBox_SelectionChanged" Tag="Choose market stock" />
                         <TextBlock x:Name="StockInfoText" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
@@ -29,11 +29,11 @@
                             <TextBlock Text="Sale Price" FontWeight="SemiBold" />
                             <TextBox x:Name="SalePriceBox" Margin="0,6,0,12" />
                             <TextBlock Text="Payment Method" FontWeight="SemiBold" />
-                            <ComboBox x:Name="PaymentMethodBox" Margin="0,6,0,12" />
+                            <ComboBox x:Name="PaymentMethodBox" Margin="0,6,0,12" Tag="Choose payment method" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="10,0,0,0">
                             <TextBlock Text="Customer (optional)" FontWeight="SemiBold" />
-                            <ComboBox x:Name="CustomerBox" DisplayMemberPath="Display" SelectedValuePath="Id" Margin="0,6,0,12" />
+                            <ComboBox x:Name="CustomerBox" DisplayMemberPath="Display" SelectedValuePath="Id" Margin="0,6,0,12" Tag="Choose a customer" />
                             <TextBlock Text="Notes" FontWeight="SemiBold" />
                             <TextBox x:Name="NotesBox" Margin="0,6,0,0" MinHeight="80" AcceptsReturn="True" TextWrapping="Wrap" />
                         </StackPanel>

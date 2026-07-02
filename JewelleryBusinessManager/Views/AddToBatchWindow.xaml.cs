@@ -30,7 +30,7 @@ public partial class AddToBatchWindow : Window
             .OrderBy(b => b.Status == ProductionBatchStatus.Completed)
             .ThenBy(b => b.TargetCompletionDate ?? DateTime.MaxValue)
             .ThenBy(b => b.Name)
-            .Select(b => new BatchOption(b.Id, $"{b.BatchCode} {b.Name} — {b.Status}".Trim())));
+            .Select(b => new BatchOption(b.Id, $"{b.BatchCode} {b.Name} - {b.Status}".Trim())));
 
         BatchCombo.ItemsSource = batches;
         BatchCombo.SelectedIndex = 0;

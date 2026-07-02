@@ -53,7 +53,7 @@
                             <TextBlock Text="CONNECTION" Style="{StaticResource PillTextStyle}" />
                             <Grid Margin="0,8,0,10">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                <ComboBox x:Name="PortBox" />
+                                <ComboBox x:Name="PortBox" Tag="Choose a port" />
                                 <Button Grid.Column="1" Content="Refresh" Click="RefreshPorts_Click" Style="{StaticResource ToolbarButtonStyle}" Margin="8,0,0,0" />
                             </Grid>
 
@@ -61,7 +61,7 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                 <StackPanel>
                                     <TextBlock Text="BAUD" Style="{StaticResource PillTextStyle}" />
-                                    <ComboBox x:Name="BaudBox" Margin="0,6,0,0">
+                                    <ComboBox x:Name="BaudBox" Margin="0,6,0,0" Tag="Choose baud rate">
                                         <ComboBoxItem Content="9600" IsSelected="True" />
                                         <ComboBoxItem Content="2400" />
                                         <ComboBoxItem Content="4800" />
@@ -70,7 +70,7 @@
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="UNIT" Style="{StaticResource PillTextStyle}" />
-                                    <ComboBox x:Name="UnitBox" Margin="0,6,0,0">
+                                    <ComboBox x:Name="UnitBox" Margin="0,6,0,0" Tag="Choose unit">
                                         <ComboBoxItem Content="grams" IsSelected="True" />
                                         <ComboBoxItem Content="carats" />
                                     </ComboBox>

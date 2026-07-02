@@ -5,7 +5,7 @@
         MinHeight="650" MinWidth="1050" WindowStartupLocation="CenterOwner"
         Background="#0B1220">
     <Window.Resources>
-        <Style TargetType="Button">
+        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="#1E293B"/>
             <Setter Property="Foreground" Value="#EFEAE0"/>
             <Setter Property="BorderBrush" Value="#334155"/>
@@ -13,13 +13,13 @@
             <Setter Property="Margin" Value="4,0"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
-        <Style TargetType="ComboBox">
+        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
             <Setter Property="Background" Value="#111827"/>
             <Setter Property="Foreground" Value="#EFEAE0"/>
             <Setter Property="BorderBrush" Value="#334155"/>
             <Setter Property="Padding" Value="8,5"/>
         </Style>
-        <Style TargetType="TextBox">
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
             <Setter Property="Background" Value="#111827"/>
             <Setter Property="Foreground" Value="#EFEAE0"/>
             <Setter Property="BorderBrush" Value="#334155"/>
@@ -27,7 +27,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="18">
+    <Grid Margin="14">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -38,8 +38,7 @@
         <Grid>
             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="Visual Production Board" Foreground="#EFEAE0" FontSize="27" FontWeight="SemiBold"/>
-                <TextBlock Text="Move workshop jobs through quoting, approval, bench work, finishing and collection." Foreground="#B8AD9E" Margin="0,5,0,0"/>
+                <TextBlock Text="Visual Production Board" Foreground="#EFEAE0" FontSize="19" FontWeight="SemiBold"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Content="Refresh" Click="Refresh_Click"/>
@@ -47,12 +46,13 @@
                 <Button Content="Move Forward" Click="MoveForward_Click"/>
                 <Button Content="Stage Checklist" Click="StageChecklist_Click"/>
                 <Button Content="Capacity Snapshot" Click="CapacitySnapshot_Click"/>
+                <Button Content="Open Payments" Click="OpenPayments_Click"/>
                 <Button Content="Complete Selected" Click="CompleteSelected_Click"/>
                 <Button Content="Edit Selected Job" Click="EditSelected_Click"/>
             </StackPanel>
         </Grid>
 
-        <Border Grid.Row="1" Background="#0D1422" BorderBrush="#243244" BorderThickness="1" CornerRadius="9" Padding="12" Margin="0,16,0,14">
+        <Border Grid.Row="1" Background="#0D1422" BorderBrush="#243244" BorderThickness="1" CornerRadius="9" Padding="8" Margin="0,8,0,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
@@ -60,7 +60,7 @@
                 <TextBox x:Name="SearchBox" ToolTip="Search job code, title, customer or quote" TextChanged="Filter_Changed" Margin="0,0,12,0"/>
                 <CheckBox x:Name="OverdueOnlyCheck" Grid.Column="1" Content="Overdue only" Foreground="#E2D8C8" VerticalAlignment="Center" Margin="6,0,14,0" Checked="Filter_Changed" Unchecked="Filter_Changed"/>
                 <CheckBox x:Name="ActiveOnlyCheck" Grid.Column="2" Content="Active only" Foreground="#E2D8C8" VerticalAlignment="Center" Margin="6,0,14,0" IsChecked="True" Checked="Filter_Changed" Unchecked="Filter_Changed"/>
-                <ComboBox x:Name="SortCombo" Grid.Column="3" Width="170" SelectionChanged="Filter_Changed">
+                <ComboBox x:Name="SortCombo" Grid.Column="3" Width="170" SelectionChanged="Filter_Changed" Tag="Choose sort order">
                     <ComboBoxItem Content="Due date" IsSelected="True"/>
                     <ComboBoxItem Content="Last updated"/>
                     <ComboBoxItem Content="Customer"/>
@@ -72,7 +72,7 @@
             <StackPanel x:Name="BoardPanel" Orientation="Horizontal"/>
         </ScrollViewer>
 
-        <Border Grid.Row="3" Background="#0D1422" BorderBrush="#243244" BorderThickness="1" CornerRadius="9" Padding="12" Margin="0,14,0,0">
+        <Border Grid.Row="3" Background="#0D1422" BorderBrush="#243244" BorderThickness="1" CornerRadius="9" Padding="8" Margin="0,8,0,0">
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                 <TextBlock x:Name="SelectionText" Text="Select a job card to see its next action." Foreground="#D8CEBE" TextWrapping="Wrap"/>

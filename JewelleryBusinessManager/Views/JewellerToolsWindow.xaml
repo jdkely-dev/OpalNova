@@ -35,7 +35,7 @@
                             <TextBlock Text="Estimate blank/wire/sheet weight from dimensions and density." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,12" />
 
                             <TextBlock Text="METAL" Style="{StaticResource PillTextStyle}" />
-                            <ComboBox x:Name="MetalBox" Margin="0,6,0,10">
+                            <ComboBox x:Name="MetalBox" Margin="0,6,0,10" Tag="Choose metal">
                                 <ComboBoxItem Content="Sterling Silver" IsSelected="True" />
                                 <ComboBoxItem Content="9ct Gold" />
                                 <ComboBoxItem Content="14ct Gold" />
@@ -59,7 +59,7 @@
                             <TextBlock Text="Approximate faceted-stone carat weight from millimetre dimensions." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,12" />
 
                             <TextBlock Text="SHAPE" Style="{StaticResource PillTextStyle}" />
-                            <ComboBox x:Name="StoneShapeBox" Margin="0,6,0,10">
+                            <ComboBox x:Name="StoneShapeBox" Margin="0,6,0,10" Tag="Choose stone shape">
                                 <ComboBoxItem Content="Round" IsSelected="True" />
                                 <ComboBoxItem Content="Oval" />
                                 <ComboBoxItem Content="Emerald / Rectangle" />

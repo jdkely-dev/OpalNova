@@ -888,9 +888,190 @@ public static class DocumentExportService
         return path;
     }
 
+    public static string CreateOperationsPerformanceReport()
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+        var today = DateTime.Today;
+        var weekStart = today.AddDays(-6);
+        var monthStart = new DateTime(today.Year, today.Month, 1);
+        var path = Path.Combine(PrintoutFolder, $"OperationsPerformance_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+
+        var jobs = db.Jobs.AsEnumerable().ToList();
+        var batches = db.ProductionBatches.AsEnumerable().ToList();
+        var externalDiamonds = db.ExternalDiamonds.AsEnumerable().ToList();
+        var marketEvents = db.MarketEvents.AsEnumerable().ToList();
+        var marketStock = db.MarketStocks.AsEnumerable().ToList();
+        var sales = db.Sales.AsEnumerable().ToList();
+        var tasks = db.BusinessTasks.AsEnumerable().ToList();
+
+        var activeJobs = jobs.Where(j => j.Status != JobStatus.Completed && j.Status != JobStatus.Cancelled).ToList();
+        var completedThisMonth = jobs.Where(j => j.Status == JobStatus.Completed && j.UpdatedAt.Date >= monthStart && j.UpdatedAt.Date <= today).ToList();
+        var completedThisWeek = completedThisMonth.Where(j => j.UpdatedAt.Date >= weekStart).ToList();
+        var overdueJobs = activeJobs.Where(j => j.DueDate.HasValue && j.DueDate.Value.Date < today).ToList();
+        var dueThisWeek = activeJobs.Where(j => j.DueDate.HasValue && j.DueDate.Value.Date <= today.AddDays(7)).ToList();
+        var activeBatchCount = batches.Count(b => b.Status != ProductionBatchStatus.Completed && b.Status != ProductionBatchStatus.Cancelled);
+        var marketSales = sales.Where(s => s.SaleLocation == SaleLocation.Market).ToList();
+        var monthMarketSales = marketSales.Where(s => s.SaleDate.Date >= monthStart && s.SaleDate.Date <= today).ToList();
+        var openTasks = tasks.Where(t => t.Status != BusinessTaskStatus.Completed && t.Status != BusinessTaskStatus.Cancelled).ToList();
+        var overdueTasks = openTasks.Count(t => t.DueDate.HasValue && t.DueDate.Value.Date < today);
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Operations Performance Report"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Operations Performance Report</h1>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}. This V1.92 report is read-only and combines workshop productivity, supplier diamonds, market performance and report rhythm guidance from existing OPALNOVA records.</p>");
+        html.AppendLine("<h2>Operations Snapshot</h2>");
+        html.AppendLine("<div class='financial-summary'>");
+        html.AppendLine(SummaryTile("Active jobs", activeJobs.Count.ToString(CultureInfo.InvariantCulture), $"{dueThisWeek.Count} due within 7 days"));
+        html.AppendLine(SummaryTile("Completed this month", completedThisMonth.Count.ToString(CultureInfo.InvariantCulture), $"{completedThisWeek.Count} completed this week"));
+        html.AppendLine(SummaryTile("Recorded labour load", $"{Number(activeJobs.Sum(j => j.LabourHours))} h", $"{activeJobs.Count(j => j.LabourHours <= 0)} jobs missing labour"));
+        html.AppendLine(SummaryTile("Supplier diamonds", externalDiamonds.Count.ToString(CultureInfo.InvariantCulture), $"{externalDiamonds.Count(d => d.IsHoldExpired)} expired holds"));
+        html.AppendLine(SummaryTile("Market sales this month", Money(monthMarketSales.Sum(s => s.SaleAmount)), $"{monthMarketSales.Count} sale records"));
+        html.AppendLine(SummaryTile("Open follow-ups", openTasks.Count.ToString(CultureInfo.InvariantCulture), $"{overdueTasks} overdue"));
+        html.AppendLine("</div>");
+
+        AppendDocumentNotice(html, "Recommended review rhythm", BuildOperationsReviewGuidance(overdueJobs, activeJobs, externalDiamonds, marketEvents, openTasks));
+        AppendWorkshopProductivitySection(html, activeJobs, completedThisWeek, completedThisMonth, batches, today);
+        AppendSupplierDiamondPerformanceSection(html, externalDiamonds);
+        AppendMarketOperationsSection(html, marketEvents, marketStock, marketSales, today);
+        AppendReportRhythmSection(html, today, openTasks);
+
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
     private static void AppendCapacityBucket(StringBuilder html, string label, List<Job> jobs, string guidance)
     {
         html.AppendLine($"<tr><td>{Html(label)}</td><td>{jobs.Count}</td><td>{Number(jobs.Sum(j => j.LabourHours))} h</td><td>{Html(guidance)}</td></tr>");
+    }
+
+    private static string SummaryTile(string label, string value, string hint) =>
+        $"<div class='summary-tile'><span>{Html(label)}</span><strong>{Html(value)}</strong><em>{Html(hint)}</em></div>";
+
+    private static string BuildOperationsReviewGuidance(
+        List<Job> overdueJobs,
+        List<Job> activeJobs,
+        List<ExternalDiamond> externalDiamonds,
+        List<MarketEvent> marketEvents,
+        List<BusinessTask> openTasks)
+    {
+        if (overdueJobs.Count > 0)
+            return $"Start with {overdueJobs.Count} overdue production job(s), then review customer communication and due-date changes.";
+        if (externalDiamonds.Any(d => d.IsHoldExpired))
+            return "Review expired supplier diamond holds before promising availability or quoting replacements.";
+        if (openTasks.Any(t => t.DueDate.HasValue && t.DueDate.Value.Date < DateTime.Today))
+            return "Clear overdue follow-ups before creating more scheduled report reminders.";
+        if (marketEvents.Any(m => m.EventDate.Date >= DateTime.Today && m.EventDate.Date <= DateTime.Today.AddDays(14)))
+            return "A market is coming up within 14 days. Run packing, inventory value and stock ageing reports before selecting stock.";
+        if (activeJobs.Any(j => j.LabourHours <= 0))
+            return "Record labour-hour estimates on active jobs so capacity and productivity reports become more useful.";
+        return "No immediate operations risk detected. Use this report as a weekly planning checkpoint.";
+    }
+
+    private static void AppendWorkshopProductivitySection(
+        StringBuilder html,
+        List<Job> activeJobs,
+        List<Job> completedThisWeek,
+        List<Job> completedThisMonth,
+        List<ProductionBatch> batches,
+        DateTime today)
+    {
+        html.AppendLine("<h2>Workshop Productivity</h2>");
+        html.AppendLine(Row("Completed jobs this week", completedThisWeek.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Completed jobs this month", completedThisMonth.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Completed job labour this month", $"{Number(completedThisMonth.Sum(j => j.LabourHours))} h"));
+        html.AppendLine(Row("Estimated completed job profit this month", Money(completedThisMonth.Sum(PricingService.CalculateJobProfit))));
+        html.AppendLine(Row("Active jobs missing labour estimate", activeJobs.Count(j => j.LabourHours <= 0).ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Active production batches", batches.Count(b => b.Status != ProductionBatchStatus.Completed && b.Status != ProductionBatchStatus.Cancelled).ToString(CultureInfo.InvariantCulture)));
+
+        html.AppendLine("<table><tr><th>Status</th><th>Active Jobs</th><th>Recorded Labour</th><th>Outstanding Balance</th><th>Planning Note</th></tr>");
+        foreach (var group in activeJobs.GroupBy(j => j.Status).OrderBy(g => g.Key.ToString()))
+        {
+            var note = group.Any(j => j.DueDate.HasValue && j.DueDate.Value.Date < today)
+                ? "Contains overdue work"
+                : group.Any(j => j.LabourHours <= 0)
+                    ? "Some labour estimates missing"
+                    : "Monitor normally";
+            html.AppendLine($"<tr><td>{Html(group.Key.ToString())}</td><td>{group.Count()}</td><td>{Number(group.Sum(j => j.LabourHours))} h</td><td>{Money(group.Sum(j => Math.Max(0, j.BalanceOwing)))}</td><td>{Html(note)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+
+        html.AppendLine("<h3>Recently Completed Jobs</h3>");
+        html.AppendLine("<table><tr><th>Job</th><th>Type</th><th>Completed / Updated</th><th>Labour</th><th>Price</th><th>Estimated Profit</th></tr>");
+        foreach (var job in completedThisMonth.OrderByDescending(j => j.UpdatedAt).Take(20))
+            html.AppendLine($"<tr><td>{Html(job.ToString())}</td><td>{Html(job.Type.ToString())}</td><td>{Html(job.UpdatedAt.ToShortDateString())}</td><td>{Number(job.LabourHours)} h</td><td>{Money(JobPrice(job))}</td><td>{Money(PricingService.CalculateJobProfit(job))}</td></tr>");
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendSupplierDiamondPerformanceSection(StringBuilder html, List<ExternalDiamond> diamonds)
+    {
+        html.AppendLine("<h2>Supplier Diamond Performance</h2>");
+        html.AppendLine(Row("Saved external diamonds", diamonds.Count.ToString(CultureInfo.InvariantCulture)));
+        html.AppendLine(Row("Saved supplier value", Money(diamonds.Sum(d => d.SupplierPrice))));
+        html.AppendLine(Row("Estimated retail value", Money(diamonds.Sum(d => d.EstimatedRetailPrice))));
+        html.AppendLine(Row("Active / expired holds", $"{diamonds.Count(d => d.HasActiveHold)} active / {diamonds.Count(d => d.IsHoldExpired)} expired"));
+        html.AppendLine(Row("Ordered not received", diamonds.Count(d => d.IsOrderedNotReceived).ToString(CultureInfo.InvariantCulture)));
+
+        html.AppendLine("<table><tr><th>Status</th><th>Count</th><th>Supplier Value</th><th>Estimated Retail</th><th>Action</th></tr>");
+        foreach (var group in diamonds.GroupBy(d => string.IsNullOrWhiteSpace(d.Status) ? "Unknown" : d.Status).OrderByDescending(g => g.Count()).ThenBy(g => g.Key))
+        {
+            var action = group.Any(d => d.IsHoldExpired)
+                ? "Review expired holds and copy replacement search"
+                : group.Any(d => d.IsOrderedNotReceived)
+                    ? "Check expected arrival / received intake"
+                    : "Monitor availability before quoting";
+            html.AppendLine($"<tr><td>{Html(group.Key)}</td><td>{group.Count()}</td><td>{Money(group.Sum(d => d.SupplierPrice))}</td><td>{Money(group.Sum(d => d.EstimatedRetailPrice))}</td><td>{Html(action)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendMarketOperationsSection(
+        StringBuilder html,
+        List<MarketEvent> markets,
+        List<MarketStock> marketStock,
+        List<Sale> marketSales,
+        DateTime today)
+    {
+        var pastMarkets = markets.Where(m => m.EventDate.Date <= today).OrderByDescending(m => m.EventDate).Take(8).ToList();
+        var nextMarket = markets.Where(m => m.EventDate.Date >= today).OrderBy(m => m.EventDate).FirstOrDefault();
+        html.AppendLine("<h2>Market Performance</h2>");
+        html.AppendLine(Row("Recorded market sales", Money(marketSales.Sum(s => s.SaleAmount))));
+        html.AppendLine(Row("Recorded market profit", Money(marketSales.Sum(s => s.Profit))));
+        html.AppendLine(Row("Next market", nextMarket == null ? "No future market recorded" : $"{nextMarket.Name} - {nextMarket.EventDate:d}"));
+
+        html.AppendLine("<table><tr><th>Market</th><th>Date</th><th>Packed</th><th>Sold</th><th>Returned</th><th>Same-Day Sales</th><th>Net Event Estimate</th><th>Follow-up</th></tr>");
+        foreach (var market in pastMarkets)
+        {
+            var stock = marketStock.Where(ms => ms.MarketEventId == market.Id).ToList();
+            var sameDaySales = marketSales.Where(s => s.SaleDate.Date == market.EventDate.Date).ToList();
+            var missingReconciliation = !market.LastReconciledAt.HasValue && market.EventDate.Date < today;
+            html.AppendLine($"<tr><td>{Html(market.Name)}</td><td>{Html(market.EventDate.ToShortDateString())}</td><td>{stock.Count(s => s.Packed)}</td><td>{stock.Count(s => s.SoldAtMarket)}</td><td>{stock.Count(s => s.ReturnedToStock)}</td><td>{Money(sameDaySales.Sum(s => s.SaleAmount))}</td><td>{Money(market.NetMarketProfit)}</td><td>{Html(missingReconciliation ? "Reconcile event" : "Review stock return/listing")}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendReportRhythmSection(StringBuilder html, DateTime today, List<BusinessTask> openTasks)
+    {
+        html.AppendLine("<h2>Suggested Report Rhythm</h2>");
+        html.AppendLine("<p class='small'>This section is advisory only. Create task reminders from Tasks Studio if you want these reviews on the dashboard.</p>");
+        html.AppendLine("<table><tr><th>Cadence</th><th>Reports</th><th>Suggested Next Run</th><th>Why</th></tr>");
+        html.AppendLine($"<tr><td>Weekly</td><td>BI Command Report, Operations Performance, Customer Follow-Ups, Outstanding Balances</td><td>{Html(NextWeekday(today, DayOfWeek.Monday).ToShortDateString())}</td><td>Sets production, payment and follow-up priorities for the week.</td></tr>");
+        html.AppendLine($"<tr><td>Weekly before markets</td><td>Market Performance, Stock Ageing, Inventory Value, Packing List</td><td>{Html(today.AddDays(7).ToShortDateString())}</td><td>Prevents overpacking and highlights stock to promote or return.</td></tr>");
+        html.AppendLine($"<tr><td>Monthly</td><td>Monthly Sales, Profitability, Tax / GST Summary, Customer Segment Report</td><td>{Html(new DateTime(today.Year, today.Month, 1).AddMonths(1).ToShortDateString())}</td><td>Supports bookkeeping, buying and customer relationship planning.</td></tr>");
+        html.AppendLine($"<tr><td>Monthly stock review</td><td>Inventory Value, Stock Ageing, Reorder Report, Supplier Diamond Holds</td><td>{Html(new DateTime(today.Year, today.Month, 1).AddMonths(1).AddDays(2).ToShortDateString())}</td><td>Finds low stock, slow-moving stock and supplier diamonds needing action.</td></tr>");
+        html.AppendLine("</table>");
+        html.AppendLine(Row("Open task pressure", $"{openTasks.Count} open task(s), {openTasks.Count(t => t.DueDate.HasValue && t.DueDate.Value.Date < today)} overdue"));
+    }
+
+    private static DateTime NextWeekday(DateTime start, DayOfWeek day)
+    {
+        var daysToAdd = ((int)day - (int)start.DayOfWeek + 7) % 7;
+        if (daysToAdd == 0)
+            daysToAdd = 7;
+        return start.AddDays(daysToAdd);
     }
 
     private static string BuildCapacityNote(Job job, DateTime today)
@@ -1394,6 +1575,97 @@ public static class DocumentExportService
         html.AppendLine(Row("Slow-moving value", Money(slowMoving.Sum(r => r.Value))));
         AppendStockAgeBucketTable(html, rows);
         AppendSlowMovingInventoryTable(html, slowMoving);
+        html.AppendLine("</section>");
+        html.Append(HtmlFooter());
+        File.WriteAllText(path, html.ToString());
+        return path;
+    }
+
+    public static string CreateInventoryDecisionReport()
+    {
+        Directory.CreateDirectory(PrintoutFolder);
+        using var db = new AppDbContext();
+        var today = DateTime.Today;
+        var jewellery = db.JewelleryItems.AsEnumerable().ToList();
+        var stones = db.Stones.AsEnumerable().ToList();
+        var materials = db.Materials.AsEnumerable().ToList();
+        var materialTransactions = db.MaterialTransactions.AsEnumerable()
+            .OrderByDescending(t => t.TransactionDate)
+            .ThenByDescending(t => t.Id)
+            .ToList();
+        var externalDiamonds = db.ExternalDiamonds.AsEnumerable().ToList();
+        var suppliers = db.Suppliers.AsEnumerable().ToDictionary(s => s.Id);
+        var openPurchaseOrders = db.PurchaseOrders.AsEnumerable()
+            .Where(o => o.Status is PurchaseOrderStatus.Draft or PurchaseOrderStatus.Ordered or PurchaseOrderStatus.PartiallyReceived)
+            .OrderBy(o => o.ExpectedDeliveryDate ?? DateTime.MaxValue)
+            .ToList();
+        var openPurchaseOrderIds = openPurchaseOrders.Select(o => o.Id).ToHashSet();
+        var openPurchaseOrderItems = db.PurchaseOrderItems.AsEnumerable()
+            .Where(i => openPurchaseOrderIds.Contains(i.PurchaseOrderId))
+            .ToList();
+        var openOrderByMaterial = openPurchaseOrderItems
+            .Where(i => i.MaterialId.HasValue)
+            .GroupBy(i => i.MaterialId!.Value)
+            .ToDictionary(g => g.Key, g => g.Sum(i => i.OutstandingQuantity));
+        var lowMaterials = materials
+            .Where(m => m.CurrentQuantity <= m.ReorderLevel)
+            .OrderBy(m => openOrderByMaterial.ContainsKey(m.Id))
+            .ThenBy(m => m.Category)
+            .ThenBy(m => m.Name)
+            .ToList();
+        var unsoldJewellery = jewellery.Where(i => i.Status != StockStatus.Sold).ToList();
+        var availableStones = stones.Where(s => s.Status != StoneStatus.Sold && s.Status != StoneStatus.SetInJewellery).ToList();
+        var stockAgeRows = unsoldJewellery.Select(i => new StockAgeRow(
+                "Jewellery",
+                i.StockCode,
+                i.Name,
+                i.Status.ToString(),
+                StockLifecycleService.DescribeStockStatus(i.Status),
+                InventoryAgeDays(i.CreatedAt, today),
+                i.RetailPrice,
+                i.CreatedAt,
+                i.UpdatedAt))
+            .Concat(availableStones.Select(s => new StockAgeRow(
+                "Stone",
+                s.StoneCode,
+                s.StoneType,
+                s.Status.ToString(),
+                StockLifecycleService.DescribeStoneStatus(s.Status),
+                InventoryAgeDays(s.CreatedAt, today),
+                s.EstimatedValue,
+                s.CreatedAt,
+                s.UpdatedAt)))
+            .OrderByDescending(r => r.AgeDays)
+            .ThenBy(r => r.Type)
+            .ThenBy(r => r.Code)
+            .ToList();
+        var slowMoving = stockAgeRows.Where(r => r.AgeDays >= 180).ToList();
+        var adjustmentTransactions = materialTransactions
+            .Where(IsMaterialAdjustment)
+            .Take(80)
+            .ToList();
+        var materialById = materials.ToDictionary(m => m.Id);
+        var path = Path.Combine(PrintoutFolder, $"InventoryDecision_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+
+        var html = new StringBuilder();
+        html.Append(HtmlHeader("Inventory Reorder Intelligence"));
+        html.AppendLine("<section class='card'>");
+        html.AppendLine("<h1>Inventory Reorder Intelligence</h1>");
+        html.AppendLine($"<p class='small'>Generated {Html(DateTime.Now.ToString("f", CultureInfo.CurrentCulture))}. This V1.93 report is read-only and combines valuation, reorder, stock ageing, supplier-stock and adjustment-audit signals from existing OPALNOVA records.</p>");
+        html.AppendLine("<h2>Inventory Decision Snapshot</h2>");
+        html.AppendLine("<div class='financial-summary'>");
+        html.AppendLine(SummaryTile("Owned stock value", Money(unsoldJewellery.Sum(i => i.RetailPrice) + availableStones.Sum(s => s.EstimatedValue) + materials.Sum(MaterialCurrentValue)), $"{unsoldJewellery.Count + availableStones.Count + materials.Count} records"));
+        html.AppendLine(SummaryTile("Low materials", lowMaterials.Count.ToString(CultureInfo.InvariantCulture), $"{lowMaterials.Count(m => openOrderByMaterial.ContainsKey(m.Id))} already on open PO"));
+        html.AppendLine(SummaryTile("Slow-moving value", Money(slowMoving.Sum(r => r.Value)), $"{slowMoving.Count} records over 180 days"));
+        html.AppendLine("</div>");
+        AppendStockLifecycleSummary(html);
+        AppendInventoryValuationByCategoryTable(html, jewellery, stones, materials, externalDiamonds);
+        AppendInventoryReorderRecommendationTable(html, lowMaterials, openOrderByMaterial, openPurchaseOrders, openPurchaseOrderItems, suppliers);
+        AppendInventorySlowMovingGuidanceTable(html, slowMoving);
+        AppendSupplierStockDecisionTable(html, externalDiamonds);
+        AppendMaterialAdjustmentAuditTable(html, adjustmentTransactions, materialById);
+        html.AppendLine("<h2>Recommended Review Order</h2>");
+        html.AppendLine("<div class='checkboxes'><p>[ ] Order materials with no open PO coverage</p><p>[ ] Check incoming purchase orders before reordering covered materials</p><p>[ ] Discount, photograph, relist or reserve slow-moving finished stock</p><p>[ ] Confirm supplier-diamond holds/orders before customer promises</p><p>[ ] Review adjustment transactions for unexplained stock movement</p><p>[ ] Update missing costs before relying on valuation totals</p></div>");
         html.AppendLine("</section>");
         html.Append(HtmlFooter());
         File.WriteAllText(path, html.ToString());
@@ -2160,6 +2432,124 @@ public static class DocumentExportService
         html.AppendLine("</table>");
     }
 
+    private static void AppendInventoryValuationByCategoryTable(StringBuilder html, List<JewelleryItem> jewellery, List<Stone> stones, List<Material> materials, List<ExternalDiamond> externalDiamonds)
+    {
+        html.AppendLine("<h2>Valuation By Category</h2>");
+        html.AppendLine("<table><tr><th>Category</th><th>Lifecycle</th><th>Records</th><th>Cost / Value</th><th>Retail / Decision Value</th><th>Guidance</th></tr>");
+
+        foreach (var group in jewellery.Where(i => i.Status != StockStatus.Sold).GroupBy(i => i.Type).OrderByDescending(g => g.Sum(i => i.RetailPrice)))
+        {
+            var cost = group.Sum(PricingService.CalculateJewelleryCost);
+            var retail = group.Sum(i => i.RetailPrice);
+            html.AppendLine($"<tr><td>Jewellery - {Html(group.Key.ToString())}</td><td>Owned stock</td><td>{group.Count()}</td><td>{Money(cost)}</td><td>{Money(retail)}</td><td>{Html(CategoryValuationGuidance(retail, cost, group.Count(i => i.Status is StockStatus.NeedsPhotos or StockStatus.InProgress)))}</td></tr>");
+        }
+
+        foreach (var group in stones.Where(s => s.Status != StoneStatus.Sold && s.Status != StoneStatus.SetInJewellery).GroupBy(s => string.IsNullOrWhiteSpace(s.StoneType) ? "Stone" : s.StoneType).OrderByDescending(g => g.Sum(s => s.EstimatedValue)))
+            html.AppendLine($"<tr><td>Stone - {Html(group.Key)}</td><td>Owned stone</td><td>{group.Count()}</td><td>{Money(group.Sum(s => s.EstimatedValue))}</td><td>{Money(group.Sum(s => s.EstimatedValue))}</td><td>{Html(group.Any(s => s.Status is StoneStatus.Reserved or StoneStatus.SelectedForDesign or StoneStatus.AssignedToJewellery) ? "Check reservation state before offering these stones again." : "Available for quote planning, listing or production selection.")}</td></tr>");
+
+        foreach (var group in materials.GroupBy(m => m.Category).OrderByDescending(g => g.Sum(MaterialCurrentValue)))
+            html.AppendLine($"<tr><td>Material - {Html(group.Key.ToString())}</td><td>Owned material</td><td>{group.Count()}</td><td>{Money(group.Sum(MaterialCurrentValue))}</td><td>{Money(group.Sum(MaterialCurrentValue))}</td><td>{Html(group.Any(m => m.CurrentQuantity <= m.ReorderLevel) ? "Low-stock lines exist in this category; check reorder recommendations." : "Quantity appears above reorder level for recorded lines.")}</td></tr>");
+
+        var supplierOpen = externalDiamonds.Where(d => !string.Equals(d.Status, "Converted To Owned Inventory", StringComparison.OrdinalIgnoreCase) && !string.Equals(d.Status, "Released", StringComparison.OrdinalIgnoreCase)).ToList();
+        if (supplierOpen.Count > 0)
+            html.AppendLine($"<tr><td>External supplier diamonds</td><td>Supplier stock</td><td>{supplierOpen.Count}</td><td>{Money(supplierOpen.Sum(d => d.SupplierPrice))}</td><td>{Money(supplierOpen.Sum(d => d.EstimatedRetailPrice > 0 ? d.EstimatedRetailPrice : d.SupplierPrice))}</td><td>Supplier stock is not owned inventory until received and converted.</td></tr>");
+
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendInventoryReorderRecommendationTable(StringBuilder html, List<Material> lowMaterials, Dictionary<int, decimal> openOrderByMaterial, List<PurchaseOrder> openOrders, List<PurchaseOrderItem> openOrderItems, Dictionary<int, Supplier> suppliers)
+    {
+        html.AppendLine("<h2>Low-Stock Reorder Recommendations</h2>");
+        if (lowMaterials.Count == 0)
+        {
+            html.AppendLine("<p>No materials are currently at or below reorder level.</p>");
+            return;
+        }
+
+        var orderById = openOrders.ToDictionary(o => o.Id);
+        html.AppendLine("<table><tr><th>Material</th><th>Category</th><th>Current</th><th>Reorder Level</th><th>Suggested Qty</th><th>Incoming Qty</th><th>Supplier</th><th>Recommended Action</th></tr>");
+        foreach (var material in lowMaterials)
+        {
+            var incoming = openOrderByMaterial.TryGetValue(material.Id, out var incomingQty) ? incomingQty : 0m;
+            var supplier = material.SupplierId.HasValue && suppliers.TryGetValue(material.SupplierId.Value, out var s) ? s.Name : string.Empty;
+            var linkedOrders = openOrderItems
+                .Where(i => i.MaterialId == material.Id && orderById.ContainsKey(i.PurchaseOrderId))
+                .Select(i => orderById[i.PurchaseOrderId].PurchaseOrderCode)
+                .Distinct()
+                .ToList();
+            var action = incoming > 0
+                ? $"Check incoming order {string.Join(", ", linkedOrders)} before ordering again."
+                : material.CurrentQuantity <= 0
+                    ? "Order urgently or confirm an acceptable substitute."
+                    : "Add to the next supplier order or adjust reorder level if this is no longer stocked.";
+            html.AppendLine($"<tr><td>{Html(material.ToString())}</td><td>{Html(material.Category.ToString())}</td><td>{Number(material.CurrentQuantity)} {Html(material.UnitType.ToString())}</td><td>{Number(material.ReorderLevel)}</td><td>{Number(SuggestedMaterialReorderQuantity(material))}</td><td>{Number(incoming)}</td><td>{Html(supplier)}</td><td>{Html(action)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendInventorySlowMovingGuidanceTable(StringBuilder html, List<StockAgeRow> slowMoving)
+    {
+        html.AppendLine("<h2>Slow-Moving Stock Guidance</h2>");
+        if (slowMoving.Count == 0)
+        {
+            html.AppendLine("<p>No unsold jewellery or available loose stones are currently older than 180 days.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Type</th><th>Code</th><th>Name</th><th>Status</th><th>Age</th><th>Value</th><th>Suggested Action</th></tr>");
+        foreach (var row in slowMoving.OrderByDescending(r => r.AgeDays).ThenByDescending(r => r.Value).Take(50))
+            html.AppendLine($"<tr><td>{Html(row.Type)}</td><td>{Html(row.Code)}</td><td>{Html(row.Name)}</td><td>{Html(row.Status)}</td><td>{row.AgeDays} days</td><td>{Money(row.Value)}</td><td>{Html(SlowMovingGuidance(row))}</td></tr>");
+        html.AppendLine("</table>");
+        if (slowMoving.Count > 50)
+            html.AppendLine($"<p class='small'>Showing the 50 oldest/highest-value records from {slowMoving.Count} slow-moving items.</p>");
+    }
+
+    private static void AppendSupplierStockDecisionTable(StringBuilder html, List<ExternalDiamond> externalDiamonds)
+    {
+        html.AppendLine("<h2>Supplier Diamond Decision State</h2>");
+        if (externalDiamonds.Count == 0)
+        {
+            html.AppendLine("<p>No saved external supplier diamonds are recorded yet.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Status</th><th>Records</th><th>Supplier Cost</th><th>Retail Estimate</th><th>Next Check</th></tr>");
+        foreach (var group in externalDiamonds.GroupBy(d => string.IsNullOrWhiteSpace(d.Status) ? "No status" : d.Status).OrderByDescending(g => g.Count()))
+        {
+            var status = group.Key;
+            var nextCheck = status.Contains("Hold", StringComparison.OrdinalIgnoreCase)
+                ? "Confirm hold expiry and customer decision."
+                : status.Contains("Order", StringComparison.OrdinalIgnoreCase)
+                    ? "Confirm supplier order, ETA and received-diamond intake."
+                    : status.Contains("Received", StringComparison.OrdinalIgnoreCase)
+                        ? "Convert to owned inventory only if physically purchased."
+                        : status.Contains("Converted", StringComparison.OrdinalIgnoreCase)
+                            ? "Review owned stone record for valuation and availability."
+                            : "Refresh availability and price before quoting.";
+            html.AppendLine($"<tr><td>{Html(status)}</td><td>{group.Count()}</td><td>{Money(group.Sum(d => d.SupplierPrice))}</td><td>{Money(group.Sum(d => d.EstimatedRetailPrice > 0 ? d.EstimatedRetailPrice : d.SupplierPrice))}</td><td>{Html(nextCheck)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
+    private static void AppendMaterialAdjustmentAuditTable(StringBuilder html, List<MaterialTransaction> adjustmentTransactions, Dictionary<int, Material> materialById)
+    {
+        html.AppendLine("<h2>Material Adjustment Audit</h2>");
+        if (adjustmentTransactions.Count == 0)
+        {
+            html.AppendLine("<p>No recent adjustment-style material transactions were found. Use Stock Movement for receive, use, adjust and return entries so quantity changes remain traceable.</p>");
+            return;
+        }
+
+        html.AppendLine("<table><tr><th>Date</th><th>Material</th><th>Quantity Change</th><th>Reason</th><th>Linked Job / Stock</th><th>Notes</th></tr>");
+        foreach (var tx in adjustmentTransactions)
+        {
+            var material = materialById.TryGetValue(tx.MaterialId, out var m) ? m : null;
+            var linked = tx.JobId.HasValue ? $"Job #{tx.JobId}" : tx.JewelleryItemId.HasValue ? $"Stock #{tx.JewelleryItemId}" : "Not linked";
+            html.AppendLine($"<tr><td>{Html(tx.TransactionDate.ToShortDateString())}</td><td>{Html(material?.ToString() ?? $"Material #{tx.MaterialId}")}</td><td>{Number(tx.QuantityChange)} {Html(material?.UnitType.ToString() ?? string.Empty)}</td><td>{Html(tx.Reason)}</td><td>{Html(linked)}</td><td>{Html(tx.Notes ?? string.Empty)}</td></tr>");
+        }
+        html.AppendLine("</table>");
+    }
+
     private sealed record StockAgeRow(string Type, string Code, string Name, string Status, string Lifecycle, int AgeDays, decimal Value, DateTime CreatedAt, DateTime UpdatedAt);
 
     private static void AppendStockAgeBucketTable(StringBuilder html, List<StockAgeRow> rows)
@@ -2198,6 +2588,54 @@ public static class DocumentExportService
         html.AppendLine("</table>");
         if (rows.Count > 120)
             html.AppendLine($"<p class='small'>Showing the 120 oldest records from {rows.Count} slow-moving items.</p>");
+    }
+
+    private static string CategoryValuationGuidance(decimal retail, decimal cost, int needsWorkCount)
+    {
+        if (needsWorkCount > 0)
+            return $"{needsWorkCount} records need photos or finishing before this value can work.";
+        if (retail <= 0)
+            return "Retail price is missing; update valuation before buying more stock in this category.";
+        if (cost <= 0)
+            return "Cost is missing; profit and valuation are less reliable.";
+        return "Review sell-through before adding more pieces in this category.";
+    }
+
+    private static decimal MaterialUnitCost(Material material)
+        => material.CurrentQuantity > 0 && material.PurchaseCost > 0
+            ? material.PurchaseCost / material.CurrentQuantity
+            : material.PurchaseCost;
+
+    private static decimal MaterialCurrentValue(Material material)
+        => Math.Max(0, material.CurrentQuantity) * MaterialUnitCost(material);
+
+    private static decimal SuggestedMaterialReorderQuantity(Material material)
+    {
+        var target = Math.Max(material.ReorderLevel * 2, material.ReorderLevel + 1);
+        return Math.Max(1, target - material.CurrentQuantity);
+    }
+
+    private static bool IsMaterialAdjustment(MaterialTransaction transaction)
+    {
+        var reason = transaction.Reason ?? string.Empty;
+        if (reason.Contains("adjust", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (!transaction.JobId.HasValue && !transaction.JewelleryItemId.HasValue && transaction.QuantityChange < 0)
+            return true;
+        return false;
+    }
+
+    private static string SlowMovingGuidance(StockAgeRow row)
+    {
+        if (row.Status.Contains("NeedsPhotos", StringComparison.OrdinalIgnoreCase))
+            return "Photograph and list before discounting.";
+        if (row.Status.Contains("AtMarket", StringComparison.OrdinalIgnoreCase))
+            return "Check market sell-through and return-to-stock state.";
+        if (row.Status.Contains("Reserved", StringComparison.OrdinalIgnoreCase))
+            return "Confirm the reservation is still valid or release it.";
+        if (row.Value <= 0)
+            return "Update valuation before deciding whether to discount, remake or archive.";
+        return row.AgeDays >= 365 ? "Consider relisting, repricing, remaking or archiving." : "Review photos, description, price and customer fit.";
     }
 
     private static int InventoryAgeDays(DateTime createdAt, DateTime today)

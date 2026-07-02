@@ -18,7 +18,7 @@
             <Border Grid.Row="1" Background="{StaticResource CardAltBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="16" Padding="18">
                 <StackPanel>
                     <TextBlock Text="NEW STATUS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
-                    <ComboBox x:Name="StatusCombo" MinHeight="36" />
+                    <ComboBox x:Name="StatusCombo" MinHeight="36" Tag="Choose a status" />
                     <TextBlock Text="This changes only the selected records in the active table. Use reports first if you need to audit a large cleanup list." Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,16,0,0" />
                 </StackPanel>
             </Border>

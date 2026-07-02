@@ -16,7 +16,7 @@
                     <TextBlock x:Name="CurrentStatusText" Foreground="{StaticResource MutedTextBrush}" Margin="0,4,0,12" />
                     <TextBlock x:Name="CurrentLifecycleText" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
                     <TextBlock Text="New Status" FontWeight="SemiBold" />
-                    <ComboBox x:Name="StatusBox" Margin="0,6,0,8" SelectionChanged="StatusBox_SelectionChanged" />
+                    <ComboBox x:Name="StatusBox" Margin="0,6,0,8" SelectionChanged="StatusBox_SelectionChanged" Tag="Choose a new status" />
                     <TextBlock x:Name="NewStatusLifecycleText" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
                     <TextBlock Text="Notes" FontWeight="SemiBold" />
                     <TextBox x:Name="NotesBox" MinHeight="80" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,6,0,0" />

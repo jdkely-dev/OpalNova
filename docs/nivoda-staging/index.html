@@ -456,6 +456,7 @@
             <li>Required payloads for holds, orders, price refresh, availability refresh and supplier order documents.</li>
             <li>Token lifetime, rate limit, region, permission and supplier visibility constraints.</li>
             <li>Whether a webhook or callback URL is required for this desktop app workflow.</li>
+            <li>Whether the production API-calling domain should be the OPALNOVA bridge domain, <code>https://api.jackthejeweller.com.au</code>.</li>
           </ul>
         </div>
       </section>
@@ -471,6 +472,7 @@
           <ul class="checklist">
             <li class="danger"><b>No secrets here</b><br>Do not add usernames, passwords, bearer tokens, account ids, customer data or supplier-private data to this page.</li>
             <li class="ok"><b>Review URL</b><br>Paste this hosted URL into OPALNOVA's Nivoda Review URL field, then generate the in-app staging handoff report for schema diagnostics.</li>
+            <li class="ok"><b>Production domain plan</b><br>Customer-facing Wix pages should call a Wix backend function, and that backend function should call the OPALNOVA API bridge. The bridge domain is the production URL Nivoda is asking for.</li>
           </ul>
         </div>
       </section>

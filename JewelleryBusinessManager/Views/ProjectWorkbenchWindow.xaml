@@ -15,7 +15,7 @@
             <Style TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{StaticResource WorkbenchTextBrush}" />
             </Style>
-            <Style TargetType="Button">
+            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="Margin" Value="4" />
                 <Setter Property="Padding" Value="11,7" />
                 <Setter Property="MinHeight" Value="34" />
@@ -32,7 +32,7 @@
                 <Setter Property="Foreground" Value="#040813" />
                 <Setter Property="FontWeight" Value="Bold" />
             </Style>
-            <Style TargetType="TextBox">
+            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                 <Setter Property="Margin" Value="4" />
                 <Setter Property="Padding" Value="8,5" />
                 <Setter Property="MinHeight" Value="32" />
@@ -76,12 +76,12 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="{StaticResource WorkbenchPanelBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
+        <Border Grid.Row="0" Background="{StaticResource WorkbenchPanelBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="0,0,0,1" Padding="7,4">
             <DockPanel LastChildFill="True">
                 <TextBlock DockPanel.Dock="Left" Text="Project Workbench" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,12,0" />
                 <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <TextBox x:Name="SearchBox" Width="260" TextChanged="SearchBox_TextChanged" ToolTip="Search customer, quote, job, diamond, certificate or next action" />
-                    <ComboBox x:Name="FilterCombo" Width="190" SelectionChanged="FilterCombo_SelectionChanged" SelectedIndex="0">
+                    <ComboBox x:Name="FilterCombo" Width="190" SelectionChanged="FilterCombo_SelectionChanged" SelectedIndex="0" Tag="Choose project filter">
                         <ComboBoxItem Content="Action needed" />
                         <ComboBoxItem Content="Quotes" />
                         <ComboBoxItem Content="Production" />
@@ -95,30 +95,30 @@
             </DockPanel>
         </Border>
 
-        <Grid Grid.Row="1" Margin="0,6,0,0">
+        <Grid Grid.Row="1" Margin="0,4,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <UniformGrid Grid.Row="0" Columns="6" Margin="0,0,0,8">
-                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
-                    <StackPanel><TextBlock Text="Needs Action" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="NeedsActionCountText" FontSize="22" FontWeight="Bold" Foreground="{StaticResource WorkbenchGoldBrush}" /></StackPanel>
+            <UniformGrid Grid.Row="0" Columns="6" Margin="0,0,0,5">
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
+                    <StackPanel><TextBlock Text="Needs Action" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="NeedsActionCountText" FontSize="18" FontWeight="Bold" Foreground="{StaticResource WorkbenchGoldBrush}" /></StackPanel>
                 </Border>
-                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
-                    <StackPanel><TextBlock Text="Quotes" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="QuoteCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
+                    <StackPanel><TextBlock Text="Quotes" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="QuoteCountText" FontSize="18" FontWeight="Bold" /></StackPanel>
                 </Border>
-                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
-                    <StackPanel><TextBlock Text="Production" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="ProductionCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
+                    <StackPanel><TextBlock Text="Production" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="ProductionCountText" FontSize="18" FontWeight="Bold" /></StackPanel>
                 </Border>
-                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
-                    <StackPanel><TextBlock Text="Balances" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="PaymentCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
+                    <StackPanel><TextBlock Text="Balances" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="PaymentCountText" FontSize="18" FontWeight="Bold" /></StackPanel>
                 </Border>
-                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
-                    <StackPanel><TextBlock Text="Diamonds" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="DiamondCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
+                    <StackPanel><TextBlock Text="Diamonds" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="DiamondCountText" FontSize="18" FontWeight="Bold" /></StackPanel>
                 </Border>
-                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="3">
-                    <StackPanel><TextBlock Text="Follow-ups" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="FollowUpCountText" FontSize="22" FontWeight="Bold" /></StackPanel>
+                <Border Background="{StaticResource WorkbenchSoftBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
+                    <StackPanel><TextBlock Text="Follow-ups" Foreground="{StaticResource WorkbenchMutedBrush}" /><TextBlock x:Name="FollowUpCountText" FontSize="18" FontWeight="Bold" /></StackPanel>
                 </Border>
             </UniformGrid>
 
@@ -142,11 +142,11 @@
                     </DataGrid>
                 </Border>
 
-                <Border Grid.Column="2" Background="{StaticResource WorkbenchPanelBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="14">
+                <Border Grid.Column="2" Background="{StaticResource WorkbenchPanelBrush}" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="10">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <TextBlock x:Name="SelectedTitleText" Text="Select a project" FontSize="22" FontWeight="Bold" TextWrapping="Wrap" />
-                            <TextBlock x:Name="SelectedSubtitleText" Text="Choose a row to see context, risk warnings and the next recommended action." Foreground="{StaticResource WorkbenchMutedBrush}" Margin="0,4,0,12" TextWrapping="Wrap" />
+                            <TextBlock x:Name="SelectedTitleText" Text="Select a project" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" />
+                            <TextBlock x:Name="SelectedSubtitleText" Text="Choose a row to see context, risk warnings and the next recommended action." Foreground="{StaticResource WorkbenchMutedBrush}" Margin="0,3,0,8" TextWrapping="Wrap" />
 
                             <Border Background="#040813" BorderBrush="{StaticResource WorkbenchBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10" Margin="0,0,0,10">
                                 <StackPanel>

@@ -23,6 +23,6 @@ public class OnlineListing : BaseEntity
     public override string ToString()
     {
         var title = string.IsNullOrWhiteSpace(SeoTitle) ? $"Listing #{Id}" : SeoTitle;
-        return $"{Platform} — {title}".Trim();
+        return $"{Platform} - {title}".Trim();
     }
 }

@@ -1,7 +1,7 @@
 # OPALNOVA One-Time Future Change Plan By Expected Version
 
 Snapshot created: 2026-06-30
-Current local baseline: V1.91.0 Nivoda Staging Readiness
+Current local baseline: V2.6.0 Roadmap Completion Record
 
 This is a one-time planning snapshot, not a locked contract. Versions can move if a change proves easier, riskier, or more useful than expected. The current working rule is to commit and push only at whole-number milestone versions such as V1.90 and V2.0 unless explicitly requested.
 
@@ -188,12 +188,12 @@ Why here:
 
 Expected focus:
 
-- Add weekly/monthly report generation if report outputs remain stable.
-- Add workshop productivity reporting.
-- Add supplier diamond performance reporting.
-- Add market performance reporting.
+- Add weekly/monthly report generation if report outputs remain stable. Started in V1.92.0 through report cadence guidance rather than background automation.
+- Add workshop productivity reporting. Started in V1.92.0 through Operations Performance.
+- Add supplier diamond performance reporting. Started in V1.92.0 through Operations Performance.
+- Add market performance reporting. Existing Market Performance remains, and V1.92.0 adds market operations summary into Operations Performance.
 - Add customer value reporting improvements.
-- Add scheduled report reminders before adding background automation.
+- Add scheduled report reminders before adding background automation. Started in V1.92.0 as advisory weekly/monthly report rhythm.
 
 Why here:
 
@@ -204,82 +204,86 @@ Why here:
 
 Expected focus:
 
-- Add inventory valuation by category.
-- Add low-stock reorder recommendations.
-- Improve slow-moving stock guidance.
-- Add stock adjustment audit review surfaces if existing material transaction data is not enough.
-- Improve reserved, owned, supplier, sold, consumed, and archived state reporting.
+- Add inventory valuation by category. Started in V1.93.0 through Inventory Intelligence.
+- Add low-stock reorder recommendations. Started in V1.93.0 with incoming purchase-order coverage.
+- Improve slow-moving stock guidance. Started in V1.93.0 with action guidance for older stock and stones.
+- Add stock adjustment audit review surfaces if existing material transaction data is not enough. Started in V1.93.0 using existing material transactions.
+- Improve reserved, owned, supplier, sold, consumed, and archived state reporting. Started in V1.93.0 by combining lifecycle guidance with supplier diamond state and stock value.
 
 Why here:
 
 - Stock lifecycle clarity already exists.
 - Valuation and reorder recommendations are decision-support features that build on stable stock states.
 
-## V1.94 - External Supplier Ordering Depth
+## V1.94 - Shared Selector Theme Polish
 
-Expected focus:
+Actual focus:
 
-- Add supplier purchase/order document generation where existing data is sufficient.
-- Improve received-diamond intake.
-- Improve replacement workflow from supplier diamonds to owned inventory.
-- Add currency conversion handling if supplier pricing data makes this necessary.
-- Reassess API-level supplier hold/order actions only after schema, authentication, and error cases are confirmed.
-
-Why here:
-
-- This is more dependent on supplier behaviour and should remain behind local workflow safety.
-
-## V1.95 - Payment, Credit, And Lay-By Refinement
-
-Expected focus:
-
-- Add refund and credit-note handling.
-- Add lay-by/payment-plan workflow if the shared payment schedule guidance is not enough.
-- Improve overdue balance alerting and reminder history.
-- Improve receipt/invoice wording for partial payment, refund, credit, and collection states.
+- Added shared ComboBox empty prompts so unselected fields show friendly muted guidance instead of blank faces.
+- Added dark DatePicker text box, calendar day and calendar month/year button styling.
+- Routed Payment & Collection and Production Board selector/date styles through the global OPALNOVA theme.
+- Kept the pass no-schema and preserved existing selector, payment, production, inventory and supplier diamond behavior.
+- Deferred deeper external supplier ordering until schema, authentication and account-specific error cases are confirmed.
 
 Why here:
 
-- Payment reminders, schedules, handover confirmation, and invoices already exist.
-- Refund/credit/lay-by work needs careful accounting language and should not be rushed.
+- The active handoff prioritized UI/workflow streamlining and shared style fixes over broad new feature areas.
+- Supplier ordering depth remains more dependent on supplier behaviour and should stay behind local workflow safety.
 
-## V1.96 - Workspace Efficiency And Keyboard Workflow
+## V1.95 - Workflow Control Consolidation
 
-Expected focus:
+Actual focus:
 
-- Add keyboard shortcuts for common actions.
-- Improve recently opened item recall beyond current-session history if worthwhile.
-- Improve tab recovery and unsaved-change coverage if any high-risk editors remain uncovered.
-- Add command/search refinements based on actual navigation friction.
-
-Why here:
-
-- Workspace stability and hosted editor guards already exist.
-- This pass should be driven by real repeated-use friction rather than broad UI redesign.
-
-## V1.97 - Hardware And Device Workflow
-
-Expected focus:
-
-- Deepen label, barcode, camera, and scale workflows after the basic tools are reliable.
-- Add scan-to-sale improvements if barcode hardware is available.
-- Add device setup checks and graceful fallbacks when hardware is unavailable.
-- Avoid making any hardware workflow mandatory.
+- Routed remaining high-priority workflow Button and TextBox styles through shared OPALNOVA templates.
+- Added explicit prompt text to every XAML ComboBox declaration.
+- Preserved local colours/spacing and existing workflow behavior.
+- Deferred payment, credit and lay-by refinement until accounting language and workflow scope are reviewed separately.
 
 Why here:
 
-- Hardware support is valuable but environment-dependent.
-- The safest approach is opt-in tooling with clear fallbacks.
+- The active handoff prioritized UI/workflow streamlining and shared style fixes before broad new feature areas.
+- Payment reminders, schedules, handover confirmation and invoices already exist, but refund/credit/lay-by work needs careful accounting language and should not be rushed.
 
-## V1.98 - Installer, Update, And Support Polish
+## V1.96 - Workspace Surface Reduction
 
-Expected focus:
+Actual focus:
 
-- Finalise installer behaviour.
-- Finalise desktop shortcut behaviour.
-- Add update/version-check presentation.
-- Add release notes viewer refinements.
-- Add final support/help/manual polish for real-world use.
+- Compressed high-use workflow headers, metric cards and selected-detail panels.
+- Reduced redundant explanatory copy in Alert Centre, Project Workbench, Proposal Pipeline, Payment & Collection, Production Board, Supplier Diamond Holds & Orders and Stock Movement.
+- Preserved all action buttons, selectors, data grids, payment controls, supplier diamond actions and stock movement inputs.
+- Kept the pass no-schema and focused on making workspace content fill the tab area.
+
+Why here:
+
+- The active handoff prioritized reducing redundant panels and letting workspace content fill the tab area.
+- Workspace stability and hosted editor guards already exist, so surface reduction can be done without changing data behavior.
+
+## V1.97 - Daily Workflow Edge Polish
+
+Actual focus:
+
+- Added an `Open Payments` action to Production Board for the selected job card.
+- Added focused Payment & Collection opening for a specific job id.
+- Payment & Collection switches to `All jobs` when the selected production job is hidden by the default handover filter.
+- Job-specific payment handoffs open in contextual workspace tabs.
+- Cleaned visible Payment & Collection list separators to plain ASCII.
+- Preserved database schema, payment recording, sale creation, handover actions and production movement behavior.
+
+Why here:
+
+- The main screens are now more compact and consistent.
+- The next value is reducing repeated-use friction without widening scope.
+
+## V1.98 - Support Snapshot Polish
+
+Actual focus:
+
+- Added a read-only Support Snapshot report.
+- Added Support Snapshot entry points in Settings & Backup and Safety & Data Studio.
+- Included installed version, executable path, app folder, database path, backup folder, printout folder, photo folder, settings path, saved-view path, error-log path and latest backup status.
+- Added support guidance for what to share and what not to share publicly.
+- Updated release notes, user guide and workflow help metadata.
+- Preserved backup, restore, health check, data integrity, release readiness, user guide and release notes behavior.
 
 Why here:
 
@@ -287,7 +291,14 @@ Why here:
 
 ## V1.99 - V2.0 Release Candidate Hardening
 
-Expected focus:
+Implemented in V1.99.0:
+
+- Reviewed V1.94-V1.98 UI/workflow/support changes for a small no-schema hardening pass.
+- Corrected Customer Relationship Studio action help routing so Customer Timeline opens its specific mini guide.
+- Removed duplicated Communication Templates help metadata from the section guide map while preserving action-specific help.
+- Refreshed visible/project version metadata, release notes, roadmap and handoff notes for the V1.99 baseline.
+
+Manual release-candidate checks still useful before external distribution:
 
 - Full UI clipping and scaling review at 100%, 125%, and 150%.
 - Full dark-theme control consistency review.
@@ -299,9 +310,16 @@ Why here:
 
 - This should be a deliberate release candidate pass, not a feature build.
 
-## V2.0 - Larger Product Systems Decision Point
+## V2.0 - Release Candidate Validation And Product Decision Point
 
-Expected focus:
+Implemented in V2.0.0:
+
+- Completed a release-candidate validation checkpoint across the V1.91-V1.99 working set.
+- Confirmed selector prompt coverage, help-guide key uniqueness and per-section tool-action title uniqueness with static checks.
+- Refreshed visible/project version metadata, release notes, user guide version text, roadmap, forward plan, handoff, version report and testing checklist for the V2.0 baseline.
+- Preserved database schema and existing quote, production, payment, inventory, supplier diamond, Nivoda staging, backup, restore, support snapshot and report behavior.
+
+Post-V2.0 decision focus:
 
 - Decide whether OPALNOVA needs multi-user, cloud sync, or shared-device workflows.
 - Decide whether direct email delivery is worth adding after the draft-based workflow proves itself.
@@ -313,3 +331,119 @@ Why here:
 
 - These are product-level decisions with higher risk and larger support burden.
 - They should be handled after OPALNOVA's local desktop workflow is stable and well-tested.
+
+## V2.1 - Post-V2 Decision Review
+
+Implemented in V2.1.0:
+
+- Added a read-only Post-V2 Decision Review report.
+- Added Decision Review entry points in Settings & Backup and Safety & Data Studio.
+- Summarized local workflow footprint, operations load, stock/supplier context and Nivoda readiness.
+- Added decision guidance for multi-user/cloud sync, direct email delivery, API-level supplier ordering, deeper scheduling/capacity planning, workspace navigation redesign and installer/update direction.
+- Kept the pass no-schema and did not add email sending, supplier mutations, cloud sync, background scheduling or installer behavior.
+
+Next decision:
+
+- Installer/update readiness has been chosen as the first concrete post-V2 direction.
+
+Why here:
+
+- The V2.0 release candidate needs product-level choices before larger support-heavy systems are started.
+- A read-only decision surface keeps the current desktop workflow stable while making the next investment explicit.
+
+## V2.2 - Installer Update Readiness
+
+Implemented in V2.2.0:
+
+- Chose installer/update readiness as the first concrete post-V2 direction.
+- Added a read-only Installer/Update Readiness report.
+- Added Installer/Update Readiness entry points in Settings & Backup and Safety & Data Studio.
+- Added Search All workflow discovery for installer/update readiness.
+- Summarized runtime executable/app folder, publish-folder signal, database/settings/backup/printout paths, installer choices, update-channel boundaries, portable build handoff steps and distribution cautions.
+- Kept the pass no-schema and did not add installer creation, shortcut creation, auto-update behavior, background scheduling or data-location changes.
+
+Next decision:
+
+- Choose whether the first packaging test should stay as a portable publish-folder handoff or move to MSIX/Inno Setup.
+
+Why here:
+
+- Installer and update behavior affects support, data safety and rollback expectations.
+- A read-only readiness pass lets packaging decisions be made deliberately before installer assets or update logic are added.
+
+## V2.3 - Installer Validation Checklist
+
+Implemented in V2.3.0:
+
+- Chose the portable publish folder as the first installer/update validation route.
+- Added a read-only Installer Validation Checklist report.
+- Added Installer Validation Checklist entry points in Settings & Backup and Safety & Data Studio.
+- Added Search All workflow discovery for installer validation.
+- Summarized executable fingerprint, publish-folder signal, database/settings/backup/printout paths, update rehearsal gates, rollback checks, installer technology gates and hold conditions.
+- Kept the pass no-schema and did not create installer files, shortcuts, update feeds, task records, background jobs, data moves or schema changes.
+
+Next decision:
+
+- Run the V2.3 checklist against the published build before choosing MSIX, Inno Setup or continued portable handoff.
+
+Why here:
+
+- V2.2 identified the installer/update boundary; V2.3 turns that boundary into a validation routine that can stop unsafe packaging before it creates support problems.
+
+## V2.4 - Portable Build Manifest
+
+Implemented in V2.4.0:
+
+- Added a read-only Portable Build Manifest report.
+- Added Portable Build Manifest entry points in Settings & Backup and Safety & Data Studio.
+- Added Search All workflow discovery for portable build manifest.
+- Summarized executable version/hash, publish-folder signal, app-folder file counts/size, top-level file inventory, local data boundaries, private-data exclusion checks, support-path context and handoff notes.
+- Updated Installer Validation Checklist expected-version guidance to the V2.4 baseline.
+- Kept the pass no-schema and did not create installer files, shortcuts, update feeds, task records, background jobs, data moves or schema changes.
+
+Next decision:
+
+- Run the V2.4 manifest from the published build, then decide whether to continue portable handoff or start a deliberately scoped MSIX/Inno Setup packaging ticket.
+
+Why here:
+
+- The validation checklist says what must pass; the portable manifest records what is actually being handed off so packaging does not start from an unknown folder.
+
+## V2.5 - Packaging Decision Record
+
+Implemented in V2.5.0:
+
+- Added a read-only Packaging Decision Record report.
+- Added Packaging Decision Record entry points in Settings & Backup and Safety & Data Studio.
+- Added Search All workflow discovery for packaging decision record.
+- Recorded portable publish-folder handoff as the validated route.
+- Kept MSIX and Inno Setup as explicit future packaging tickets requiring signing, install path, shortcut ownership, update channel, uninstall behavior and rollback rules before implementation.
+- Summarized executable evidence, local data boundaries, the release/readiness/validation/manifest/support evidence chain, allowed next actions and non-negotiable packaging boundaries.
+- Kept the pass no-schema and did not create installer files, shortcuts, update feeds, task records, background jobs, data moves or schema changes.
+
+Next decision:
+
+- Choose the next major product direction explicitly. Installer readiness is complete for portable handoff; any real installer work should now be a named MSIX or Inno Setup implementation ticket.
+
+Why here:
+
+- V2.2-V2.4 prepared and validated portable handoff. V2.5 prevents another readiness loop by recording the current decision and the conditions required before packaging implementation starts.
+
+## V2.6 - Roadmap Completion Record
+
+Implemented in V2.6.0:
+
+- Added a read-only Roadmap Completion Record report.
+- Added Roadmap Completion Record entry points in Settings & Backup and Safety & Data Studio.
+- Added Search All workflow discovery for roadmap completion record.
+- Recorded the current no-schema version stream as complete.
+- Listed completed tracks, remaining explicit major decisions and the stop condition for further readiness-only version passes.
+- Kept the pass no-schema and did not create installer files, shortcuts, update feeds, task records, background jobs, data moves, supplier mutations, hardware dependencies or schema changes.
+
+Next decision:
+
+- Choose a new major stream explicitly. The remaining options are MSIX packaging, Inno Setup packaging, true backup scheduling, advanced hardware setup, scheduled reports, deeper calendar/capacity planning, command-palette expansion or API-level Nivoda hold/order after schema confirmation.
+
+Why here:
+
+- The user asked to continue all versions until finished. V2.6 records the finish point for the current version sequence and prevents further automatic version churn without a concrete product decision.

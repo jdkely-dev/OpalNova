@@ -16,13 +16,13 @@
                     <TextBlock Text="Search records and workflow actions, apply quick filters, then save useful views for daily work." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,5,0,18" />
 
                     <TextBlock Text="SECTION" Style="{StaticResource PillTextStyle}" Margin="0,0,0,5" />
-                    <ComboBox x:Name="SectionCombo" Margin="0,0,0,12" />
+                    <ComboBox x:Name="SectionCombo" Margin="0,0,0,12" Tag="Choose a section" />
 
                     <TextBlock Text="SEARCH TEXT" Style="{StaticResource PillTextStyle}" Margin="0,0,0,5" />
                     <TextBox x:Name="KeywordBox" Margin="0,0,0,12" ToolTip="Search text, codes, statuses, notes, visible field values and workflow actions." />
 
                     <TextBlock Text="QUICK FILTER" Style="{StaticResource PillTextStyle}" Margin="0,0,0,5" />
-                    <ComboBox x:Name="FilterCombo" Margin="0,0,0,16" />
+                    <ComboBox x:Name="FilterCombo" Margin="0,0,0,16" Tag="Choose a filter" />
 
                     <Button Content="Search Now" Click="Search_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
                     <Button Content="Open Selected Record" Click="OpenSelected_Click" Style="{StaticResource ToolbarButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,18" />
@@ -33,7 +33,7 @@
                             <TextBlock Text="Save searches such as Low Stock, Jobs Due Soon, At Market, Ready To List, or customer follow-ups." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,10" />
                             <TextBox x:Name="SavedViewNameBox" Margin="0,0,0,8" ToolTip="Name this saved search/filter view." />
                             <Button Content="Save Current View" Click="SaveView_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,10" />
-                            <ComboBox x:Name="SavedViewsCombo" Margin="0,0,0,8" />
+                            <ComboBox x:Name="SavedViewsCombo" Margin="0,0,0,8" Tag="Choose a saved view" />
                             <Button Content="Apply Saved View" Click="ApplySavedView_Click" Style="{StaticResource ToolbarButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
                             <Button Content="Delete Saved View" Click="DeleteSavedView_Click" Style="{StaticResource ToolbarButtonStyle}" HorizontalAlignment="Stretch" />
                         </StackPanel>

@@ -13,8 +13,8 @@ public sealed class SavedSearchView
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
     public override string ToString() => string.IsNullOrWhiteSpace(Name)
-        ? $"{Section} • {FilterPreset}"
-        : $"{Name} — {Section} • {FilterPreset}";
+        ? $"{Section} - {FilterPreset}"
+        : $"{Name} - {Section} - {FilterPreset}";
 }
 
 public static class SavedViewService

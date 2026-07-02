@@ -17,7 +17,7 @@
 
             <StackPanel>
                 <TextBlock Text="Workflow Stage" Foreground="{StaticResource MutedTextBrush}" FontWeight="SemiBold" />
-                <ComboBox x:Name="StageComboBox" Margin="0,6,0,14" Height="34">
+                <ComboBox x:Name="StageComboBox" Margin="0,6,0,14" Height="34" Tag="Choose stone stage">
                     <ComboBoxItem Content="Rough" />
                     <ComboBoxItem Content="Loose" />
                     <ComboBoxItem Content="Cutting" />

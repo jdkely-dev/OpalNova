@@ -44,6 +44,6 @@ public class ExternalDiamond : BaseEntity
 
         var type = IsLabGrown ? "LG" : "Natural";
         var cert = string.IsNullOrWhiteSpace(CertificateNumber) ? SupplierDiamondId : CertificateNumber;
-        return $"{type} {Shape} {Carat:0.###}ct {Color} {Clarity} {Lab} {cert} — {SupplierPrice:C}".Trim();
+        return $"{type} {Shape} {Carat:0.###}ct {Color} {Clarity} {Lab} {cert} - {SupplierPrice:C}".Trim();
     }
 }

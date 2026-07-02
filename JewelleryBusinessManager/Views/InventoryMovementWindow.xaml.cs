@@ -33,7 +33,7 @@ public partial class InventoryMovementWindow : Window
         materials.AddRange(db.Materials
             .AsEnumerable()
             .OrderBy(m => m.Name)
-            .Select(m => new LookupItem(m.Id, $"{m.MaterialCode} {m.Name} — {m.CurrentQuantity:0.###} {m.UnitType}".Trim())));
+            .Select(m => new LookupItem(m.Id, $"{m.MaterialCode} {m.Name} - {m.CurrentQuantity:0.###} {m.UnitType}".Trim())));
         MaterialBox.ItemsSource = materials;
 
         var jobs = new List<LookupItem> { new(null, "No linked job") };
@@ -79,8 +79,8 @@ public partial class InventoryMovementWindow : Window
         using var db = new AppDbContext();
         var material = db.Materials.Find(materialId);
         if (material == null) return;
-        var lowText = material.CurrentQuantity <= material.ReorderLevel ? " • LOW STOCK" : string.Empty;
-        MaterialInfoText.Text = $"Current: {material.CurrentQuantity:0.###} {material.UnitType} • Reorder level: {material.ReorderLevel:0.###}{lowText}";
+        var lowText = material.CurrentQuantity <= material.ReorderLevel ? " - LOW STOCK" : string.Empty;
+        MaterialInfoText.Text = $"Current: {material.CurrentQuantity:0.###} {material.UnitType} - Reorder level: {material.ReorderLevel:0.###}{lowText}";
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)

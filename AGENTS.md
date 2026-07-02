@@ -6,7 +6,7 @@
 - Internal project/namespace: `JewelleryBusinessManager`
 - Platform: Windows desktop app, WPF / C#
 - Database: SQLite under `%LocalAppData%\JewelleryBusinessManager\jewellery_business_manager.db`
-- Current workspace version: V1.91.0 Nivoda Staging Readiness
+- Current workspace version: V2.6.0 Roadmap Completion Record
 - Source root: `JewelleryBusinessManager`
 - Published output: `JewelleryBusinessManager\bin\Release\net10.0-windows\win-x64\publish\OPALNOVA.exe`
 
@@ -14,7 +14,7 @@ Keep the internal project and namespace as `JewelleryBusinessManager`. Visible b
 
 ## Current Direction
 
-The immediate focus is UI/workflow streamlining:
+The immediate focus is installer/update readiness after the post-V2 decision review while preserving the UI/workflow streamlining standards:
 
 - Keep the dark navy OPALNOVA theme and antique-white text.
 - Avoid white input/dropdown backgrounds and bright yellow highlights.
@@ -22,6 +22,330 @@ The immediate focus is UI/workflow streamlining:
 - Editors and workflows should open in workspace tabs where practical.
 - Reduce redundant explanatory panels and let workspace content fill the tab area.
 - Selector fields should show friendly prompts, not raw object strings.
+- Installer/update readiness is the selected first post-V2 direction.
+- Keep installer/update work no-schema and do not add auto-update, shortcut creation, background scheduling or data-location changes without an explicit packaging plan.
+
+## V2.6.0 State
+
+V2.6.0 records completion of the current no-schema version stream:
+
+- Bumped visible/project version metadata to 2.6.0.
+- Added `DataSafetyService.CreateRoadmapCompletionRecordReport()`.
+- Added Roadmap Completion Record actions in Settings & Backup and Safety & Data Studio.
+- Added action-specific mini-guide metadata for Roadmap Completion Record.
+- Added Roadmap completion record to Search All workflow action discovery.
+- The report records completed tracks, remaining explicit major decisions and the stop condition for further readiness-only version passes.
+- The remaining major decisions are MSIX packaging, Inno Setup packaging, true backup scheduling, advanced hardware setup, scheduled reports, deeper calendar/capacity planning, command-palette expansion and API-level Nivoda hold/order after schema confirmation.
+- Updated built-in release notes, user guide version text, roadmap, forward plan, future plan, version report and testing checklist for the V2.6 baseline.
+- Preserved database schema and existing quote, production, payment, inventory, supplier diamond, Nivoda staging, backup, restore, support snapshot, release readiness, decision review, installer/update readiness, installer validation, portable manifest and packaging decision behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Static checks confirm all XAML ComboBox declarations under `Views` include friendly `Tag` prompt text.
+- Static checks confirm `SectionHelpGuides` and `HelpGuides` do not contain duplicate keys.
+- Static checks confirm no duplicate tool-action titles within the same tool section.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` file/version check confirms `FileVersion` `2.6.0.0` and product version `2.6.0 OPALNOVA Roadmap Completion Record`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V2.6 remains uncommitted unless explicitly requested.
+
+## V2.5.0 State
+
+V2.5.0 closes the installer/update readiness track with a packaging decision record without schema changes:
+
+- Bumped visible/project version metadata to 2.5.0.
+- Added `DataSafetyService.CreatePackagingDecisionRecordReport()`.
+- Added Packaging Decision Record actions in Settings & Backup and Safety & Data Studio.
+- Added action-specific mini-guide metadata for Packaging Decision Record.
+- Added Packaging decision record to Search All workflow action discovery.
+- The report records portable publish-folder handoff as the validated route and keeps MSIX/Inno Setup as explicit future packaging tickets.
+- The report summarizes executable evidence, local data boundaries, the release/readiness/validation/manifest/support evidence chain, allowed next actions and non-negotiable packaging boundaries.
+- Updated built-in release notes, user guide version text, roadmap, forward plan, future plan, version report and testing checklist for the V2.5 baseline.
+- Preserved database schema and existing quote, production, payment, inventory, supplier diamond, Nivoda staging, backup, restore, support snapshot, release readiness, decision review, installer/update readiness, installer validation and portable manifest behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Static checks confirm all XAML ComboBox declarations under `Views` include friendly `Tag` prompt text.
+- Static checks confirm `SectionHelpGuides` and `HelpGuides` do not contain duplicate keys.
+- Static checks confirm no duplicate tool-action titles within the same tool section.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` file/version check confirms `FileVersion` `2.5.0.0` and product version `2.5.0 OPALNOVA Packaging Decision Record`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V2.5 remains uncommitted unless explicitly requested.
+
+## V2.4.0 State
+
+V2.4.0 adds a portable build handoff manifest without schema changes:
+
+- Bumped visible/project version metadata to 2.4.0.
+- Added `DataSafetyService.CreatePortableBuildManifestReport()`.
+- Added Portable Build Manifest actions in Settings & Backup and Safety & Data Studio.
+- Added action-specific mini-guide metadata for Portable Build Manifest.
+- Added Portable build manifest to Search All workflow action discovery.
+- The report summarizes executable version/hash, publish-folder signal, app-folder file counts/size, top-level file inventory, local data boundaries, private-data exclusion checks, support-path context and handoff notes.
+- Updated Installer Validation Checklist expected-version guidance to the V2.4 baseline.
+- Updated built-in release notes, user guide version text, roadmap, forward plan, future plan, version report and testing checklist for the V2.4 baseline.
+- Preserved database schema and existing quote, production, payment, inventory, supplier diamond, Nivoda staging, backup, restore, support snapshot, release readiness, decision review, installer/update readiness and installer validation behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Static checks confirm all XAML ComboBox declarations under `Views` include friendly `Tag` prompt text.
+- Static checks confirm `SectionHelpGuides` and `HelpGuides` do not contain duplicate keys.
+- Static checks confirm no duplicate tool-action titles within the same tool section.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` file/version check confirms `FileVersion` `2.4.0.0` and product version `2.4.0 OPALNOVA Portable Build Manifest`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V2.4 remains uncommitted unless explicitly requested.
+
+## V2.3.0 State
+
+V2.3.0 turns installer/update readiness into a narrow validation checklist without schema changes:
+
+- Bumped visible/project version metadata to 2.3.0.
+- Added `DataSafetyService.CreateInstallerValidationChecklistReport()`.
+- Added Installer Validation Checklist actions in Settings & Backup and Safety & Data Studio.
+- Added action-specific mini-guide metadata for Installer Validation Checklist.
+- Added Installer validation to Search All workflow action discovery.
+- Chose the portable publish folder as the first validation route before MSIX, Inno Setup or another installer technology.
+- The report summarizes executable fingerprint, SHA-256, publish-folder signal, database/settings/backup/printout paths, portable validation steps, manual update rehearsal gates, rollback checks, installer technology gates and hold conditions.
+- Updated built-in release notes, user guide version text, roadmap, forward plan, future plan, version report and testing checklist for the V2.3 baseline.
+- Preserved database schema and existing quote, production, payment, inventory, supplier diamond, Nivoda staging, backup, restore, support snapshot, release readiness, decision review, installer/update readiness and report behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Static checks confirm all XAML ComboBox declarations under `Views` include friendly `Tag` prompt text.
+- Static checks confirm `SectionHelpGuides` and `HelpGuides` do not contain duplicate keys.
+- Static checks confirm no duplicate tool-action titles within the same tool section.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` file/version check confirms `FileVersion` `2.3.0.0` and product version `2.3.0 OPALNOVA Installer Validation Checklist`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V2.3 remains uncommitted unless explicitly requested.
+
+## V2.2.0 State
+
+V2.2.0 chooses installer/update readiness as the first concrete post-V2 direction without schema changes:
+
+- Bumped visible/project version metadata to 2.2.0.
+- Added `DataSafetyService.CreateInstallerUpdateReadinessReport()`.
+- Added Installer/Update Readiness actions in Settings & Backup and Safety & Data Studio.
+- Added action-specific mini-guide metadata for Installer/Update Readiness.
+- Added Installer and updates to Search All workflow action discovery.
+- The report summarizes runtime executable/app folder, publish-folder signal, database/settings/backup/printout paths, installer choices, update-channel boundaries, portable build handoff steps and distribution cautions.
+- Updated built-in release notes, user guide version text, roadmap, forward plan, future plan, version report and testing checklist for the V2.2 baseline.
+- Preserved database schema and existing quote, production, payment, inventory, supplier diamond, Nivoda staging, backup, restore, support snapshot, release readiness, decision review and report behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Static checks confirm all XAML ComboBox declarations under `Views` include friendly `Tag` prompt text.
+- Static checks confirm `SectionHelpGuides` and `HelpGuides` do not contain duplicate keys.
+- Static checks confirm no duplicate tool-action titles within the same tool section.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` file/version check confirms `FileVersion` `2.2.0.0` and product version `2.2.0 OPALNOVA Installer Update Readiness`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V2.2 remains uncommitted unless explicitly requested.
+
+## V2.1.0 State
+
+V2.1.0 starts the post-V2 product decision review pass without schema changes:
+
+- Bumped visible/project version metadata to 2.1.0.
+- Added `DataSafetyService.CreatePostV2DecisionReviewReport()`.
+- Added Decision Review actions in Settings & Backup and Safety & Data Studio.
+- The report summarizes local workflow footprint, stock/supplier context and Nivoda readiness.
+- The report gives decision guidance for multi-user/cloud sync, direct email delivery, API-level supplier ordering, deeper scheduling/capacity planning, workspace navigation redesign and installer/update direction.
+- Updated built-in release notes, user guide version text, roadmap, forward plan, future plan, version report and testing checklist for the V2.1 baseline.
+- Preserved database schema and existing quote, production, payment, inventory, supplier diamond, Nivoda staging, backup, restore, support snapshot and report behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Static checks confirm all XAML ComboBox declarations under `Views` include friendly `Tag` prompt text.
+- Static checks confirm `SectionHelpGuides` and `HelpGuides` do not contain duplicate keys.
+- Static checks confirm no duplicate tool-action titles within the same tool section.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` file/version check confirms `FileVersion` `2.1.0.0` and product version `2.1.0 OPALNOVA Post-V2 Decision Review`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V2.1 remains uncommitted unless explicitly requested.
+
+## V2.0.0 State
+
+V2.0.0 completes a release-candidate validation checkpoint across the V1.91-V1.99 working set without schema changes:
+
+- Bumped visible/project version metadata to 2.0.0.
+- Ran static release-candidate checks for selector prompt coverage, help-guide key uniqueness and per-section tool-action title uniqueness.
+- Confirmed no ComboBox declarations are missing friendly prompt `Tag` text.
+- Confirmed `SectionHelpGuides` and `HelpGuides` do not contain duplicate keys.
+- Confirmed no duplicate tool-action titles within the same tool section.
+- Updated built-in release notes, user guide version text, roadmap, forward plan, future plan, version report and testing checklist for the V2.0 baseline.
+- Preserved database schema and existing quote, production, payment, inventory, supplier diamond, Nivoda staging, backup, restore, support snapshot and report behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` file/version check confirms `FileVersion` `2.0.0.0` and product version `2.0.0 OPALNOVA Release Candidate Validation`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V2.0 is an appropriate commit/push checkpoint when explicitly requested.
+
+## V1.99.0 State
+
+V1.99.0 completes a small pre-milestone hardening pass before the V2.0 checkpoint without schema changes:
+
+- Bumped visible/project version metadata to 1.99.0.
+- Reviewed the V1.94-V1.98 selector, workflow-surface and support-polish work for stale version text, duplicated help metadata and action-help routing gaps.
+- Corrected Customer Relationship Studio mini-guide routing so Customer Timeline opens its specific action help instead of falling back to the broad section guide.
+- Removed duplicated Communication Templates help metadata from the section-guide map while preserving the action-specific help entry.
+- Suppressed the SDK source-revision suffix in informational product version metadata so published ProductVersion matches the clean OPALNOVA release label.
+- Updated built-in release notes, user guide version text, roadmap, forward plan, future plan, version report and testing checklist for the V1.99 baseline.
+- Preserved database schema and existing quote, production, payment, inventory, supplier diamond, backup, restore, support snapshot and report behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` file/version check confirms `FileVersion` `1.99.0.0` and product version `1.99.0 OPALNOVA Pre-Milestone Hardening`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.99 remains uncommitted unless explicitly requested.
+
+## V1.98.0 State
+
+V1.98.0 continues release/support hardening without schema changes:
+
+- Bumped visible/project version metadata to 1.98.0.
+- Added `DataSafetyService.CreateSupportSnapshotReport()`.
+- Added Support Snapshot actions in Settings & Backup and Safety & Data Studio.
+- The support snapshot reports installed version, executable path, app folder, database path, backup folder, printout folder, photo folder, settings path, saved-view path and error-log path.
+- The support snapshot reports file/folder status and the latest `.db` or `.zip` backup in the configured backup folder.
+- Added support guidance for what to share when asking for help and what not to share publicly.
+- Updated the built-in user guide, release notes and workflow help metadata for the Support Snapshot action.
+- Preserved database schema and existing backup, restore, health check, data integrity, release notes, user guide and release readiness behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` file/version check confirms `FileVersion` `1.98.0.0` and product version `1.98.0 OPALNOVA Support Snapshot Polish`.
+- Published launch smoke is pending because the process-launch escalation was blocked by the app usage-limit approval gate.
+- Per the milestone-only git rule, V1.98 remains uncommitted unless explicitly requested.
+
+## V1.97.0 State
+
+V1.97.0 continues UI/workflow streamlining without schema changes:
+
+- Bumped visible/project version metadata to 1.97.0.
+- Added an `Open Payments` action to the Production Board toolbar for the selected job card.
+- Added focused Payment & Collection opening for a specific job id.
+- Payment & Collection switches to `All jobs` when a selected production job would be hidden by the default handover filter.
+- Job-specific payment handoffs open in workspace tabs with contextual titles such as `Payment JOB001`.
+- Preserved the standard Payment & Collection entry point for normal all-workflow use.
+- Cleaned visible Payment & Collection row separators to plain ASCII text.
+- Preserved database schema and existing production movement, payment recording, invoice/receipt, sale creation and handover behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.97 remains uncommitted unless explicitly requested.
+
+## V1.96.0 State
+
+V1.96.0 continues UI/workflow streamlining without schema changes:
+
+- Bumped visible/project version metadata to 1.96.0.
+- Compressed high-use workflow headers so workspace tabs show more working content above the fold.
+- Removed redundant subtitle copy from compact workflow headers where the screen title and controls already explain the context.
+- Tightened metric summary rows in Alert Centre, Project Workbench, Proposal Pipeline and Supplier Diamond Holds & Orders.
+- Reduced selected-detail panel padding and heading sizes in Alert Centre, Project Workbench, Proposal Pipeline and Payment & Collection.
+- Reduced outer margins and filter-panel padding in Production Board, Supplier Diamond Holds & Orders and Stock Movement.
+- Shortened the Supplier Diamond workflow status guidance line while preserving the same workflow sequence.
+- Preserved all action buttons, selectors, data grids, payment controls, supplier diamond actions and stock movement inputs.
+- Preserved database schema and existing workflow behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.96 remains uncommitted unless explicitly requested.
+
+## V1.95.0 State
+
+V1.95.0 continues UI/workflow streamlining without schema changes:
+
+- Bumped visible/project version metadata to 1.95.0.
+- Routed remaining high-priority workflow Button and TextBox styles through shared OPALNOVA application control templates.
+- Preserved local workflow colours, spacing and sizing where workflow windows use their own brush names.
+- Added explicit `Tag` prompt text to every ComboBox declaration in XAML.
+- Covered quote, search, inventory, market, production, payment, supplier diamond, pricing, device, label and jeweller tool selectors.
+- Preserved database schema and existing selector bindings, selected values, save actions, payment recording, production movement, supplier diamond state and report behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.95 remains uncommitted unless explicitly requested.
+
+## V1.94.0 State
+
+V1.94.0 resumes UI/workflow streamlining without schema changes:
+
+- Bumped visible/project version metadata to 1.94.0.
+- Added a global ComboBox empty-state prompt path using the selector `Tag` when supplied and `Choose...` as fallback.
+- Added dark OPALNOVA styling for DatePicker text boxes, calendar day buttons and calendar month/year buttons.
+- Routed Payment & Collection ComboBox/DatePicker styles through the shared global styles.
+- Routed Production Board ComboBox styling through the shared global selector template.
+- Cleaned high-use selector/list display text for supplier diamonds, quote option links, saved views, batch lookup and material movement lookup to use plain ASCII separators.
+- Preserved database schema and existing selector binding, payment, production, inventory and supplier diamond behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero errors; NU1900 vulnerability-feed warnings appear because the sandbox cannot reach `https://api.nuget.org/v3/index.json`.
+- Release publish succeeds through `win-x64-self-contained` with the same NU1900 sandbox warning.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.94 remains uncommitted unless explicitly requested.
+
+## V1.93.0 State
+
+V1.93.0 continues the inventory decision-support pass without schema changes:
+
+- Bumped visible/project version metadata to 1.93.0.
+- Added `DocumentExportService.CreateInventoryDecisionReport()`.
+- Added Inventory Intelligence actions in Inventory, Reports, Inventory Studio and Reports Studio.
+- The report combines valuation by category, low-stock reorder recommendations, open purchase-order coverage, slow-moving stock guidance, supplier diamond state and material adjustment audit signals.
+- The report is read-only and does not create purchase orders, change stock quantities, convert supplier diamonds or alter inventory statuses.
+- Preserved database schema and existing Inventory Value, Stock Ageing, Reorder Report and Stock Movement behavior.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.93 remains uncommitted unless explicitly requested.
+
+## V1.92.0 State
+
+V1.92.0 starts the advanced reports and scheduled-output readiness pass:
+
+- Bumped visible/project version metadata to 1.92.0.
+- Added `DocumentExportService.CreateOperationsPerformanceReport()`.
+- Added Operations Performance actions in Reports and Reports Studio.
+- The report combines workshop productivity, supplier diamond status, market performance and suggested weekly/monthly report cadence.
+- The report is read-only and does not create background scheduled tasks or change records.
+- Preserved database schema.
+
+Validation completed:
+
+- Debug build succeeds with zero warnings and zero errors.
+- Release publish succeeds through `win-x64-self-contained`.
+- Published `OPALNOVA.exe` launches and closes cleanly.
+- Per the milestone-only git rule, V1.92 remains uncommitted unless explicitly requested.
 
 ## V1.91.0 State
 
@@ -44,7 +368,7 @@ Validation completed:
 - Debug build succeeds with zero warnings and zero errors.
 - Release publish succeeds through `win-x64-self-contained`.
 - Published `OPALNOVA.exe` launches and closes cleanly.
-- Per the milestone-only git rule, V1.91 remains uncommitted until a whole-number milestone unless explicitly requested.
+- V1.91 was committed and pushed as an explicit exception so the Nivoda staging handoff could be viewed externally.
 
 ## V1.90.0 State
 

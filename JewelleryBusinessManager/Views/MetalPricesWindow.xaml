@@ -36,9 +36,9 @@
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Live Price Settings" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="4,0,4,12" />
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="API Provider" Margin="4" VerticalAlignment="Center" />
-                        <ComboBox x:Name="ProviderBox" Grid.Row="1" Grid.Column="1" Margin="4" />
+                        <ComboBox x:Name="ProviderBox" Grid.Row="1" Grid.Column="1" Margin="4" Tag="Choose price source" />
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Currency" Margin="4" VerticalAlignment="Center" />
-                        <ComboBox x:Name="CurrencyBox" Grid.Row="2" Grid.Column="1" Margin="4" />
+                        <ComboBox x:Name="CurrencyBox" Grid.Row="2" Grid.Column="1" Margin="4" Tag="Choose currency" />
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="API Key" Margin="4" VerticalAlignment="Center" />
                         <PasswordBox x:Name="ApiKeyBox" Grid.Row="3" Grid.Column="1" Margin="4" />
                     </Grid>

@@ -1184,6 +1184,7 @@ public partial class MainWindow : Window
             new("Change Status", "Quickly update jewellery or stone status.", ChangeInventoryStatusSetup_Click),
             new("Purchase Orders", "Open supplier purchase order records.", (_, _) => SelectNavigationSection("Purchase Orders")),
             new("Inventory Value", "Preview inventory value across stock, stones and materials.", InventoryValueReport_Click),
+            new("Inventory Intelligence", "Preview valuation, reorder, ageing, supplier-stock and adjustment signals in one report.", InventoryDecisionReport_Click),
         },
         "Diamonds" => new ToolAction[]
         {
@@ -1197,6 +1198,7 @@ public partial class MainWindow : Window
         "Reports" => new ToolAction[]
         {
             new("BI Command Report", "Preview the full business intelligence report.", BusinessIntelligenceReport_Click),
+            new("Operations Performance", "Preview workshop productivity, supplier diamonds, market performance and report rhythm guidance.", OperationsPerformanceReport_Click),
             new("Visual Charts", "Preview sales, quote, inventory and cashflow charts.", VisualChartsReport_Click),
             new("Weekly Sales", "Preview sales, profit and channels for the last 7 days.", WeeklySalesReport_Click),
             new("Monthly Sales", "Preview current month sales, profit and channels.", MonthlySalesReport_Click),
@@ -1207,6 +1209,7 @@ public partial class MainWindow : Window
             new("Proposal Pipeline", "Open the live proposal follow-up queue.", ProposalPipeline_Click),
             new("Inventory Value", "Preview stock, stone and material value tied up in inventory.", InventoryValueReport_Click),
             new("Stock Ageing", "Preview older unsold stock and slow-moving inventory value.", StockAgeingReport_Click),
+            new("Inventory Intelligence", "Preview category valuation, reorder recommendations and stock adjustment audit signals.", InventoryDecisionReport_Click),
             new("Export BI CSV", "Export spreadsheet-ready reporting data.", ExportBusinessIntelligenceCsv_Click),
             new("Export BI Excel", "Export one Excel-compatible workbook for business review.", ExportBusinessIntelligenceExcel_Click),
             new("Classic Reports Studio", "Open the full specialist reports list.", (_, _) => SelectNavigationSection("Reports Studio")),
@@ -1222,6 +1225,13 @@ public partial class MainWindow : Window
             new("User Guide", "Preview the built-in user guide.", UserGuide_Click),
             new("Release Notes", "Open the current OPALNOVA release notes.", ReleaseNotes_Click),
             new("Release Readiness", "Preview packaging notes, validation gates and release checklist.", ReleaseReadiness_Click),
+            new("Installer/Update Readiness", "Preview installer choices, update boundaries and manual distribution checks.", InstallerUpdateReadiness_Click),
+            new("Installer Validation Checklist", "Preview portable publish validation, update rehearsal gates and installer hold conditions.", InstallerValidationChecklist_Click),
+            new("Portable Build Manifest", "Preview publish-folder inventory, executable hash and handoff exclusions.", PortableBuildManifest_Click),
+            new("Packaging Decision Record", "Preview the portable handoff decision and installer packaging boundaries.", PackagingDecisionRecord_Click),
+            new("Roadmap Completion Record", "Preview completed tracks and remaining explicit major decisions.", RoadmapCompletionRecord_Click),
+            new("Decision Review", "Preview post-V2 product choices before broad new systems are added.", PostV2DecisionReview_Click),
+            new("Support Snapshot", "Preview version, runtime, database, backup, printout, photo and log paths for support.", SupportSnapshot_Click),
             new("Data Cleanup", "Open data quality and bulk-cleanup tools.", (_, _) => SelectNavigationSection("Data Cleanup Studio")),
         },
         "Custom Workflow Studio" => new ToolAction[]
@@ -1253,6 +1263,7 @@ public partial class MainWindow : Window
             new("Change Status", "Quickly update jewellery or stone status.", ChangeInventoryStatusSetup_Click),
             new("Trace Selected", "View links between customer, job, material, stone, stock, sale and market records.", TraceSelectedSetup_Click),
             new("Inventory Report", "Generate an inventory audit and low-stock report preview.", InventoryReport_Click),
+            new("Inventory Intelligence", "Review valuation, low-stock reorder coverage, ageing and adjustment audit signals.", InventoryDecisionReport_Click),
         },
         "Purchasing Studio" => new ToolAction[]
         {
@@ -1334,6 +1345,7 @@ public partial class MainWindow : Window
         "Reports Studio" => new ToolAction[]
         {
             new("BI Command Report", "Preview the full business intelligence dashboard report: sales, profit, quotes, balances, inventory value, reservations and follow-ups.", BusinessIntelligenceReport_Click),
+            new("Operations Performance", "Preview workshop productivity, supplier diamond performance, market results and suggested report cadence.", OperationsPerformanceReport_Click),
             new("Visual Charts", "Preview printable sales, quote conversion, inventory and cashflow charts.", VisualChartsReport_Click),
             new("Weekly Sales", "Preview sales, profit, margin and channel performance for the last 7 days.", WeeklySalesReport_Click),
             new("Monthly Sales", "Preview sales, profit, margin and channel performance for the current month.", MonthlySalesReport_Click),
@@ -1343,6 +1355,7 @@ public partial class MainWindow : Window
             new("Quote Conversion", "Preview quote status, acceptance and conversion performance.", QuoteConversionReport_Click),
             new("Inventory Value", "Preview finished jewellery, loose stone and material value tied up in stock.", InventoryValueReport_Click),
             new("Stock Ageing", "Preview unsold jewellery and loose stones by age band and slow-moving value.", StockAgeingReport_Click),
+            new("Inventory Intelligence", "Preview category valuation, low-stock reorder coverage, supplier stock and adjustment audit signals.", InventoryDecisionReport_Click),
             new("Reserved Inventory", "Preview stones and materials reserved against accepted quote options.", ReservedInventoryReport_Click),
             new("Customer Follow-Ups", "Preview open follow-ups and tasks by priority and due date.", CustomerFollowUpInsightReport_Click),
             new("Opal / Stone Stock", "Preview stone inventory, opal values, weights and statuses.", OpalStoneStockReport_Click),
@@ -1370,6 +1383,13 @@ public partial class MainWindow : Window
             new("User Guide", "Preview the built-in user guide.", UserGuide_Click),
             new("Release Notes", "Open the current OPALNOVA release notes.", ReleaseNotes_Click),
             new("Release Readiness", "Preview packaging notes, validation gates and release checklist.", ReleaseReadiness_Click),
+            new("Installer/Update Readiness", "Preview installer choices, update boundaries and manual distribution checks.", InstallerUpdateReadiness_Click),
+            new("Installer Validation Checklist", "Preview portable publish validation, update rehearsal gates and installer hold conditions.", InstallerValidationChecklist_Click),
+            new("Portable Build Manifest", "Preview publish-folder inventory, executable hash and handoff exclusions.", PortableBuildManifest_Click),
+            new("Packaging Decision Record", "Preview the portable handoff decision and installer packaging boundaries.", PackagingDecisionRecord_Click),
+            new("Roadmap Completion Record", "Preview completed tracks and remaining explicit major decisions.", RoadmapCompletionRecord_Click),
+            new("Decision Review", "Preview post-V2 product choices before broad new systems are added.", PostV2DecisionReview_Click),
+            new("Support Snapshot", "Preview version, runtime, database, backup, printout, photo and log paths for support.", SupportSnapshot_Click),
             new("About", "Show version, paths and app information.", About_Click),
         },
         "Hardware & POS Studio" => new ToolAction[]
@@ -1737,8 +1757,6 @@ public partial class MainWindow : Window
         ["Safety & Data Studio"] = new("Safety & Data Studio", "Backups, exports and recovery.", "Creates backups, restores from validated files, checks database health, exports bundles, imports CSV and opens logs/help.", "Create Backup before risky work. Use Health Check when something looks wrong. Use Export Bundle when moving or archiving data.", "Keep a backup outside the computer, such as an external drive or cloud folder.", "Restore and import tools can change data. Read prompts carefully and avoid using them while another copy of OPALNOVA is running."),
         ["Hardware & POS Studio"] = new("Hardware & POS Studio", "Printers, camera/scale capture and market POS.", "Supports DYMO-style labels, camera/photo capture, scale notes and a market operations display.", "Set up devices in Windows first, then use OPALNOVA to print labels, capture photos or open market operations tools.", "Test printers and labels before a market day.", "Hardware behaviour depends on Windows drivers, printer setup and connected device compatibility."),
         ["Customer Relationship Studio"] = new("Customer Relationship Studio", "Customer history and follow-up tools.", "Shows customer summaries, history, open follow-ups, jobs, sales, payments and relationship reports.", "Select a customer, open the summary or history, then create a follow-up task when action is needed.", "Record preferences like ring sizes, favourite stones and budget notes to improve repeat customer service.", "Customer reports are only as useful as the linked jobs, sales and payments entered."),
-        ["Customer Relationship Studio|Customer Timeline"] = new("Customer Timeline", "See one customer's activity trail.", "Combines existing quotes, proposal sent events, jobs, sales, payments and customer tasks into one dated report.", "Use it before contacting a repeat customer so you can see recent work and open actions in one place.", "Create a follow-up from the same studio when the timeline shows a next step.", "The timeline reflects linked records only; unlinked payments or jobs will not appear."),
-        ["Customer Relationship Studio|Communication Templates"] = new("Communication Templates", "Prepare customer-specific message starters.", "Creates local message templates from the selected customer's quotes, jobs, sales, preferences and follow-up context.", "Open it before messaging a customer, choose the relevant starter, then personalize it before sending outside OPALNOVA.", "Use it for proposal nudges, production updates, handover messages, after-care and repeat-customer prompts.", "Templates are drafts. Check tone, accuracy, prices and private notes before sending."),
         ["Data Cleanup Studio"] = new("Data Cleanup Studio", "Data quality and safe cleanup.", "Finds duplicates, missing information and selected records that need status or market cleanup.", "Run reports first, review the affected records, then apply selected bulk actions only when you are confident.", "Backup before data cleanup or bulk updates.", "Cleanup actions can change many records at once. Avoid rushing these tools."),
     };
 
@@ -1753,6 +1771,7 @@ public partial class MainWindow : Window
         ["Inventory Studio|Stock Movement"] = new("Stock Movement", "Record material stock in or out.", "Adds a transaction for receiving, using, adjusting or returning material quantities.", "Select the material, choose movement type and enter quantity/notes.", "Record small adjustments immediately so stock figures stay trustworthy.", "Double-check units such as grams, carats, pieces or metres."),
         ["Inventory Studio|Change Status"] = new("Change Status", "Change stock or stone status.", "Moves jewellery or stones between statuses such as available, reserved, sold, at market or in production.", "Select a record, choose the new status, then save.", "Use status updates instead of deleting records when items move through the business.", "Wrong status can hide items from the workflow you expect."),
         ["Customer Relationship Studio|Create Customer Follow-Up"] = new("Create Customer Follow-Up", "Make a reminder linked to a customer.", "Creates a task for calling, messaging, quote checking, pickup reminders or after-sale follow-up.", "Select a customer, enter the reason and due date, then save the generated task.", "Use follow-ups after every quote, custom job and important sale.", "Do not put sensitive private information in notes unless you really need it for business service."),
+        ["Customer Relationship Studio|Customer Timeline"] = new("Customer Timeline", "See one customer's activity trail.", "Combines existing quotes, proposal sent events, jobs, sales, payments and customer tasks into one dated report.", "Use it before contacting a repeat customer so you can see recent work and open actions in one place.", "Create a follow-up from the same studio when the timeline shows a next step.", "The timeline reflects linked records only; unlinked payments or jobs will not appear."),
         ["Customer Relationship Studio|Communication Templates"] = new("Communication Templates", "Draft customer communication.", "Builds customer-specific message starters from linked quotes, jobs, sales, preferences and follow-up context.", "Select a customer, generate the templates, then copy and personalize the relevant message outside OPALNOVA.", "Use this before sending proposal, production, handover or after-care messages.", "Generated text is a starting point and should be checked before sending."),
         ["Documents Studio|Quote"] = new("Quote", "Create a customer quote preview.", "Generates quote paperwork from a selected job, price and customer information.", "Select the job/customer, confirm prices and details, generate preview, then open or print the HTML output.", "Always check expiry date, deposit terms and item details before sending.", "Quotes can create expectations. Make sure labour, stone and metal details are accurate."),
 
@@ -1771,6 +1790,8 @@ public partial class MainWindow : Window
         ["Documents Studio|Payment & Collection"] = new("Payment & Collection", "Payments, receipts and handover paperwork.", "Brings payment entry, invoice/receipt generation, sale creation and final collection/shipping status into one place.", "Select a job, enter payment details, generate paperwork, then mark the job ready, collected or shipped.", "Use it after quality check so the business record matches the customer handover.", "Make sure payment method and reference are correct before printing receipts."),
         ["Documents Studio|Invoice / Receipt"] = new("Invoice / Receipt", "Create sales paperwork.", "Generates an invoice or receipt from a sale or job-related payment.", "Select the job or sale, generate the document, preview it, then print or save.", "Create receipts as soon as payment is received.", "Make sure the paid amount and balance are correct before handing it to a customer."),
         ["Reports Studio|BI Command Report"] = new("BI Command Report", "One report for the whole business.", "Combines sales, profit, balances, quote conversion, inventory value, reserved inventory and open follow-ups into one command report.", "Open it weekly or before planning production, then use the highlighted sections to decide what needs action first.", "Use this report as your Monday morning business check.", "The report is only as accurate as the prices, costs, statuses and links entered in OPALNOVA."),
+        ["Reports Studio|Operations Performance"] = new("Operations Performance", "Review operational health.", "Combines workshop productivity, supplier diamond status, market performance and a suggested report rhythm into one read-only planning report.", "Run it weekly after the BI Command Report, then open specialist reports when a section needs deeper review.", "Use it to decide whether production, supplier diamonds, market stock or overdue follow-ups need priority.", "Productivity is estimated from recorded statuses, updated dates and labour hours. Missing labour estimates reduce accuracy."),
+        ["Reports|Operations Performance"] = new("Operations Performance", "Review operational health.", "Shows workshop throughput, active load, supplier diamond hold/order state, market results and weekly/monthly report cadence guidance.", "Open it from Reports for a fast operations check without searching the full Reports Studio list.", "Use it before promising new dates, preparing markets or following up supplier diamonds.", "The report is advisory and does not create scheduled tasks or change records."),
         ["Reports Studio|Visual Charts"] = new("Visual Charts", "See business snapshots quickly.", "Creates printable bar charts for sales, profit, quote conversion, inventory value, payments and outstanding balances using existing report data.", "Open it before weekly planning or stock decisions when a visual snapshot is faster than tables.", "Use charts to spot trends, then open the detailed report table before making financial decisions.", "Charts are only as accurate as the underlying records and may look flat when the dataset is small."),
         ["Reports Studio|Weekly Sales"] = new("Weekly Sales", "Review the last 7 days.", "Shows weekly sales, cost of goods, profit, margin and channel performance.", "Run it after markets, online drops or custom-job handovers.", "Compare weekly sales to the jobs and listings that created them.", "Sales without cost-of-goods entries can make profit look higher than reality."),
         ["Reports Studio|Monthly Sales"] = new("Monthly Sales", "Review the current month.", "Shows month-to-date sales, cost of goods, profit, margin and channel performance.", "Use it before ordering materials, paying bills or planning new stock.", "Look for channels with strong profit, not just high turnover.", "Incomplete sale records or missing costs will affect the result."),
@@ -1780,6 +1801,10 @@ public partial class MainWindow : Window
         ["Reports Studio|Quote Conversion"] = new("Quote Conversion", "Measure quote performance.", "Shows quote statuses, accepted options, linked jobs and the overall conversion rate.", "Use it to follow up draft or sent quotes and improve pricing or proposal wording.", "A quote only counts as converted when it is marked accepted, has an accepted option or is linked to a job.", "Old draft quotes can lower the conversion rate unless they are cancelled or closed."),
         ["Reports Studio|Inventory Value"] = new("Inventory Value", "See money tied up in stock.", "Summarises finished jewellery, loose stones and materials by cost, value and retail potential.", "Use it before buying more stock or preparing for a market.", "This helps prevent cash being trapped in slow-moving inventory.", "Estimated values depend on the values you recorded for stones, materials and finished pieces."),
         ["Reports Studio|Stock Ageing"] = new("Stock Ageing", "Find slow-moving stock.", "Groups unsold jewellery and available loose stones by age band and lists records older than 180 days.", "Use it before buying more stock, planning sales, or choosing pieces for markets and online listing.", "Ageing is read-only and does not change inventory status.", "Age is based on the record creation date, so imported legacy records may need manual interpretation."),
+        ["Reports Studio|Inventory Intelligence"] = new("Inventory Intelligence", "Make inventory buying decisions.", "Combines valuation by category, low-stock reorder coverage, slow-moving stock guidance, supplier-diamond state and material adjustment review into one read-only report.", "Run it before buying materials, preparing markets or deciding what stock to photograph, discount, remake or archive.", "Use the recommended review order to decide what needs attention first.", "The report does not place purchase orders or change stock levels; check quantities and supplier availability before acting."),
+        ["Reports|Inventory Intelligence"] = new("Inventory Intelligence", "Make inventory buying decisions.", "Creates the same read-only inventory decision report from the quick Reports workspace.", "Use it when Inventory Value or Stock Ageing shows a problem and you need reorder, supplier-stock and adjustment context together.", "Good stock decisions depend on both value and movement, not only quantity.", "Missing material costs or old imported dates can make valuation and ageing guidance less precise."),
+        ["Inventory|Inventory Intelligence"] = new("Inventory Intelligence", "Review stock decisions.", "Shows category valuation, low-stock reorder suggestions, incoming PO coverage, slow-moving records, supplier diamonds and adjustment-style movements.", "Open it from Inventory before creating reorder suggestions or changing stock status.", "It is a decision report, not a stock movement screen.", "No quantities or purchase orders are changed by opening the report."),
+        ["Inventory Studio|Inventory Intelligence"] = new("Inventory Intelligence", "Review stock decisions.", "Adds a consolidated decision-support report to the specialist Inventory Studio.", "Use it after stock movement, status changes or trace reviews when you need a broader buying and valuation picture.", "Check adjustment rows for unexplained stock changes.", "The report only reads existing records and does not replace physical stocktakes."),
         ["Reports Studio|Reserved Inventory"] = new("Reserved Inventory", "See committed stones and materials.", "Lists inventory reserved against accepted quote options so the same stone or material is not accidentally promised twice.", "Run it before starting production or changing an accepted custom job.", "Release reservations when a quote is cancelled or redesigned.", "This is reservation value, not physical stock consumption."),
         ["Reports Studio|Customer Follow-Ups"] = new("Customer Follow-Ups", "Keep customer actions visible.", "Lists open tasks and reminders by due date, priority, customer and job link.", "Use it daily to decide who needs a message, pickup reminder, approval request or after-sale follow-up.", "Good follow-ups turn quotes into jobs and customers into repeat customers.", "Sensitive notes should be kept professional and necessary."),
         ["Reports Studio|Opal / Stone Stock"] = new("Opal / Stone Stock", "Audit loose stones and opals.", "Shows stone codes, types, statuses, weights, dimensions, brightness, colour notes, values and parcel links.", "Use it when selecting stones for new designs or checking what can be listed or set.", "Keep weights, values and statuses up to date as stones are cut, reserved, set or sold.", "The report cannot judge stone quality; it reflects recorded information."),
@@ -1788,6 +1813,20 @@ public partial class MainWindow : Window
         ["Safety & Data Studio|Create Backup"] = new("Create Backup", "Protect your business data.", "Creates a safe copy of the local SQLite database.", "Click Create Backup and save it in your backup location. Use Ctrl+B as a shortcut where available.", "Back up before imports, restores, bulk changes and every important work session.", "A backup on the same computer does not protect you from device loss or drive failure."),
         ["Safety & Data Studio|Restore Backup"] = new("Restore Backup", "Recover from a backup.", "Stages and validates a restore file before replacing active data.", "Choose the backup or export bundle, read prompts carefully, and restart the app if instructed.", "Only restore when you know the backup is the correct version.", "Restore can overwrite current work. Create a backup of the current state first."),
         ["Safety & Data Studio|Release Notes"] = new("Release Notes", "Review current changes.", "Creates a local HTML release-notes page covering the current workflow builds.", "Open it after upgrades or before handoff testing so the current build scope is clear.", "Use it with the version-specific testing checklists.", "Release notes summarize the app build; they are not a backup or data export."),
+        ["Safety & Data Studio|Installer/Update Readiness"] = new("Installer/Update Readiness", "Package deliberately.", "Creates a read-only report for installer choice, shortcut ownership, local-data boundaries, update-channel rules and manual distribution checks.", "Open it before packaging, copying or installing a build for another machine.", "Keep installer/update work separate from normal app startup and protect the local database before install tests.", "The report does not create an installer, shortcut, update feed, backup schedule or schema change."),
+        ["Safety & Data Studio|Installer Validation Checklist"] = new("Installer Validation Checklist", "Validate before packaging.", "Creates a read-only checklist for the portable publish folder, executable fingerprint, update rehearsal gates, rollback checks and installer hold conditions.", "Run it after Installer/Update Readiness and before creating MSIX, Inno Setup or another installer asset.", "Start with the portable publish folder so version, paths and data boundaries are proven before installer technology adds more variables.", "The checklist does not create installer files, shortcuts, update feeds, tasks, data moves or schema changes."),
+        ["Safety & Data Studio|Portable Build Manifest"] = new("Portable Build Manifest", "Record the build handoff.", "Creates a read-only manifest for the current app folder with executable version/hash, file inventory, private-data exclusion checks and handoff notes.", "Run it from the published app before sharing the publish folder or using it as installer input.", "Pair it with Support Snapshot so the binary handoff and local data paths are both clear without sharing private records.", "The manifest does not copy files, create an installer, create shortcuts, install updates, move data or change records."),
+        ["Safety & Data Studio|Packaging Decision Record"] = new("Packaging Decision Record", "Close the readiness track.", "Creates a read-only decision record that portable handoff is the validated route and MSIX/Inno packaging need explicit future tickets.", "Run it after the portable manifest when deciding whether to hand off the publish folder or start packaging implementation.", "Use it as the stop point for readiness work: further installer work should be a named packaging build, not another readiness pass.", "The decision record does not create installer files, shortcuts, update feeds, tasks, data moves or schema changes."),
+        ["Safety & Data Studio|Roadmap Completion Record"] = new("Roadmap Completion Record", "Finish the current stream.", "Creates a read-only completion record for the no-schema version stream, completed tracks and remaining explicit major decisions.", "Run it when deciding whether the current version sequence is finished.", "Use it to stop readiness-only iteration and choose one named product direction before the next build stream.", "The completion record does not create installer files, shortcuts, update feeds, tasks, hardware dependencies, supplier mutations, data moves or schema changes."),
+        ["Safety & Data Studio|Decision Review"] = new("Decision Review", "Choose the next product direction deliberately.", "Creates a read-only post-V2 report for multi-user/cloud sync, direct email delivery, supplier API ordering, deeper scheduling, navigation redesign and installer/update direction.", "Open it after V2.0 validation and before starting a broad new system, then pick one narrow follow-up ticket.", "Use this beside Release Readiness so product choices and packaging choices stay explicit.", "The report is advisory. It does not send email, call supplier mutations, create scheduled jobs, create tasks or change records."),
+        ["Settings & Backup|Installer/Update Readiness"] = new("Installer/Update Readiness", "Review install and update boundaries.", "Creates the same read-only installer/update readiness report from the admin home.", "Run it after Release Readiness and before sharing a publish folder or packaged build.", "Treat installer, shortcut and update-channel behavior as release packaging decisions, not hidden startup actions.", "Opening the report does not move data, copy files, create shortcuts or install updates."),
+        ["Settings & Backup|Installer Validation Checklist"] = new("Installer Validation Checklist", "Validate portable handoff.", "Creates the same read-only installer validation checklist from the admin home.", "Run it before copying a build to another machine or turning the publish folder into an installer package.", "Use the hold conditions to stop packaging if version metadata, paths, backups or support reports do not match.", "Opening the checklist does not create an installer, shortcut, update feed, task, data move or schema change."),
+        ["Settings & Backup|Portable Build Manifest"] = new("Portable Build Manifest", "Record publish-folder contents.", "Creates the same read-only portable build manifest from the admin home.", "Run it after the installer validation checklist and before sharing the publish folder.", "Use the manifest to confirm the whole publish folder, executable hash and private-data exclusions are clear.", "Opening the manifest does not copy files, create installer assets, create shortcuts or touch business data."),
+        ["Settings & Backup|Packaging Decision Record"] = new("Packaging Decision Record", "Record packaging posture.", "Creates the same read-only packaging decision record from the admin home.", "Run it when portable handoff is ready and before choosing whether to start MSIX or Inno Setup work.", "It marks the readiness stream complete for portable handoff.", "Opening the record does not create installer files, shortcuts, updates, tasks or data changes."),
+        ["Settings & Backup|Roadmap Completion Record"] = new("Roadmap Completion Record", "Record roadmap completion.", "Creates the same read-only roadmap completion record from the admin home.", "Run it after the packaging decision record when the current version sequence should stop.", "It lists the remaining major decisions that need explicit selection before implementation.", "Opening the record does not create installer files, shortcuts, updates, tasks, supplier mutations or data changes."),
+        ["Safety & Data Studio|Support Snapshot"] = new("Support Snapshot", "Collect support paths.", "Creates a read-only HTML snapshot with version, executable path, app folder, database, backup, printout, photo, settings and log locations.", "Open it when troubleshooting install, publish, backup, path or support questions.", "Use it alongside Health Check and Data Integrity so support starts with exact local paths.", "Do not share database backups, export bundles, customer documents or supplier credentials publicly."),
+        ["Settings & Backup|Decision Review"] = new("Decision Review", "Review post-V2 choices.", "Creates the same post-V2 product decision report from the admin home.", "Run it before committing to installer, email, supplier ordering, scheduling, cloud or navigation work.", "Choose one product direction and write the acceptance checklist before coding.", "Opening the review does not change data or replace a manual workflow smoke test."),
+        ["Settings & Backup|Support Snapshot"] = new("Support Snapshot", "Collect support paths.", "Creates the same read-only support snapshot from the admin home.", "Open it before asking for help or moving an installation so version and storage paths are clear.", "It is safer than copying private backup files because it only reports paths and file status.", "The snapshot does not replace backups, Health Check or Data Integrity."),
     };
 
     private void RefreshCurrentSection()
@@ -4302,6 +4341,20 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OperationsPerformanceReport_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DocumentExportService.CreateOperationsPerformanceReport();
+            OpenReportInApp(path, "Operations Performance Report");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create operations performance report");
+            MessageBox.Show($"Could not create the operations performance report.\n\n{ex.Message}", "Operations Performance error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void VisualChartsReport_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -4425,6 +4478,20 @@ public partial class MainWindow : Window
         {
             ErrorLogService.Log(ex, "Create stock ageing report");
             MessageBox.Show($"Could not create the stock ageing report.\n\n{ex.Message}", "Stock Ageing error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void InventoryDecisionReport_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DocumentExportService.CreateInventoryDecisionReport();
+            OpenReportInApp(path, "Inventory Intelligence Report");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Create inventory intelligence report");
+            MessageBox.Show($"Could not create the inventory intelligence report.\n\n{ex.Message}", "Inventory Intelligence error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -4750,6 +4817,104 @@ public partial class MainWindow : Window
         {
             ErrorLogService.Log(ex, "Open release readiness report");
             MessageBox.Show($"Could not open the release readiness report.\n\n{ex.Message}", "Release Readiness error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void InstallerUpdateReadiness_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DataSafetyService.CreateInstallerUpdateReadinessReport();
+            OpenReportInApp(path, "OPALNOVA Installer Update Readiness");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open installer update readiness report");
+            MessageBox.Show($"Could not open the installer/update readiness report.\n\n{ex.Message}", "Installer/Update Readiness error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void InstallerValidationChecklist_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DataSafetyService.CreateInstallerValidationChecklistReport();
+            OpenReportInApp(path, "OPALNOVA Installer Validation Checklist");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open installer validation checklist");
+            MessageBox.Show($"Could not open the installer validation checklist.\n\n{ex.Message}", "Installer Validation Checklist error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void PortableBuildManifest_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DataSafetyService.CreatePortableBuildManifestReport();
+            OpenReportInApp(path, "OPALNOVA Portable Build Manifest");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open portable build manifest");
+            MessageBox.Show($"Could not open the portable build manifest.\n\n{ex.Message}", "Portable Build Manifest error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void PackagingDecisionRecord_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DataSafetyService.CreatePackagingDecisionRecordReport();
+            OpenReportInApp(path, "OPALNOVA Packaging Decision Record");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open packaging decision record");
+            MessageBox.Show($"Could not open the packaging decision record.\n\n{ex.Message}", "Packaging Decision Record error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void RoadmapCompletionRecord_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DataSafetyService.CreateRoadmapCompletionRecordReport();
+            OpenReportInApp(path, "OPALNOVA Roadmap Completion Record");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open roadmap completion record");
+            MessageBox.Show($"Could not open the roadmap completion record.\n\n{ex.Message}", "Roadmap Completion Record error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void PostV2DecisionReview_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DataSafetyService.CreatePostV2DecisionReviewReport();
+            OpenReportInApp(path, "OPALNOVA Post-V2 Decision Review");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open post-V2 decision review");
+            MessageBox.Show($"Could not open the post-V2 decision review.\n\n{ex.Message}", "Decision Review error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void SupportSnapshot_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = DataSafetyService.CreateSupportSnapshotReport();
+            OpenReportInApp(path, "OPALNOVA Support Snapshot");
+        }
+        catch (Exception ex)
+        {
+            ErrorLogService.Log(ex, "Open support snapshot");
+            MessageBox.Show($"Could not open the support snapshot.\n\n{ex.Message}", "Support Snapshot error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -5434,6 +5599,7 @@ public partial class MainWindow : Window
     {
         var window = new ProductionBoardWindow();
         window.ReportRequested += (path, title) => OpenReportInApp(path, title);
+        window.OpenPaymentsRequested += (_, jobId) => OpenPaymentCollection(jobId);
         OpenWindowInWorkspaceTab("Production Board", window, "workflow:production-board", RefreshAfterWorkspaceTabClosed);
     }
 
@@ -5504,8 +5670,23 @@ public partial class MainWindow : Window
 
     private void PaymentCollection_Click(object sender, RoutedEventArgs e)
     {
-        var window = new PaymentCollectionWindow();
-        OpenWindowInWorkspaceTab("Payment & Collection", window, "workflow:payment-collection", RefreshAfterWorkspaceTabClosed);
+        OpenPaymentCollection();
+    }
+
+    private void OpenPaymentCollection(int? jobId = null)
+    {
+        var title = "Payment & Collection";
+        var key = "workflow:payment-collection";
+        if (jobId.HasValue)
+        {
+            using var db = new AppDbContext();
+            var job = db.Jobs.AsNoTracking().FirstOrDefault(x => x.Id == jobId.Value);
+            title = string.IsNullOrWhiteSpace(job?.JobCode) ? $"Payment Job #{jobId.Value}" : $"Payment {job.JobCode}";
+            key = $"workflow:payment-collection:job:{jobId.Value}";
+        }
+
+        var window = new PaymentCollectionWindow(jobId);
+        OpenWindowInWorkspaceTab(title, window, key, RefreshAfterWorkspaceTabClosed);
     }
 
     private void CustomQuoteRegister_Click(object sender, RoutedEventArgs e)

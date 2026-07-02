@@ -1,7 +1,7 @@
 # OPALNOVA Forward Implementation Plan
 
 Created: 2026-06-22
-Current baseline: V1.91.0 Nivoda Staging Readiness
+Current baseline: V2.6.0 Roadmap Completion Record
 
 ## Purpose
 
@@ -82,6 +82,19 @@ Ease:
 | Alert centre | P2 | M | Implemented in V1.51.0 as a workspace-hosted alert list with filters, search, counts, details, and workflow actions. | V1.51 |
 | Recently opened tabs/items | P2 | S-M | Implemented in V1.77.0 as a dashboard Recent Work panel for current-session workflow tabs, generated reports and saved record editors. | V1.77 |
 | Unsaved-change warnings for tab close | P2 | M-L | Started in V1.66.0 with Custom Quote Builder dirty tracking and broadened in V1.73.0 to hosted generic record editor tabs. | V1.66, V1.73 |
+| Shared selector and date-picker polish | P2 | S | Implemented in V1.94.0 with shared ComboBox empty prompts, dark DatePicker/calendar styling and local selector styles routed through the global theme. | V1.94 |
+| Workflow control consolidation | P2 | S | Implemented in V1.95.0 by routing remaining priority workflow Button/TextBox styles through shared templates and adding explicit ComboBox prompt text across XAML. | V1.95 |
+| Workspace surface reduction | P2 | S | Implemented in V1.96.0 by compacting workflow headers, metric cards and selected-detail panels in the most-used operational workspaces. | V1.96 |
+| Daily workflow edge polish | P2 | S | Implemented in V1.97.0 by adding a selected-job Production Board handoff into focused Payment & Collection tabs and keeping the selected job visible across payment filters. | V1.97 |
+| Support snapshot polish | P2 | S | Implemented in V1.98.0 by adding a read-only support snapshot for version, runtime, data, backup, printout, photo, settings and log paths. | V1.98 |
+| Pre-milestone hardening review | P0 | S | Started in V1.99.0 by reviewing V1.94-V1.98 workflow/support changes, correcting Customer Timeline help routing and removing duplicated Communication Templates help metadata before the V2.0 checkpoint. | V1.99 |
+| Release-candidate validation checkpoint | P0 | S | Completed in V2.0.0 with static checks for selector prompt coverage, help-guide key uniqueness and per-section tool-action title uniqueness, plus refreshed release metadata and validation docs. | V2.0 |
+| Post-V2 product decision review | P0 | S | Completed in V2.1.0 by adding a read-only decision report for installer/update, direct email, supplier API ordering, deeper scheduling, multi-user/cloud sync and navigation direction before broad new systems are started. | V2.1 |
+| Installer/update readiness | P0 | S | Started in V2.2.0 by choosing installer/update readiness as the first concrete post-V2 direction and adding a read-only report for installer decisions, update-channel boundaries, portable build handoff and distribution cautions without creating installer or auto-update behavior. | V2.2 |
+| Installer validation checklist | P0 | S | Started in V2.3.0 by choosing the portable publish folder as the first validation route and adding a read-only checklist for executable fingerprinting, local data boundaries, update rehearsal gates, rollback checks and installer hold conditions before creating installer assets. | V2.3 |
+| Portable build manifest | P0 | S | Started in V2.4.0 by adding a read-only manifest for executable version/hash, publish-folder inventory, private-data exclusions and handoff notes before portable sharing or installer packaging. | V2.4 |
+| Packaging decision record | P0 | S | Completed in V2.5.0 by recording portable handoff as the validated route and keeping MSIX/Inno Setup as explicit future packaging tickets with signing, shortcuts, update channel, uninstall and rollback rules required before implementation. | V2.5 |
+| Roadmap completion record | P0 | S | Completed in V2.6.0 by recording the current no-schema version stream as finished and listing the remaining major decisions that require explicit selection before implementation. | V2.6 |
 | Payment schedule tracking | P2 | M | Implemented in V1.78.0 as shared quote/job schedule guidance shown in proposals, job payment summaries and Payment & Collection. | V1.78 |
 | Polished invoice/receipt templates | P2 | M | Implemented in V1.57.0 for job invoices/receipts, sale receipts, deposit receipts and payment receipts. | V1.57 |
 | Balance reminder messages | P2 | S | Implemented in V1.68.0 through Payment & Collection copy-ready reminder text and duplicate-safe follow-up task creation. | V1.68 |
@@ -96,7 +109,8 @@ Ease:
 | Production stage checklist, waiting flags, and job files | P2 | M-L | Started in V1.76.0 with a generated stage checklist covering readiness, waits, quote context, reservations, supplier diamonds, payments, tasks and linked job photos/files. | V1.76 |
 | Stock lifecycle clarity | P2 | M-L | Strengthened in V1.79.0 with shared lifecycle guidance for status changes, supplier diamonds and inventory reports. | V1.52, V1.79 |
 | Stability milestone and redundancy check | P0 | S-M | Completed in V1.80.0 across V1.76-V1.79 and repeated in V1.90.0 across V1.81-V1.89 before the milestone commit/push. | V1.80, V1.90 |
-| External diamond refresh availability/price | P3 | M-L | API search exists; live refresh still needs confirmed credential/schema behavior. V1.83.0 adds local replacement-search copy from saved diamond data and close saved alternatives. V1.91.0 adds staging handoff/schema diagnostics so Nivoda can confirm the accessible fields and mutations. | V1.83+ / V1.91 |
+| Inventory valuation and reorder intelligence | P3 | M | Started in V1.93.0 through a read-only report combining category valuation, low-stock reorder coverage, slow-moving guidance, supplier-stock state and material adjustment audit signals. | V1.93 |
+| External diamond refresh availability/price | P3 | M-L | API search exists; live refresh still needs confirmed credential/schema behavior. V1.83.0 adds local replacement-search copy from saved diamond data and close saved alternatives. V1.91.0 adds staging handoff/schema diagnostics so Nivoda can confirm the accessible fields and mutations. V1.92.0 surfaces supplier diamond state in Operations Performance for weekly review, and V1.93.0 includes supplier stock state in Inventory Intelligence. | V1.83+ / V1.91+ |
 | Supplier diamond intake and conversion to owned inventory | P3 | L | Implemented in V1.53.0 as duplicate-safe conversion from received external diamond to owned loose `Stone` inventory. | V1.53 |
 | Visual reports and Excel export | P3 | M-L | Excel-compatible workbook export is implemented in V1.54.0; stock ageing/slow-moving inventory is implemented in V1.58.0; profitability reporting is implemented in V1.59.0; tax/GST summary is implemented in V1.60.0; visual charts are implemented in V1.61.0. | V1.54, V1.58, V1.59, V1.60, V1.61 |
 | Customer profile dashboard and timeline | P3 | M | Customer timeline implemented in V1.56.0 using existing quote, proposal, job, sale, payment and task records; V1.75 adds value guidance and communication templates. | V1.56, V1.75 |
@@ -106,7 +120,7 @@ Ease:
 | Production time, capacity, and scheduling | P3 | M-L | Started in V1.84.0 with a no-schema Production Capacity Snapshot using existing due dates, labour hours and active production batches. | V1.84 |
 | Data integrity check | P0 | S-M | Started in V1.86.0 as a read-only report for orphaned links, missing files, inconsistent market stock states and incomplete payment links. | V1.86 |
 | Automated backup schedule | P3 | L | Health indicator is easy; true scheduling is OS/app lifecycle work. V1.86.0 deferred true scheduling until app lifecycle or installer support is explicitly chosen. | V1.55+ |
-| Installer, shortcut, version check, user guide | P3 | L-XL | Release notes viewer implemented in V1.55.0; V1.89.0 adds release-readiness packaging notes and validation gates while leaving installer/shortcut/update-channel decisions explicit. | V1.55, V1.89 |
+| Installer, shortcut, version check, user guide | P3 | L-XL | Release notes viewer implemented in V1.55.0; V1.89.0 adds release-readiness packaging notes and validation gates; V2.2-V2.5 complete portable handoff readiness and decision records before any installer implementation work. | V1.55, V1.89, V2.2-V2.5 |
 | Built-in help/searchable guide | P3 | M-L | The built-in user guide was refreshed in V1.62.0 into a practical local manual; V1.87.0 starts findability by adding workflow actions to Search All. | V1.62, V1.87 |
 | Command palette/global command bar | P4 | M-L | V1.87.0 starts a low-risk version by extending Search All with workflow-action navigation instead of adding a new command data model. | V1.87+ |
 | Complex capacity/calendar view | P4 | L-XL | Needs better production stage/checklist data first. | Later |
@@ -385,26 +399,33 @@ These are small and can be included opportunistically when touching related file
 
 ## Immediate Next Work Ticket
 
-Start the next local build with this ticket. Keep changes uncommitted until the next whole-number milestone requested for git, such as V2.0.
+Start the next local build with this ticket. Keep changes uncommitted unless a git checkpoint is explicitly requested.
 
-Title: V1.81 Market / POS Speed Polish
+Title: Choose New Major Stream
 
 Tasks:
 
-- Review current market sale, market packing, reconciliation and return-to-stock paths.
-- Improve the fastest market-sale workflow using existing market, sale and stock records first.
-- Add clearer end-of-day market reconciliation guidance if existing data supports it.
-- Add return-to-stock prompts or report guidance where packed-but-unsold stock can be confused with sold stock.
-- Keep market/POS changes no-schema unless a real workflow gap appears.
-- Preserve existing sale creation, stock status and payment method behavior.
+- Treat the current no-schema version stream as complete.
+- Treat the installer/update readiness track as complete for portable handoff.
+- Choose the next major product decision deliberately: MSIX packaging, Inno Setup packaging, true backup scheduling, advanced hardware, scheduled reports, deeper calendar/capacity planning, command-palette expansion or API-level Nivoda hold/order after schema confirmation.
+- If packaging is chosen, create a named implementation ticket before coding installer assets.
+- For packaging, define signing, install path, shortcut ownership, update channel, uninstall behavior, rollback and local data boundaries first.
+- Keep data in the existing local app/user folders and do not move the SQLite database into the install folder.
+- Preserve existing quote, production, payment, inventory, supplier diamond, backup, restore, support snapshot and report behavior.
 
 Validation:
 
 - `dotnet build .\JewelleryBusinessManager.csproj --no-restore`
 - `dotnet publish .\JewelleryBusinessManager.csproj -c Release -p:PublishProfile=win-x64-self-contained --no-restore`
 - launch smoke of published `OPALNOVA.exe`
-- manual V1.81 smoke:
-  - process a test market sale path using test data only.
-  - confirm sold stock, returned stock and packed stock remain distinguishable.
-  - confirm sale totals, payment method and market reconciliation values remain correct.
-  - confirm no stock is marked sold or returned just by opening guidance/report screens.
+- manual V2.6 smoke:
+  - open the V1.91-V2.5 changed workflows and support reports.
+  - open Installer/Update Readiness from Settings & Backup and Safety & Data Studio.
+  - open Installer Validation Checklist from Settings & Backup and Safety & Data Studio.
+  - open Portable Build Manifest from Settings & Backup and Safety & Data Studio.
+  - open Packaging Decision Record from Settings & Backup and Safety & Data Studio.
+  - open Roadmap Completion Record from Settings & Backup and Safety & Data Studio.
+  - confirm Search All finds installer validation, installer/update, portable build manifest, packaging decision and roadmap completion actions.
+  - confirm no stale current-version text remains in visible metadata.
+  - confirm no new action creates installers, shortcuts, tasks, payments, stock movements, sales or supplier diamond state changes.
+  - confirm generated release/support documents open in preview and include current version context.

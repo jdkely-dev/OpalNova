@@ -37,7 +37,7 @@
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Inputs" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="4,0,4,12" />
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Metal" Margin="4" VerticalAlignment="Center" />
-                        <ComboBox x:Name="MetalBox" Grid.Row="1" Grid.Column="1" Margin="4">
+                        <ComboBox x:Name="MetalBox" Grid.Row="1" Grid.Column="1" Margin="4" Tag="Choose metal">
                             <ComboBoxItem Content="Sterling Silver" IsSelected="True" />
                             <ComboBoxItem Content="9ct Gold" />
                             <ComboBoxItem Content="14ct Gold" />

@@ -16,6 +16,7 @@ public partial class ProductionBoardWindow : Window
     private sealed record BoardJob(Job Job, string Customer, string QuoteCode);
 
     public event Action<string, string>? ReportRequested;
+    public event EventHandler<int>? OpenPaymentsRequested;
 
     private static readonly Lane[] Lanes =
     {
@@ -172,6 +173,24 @@ public partial class ProductionBoardWindow : Window
     private void MoveForward_Click(object sender, RoutedEventArgs e) => MoveSelected(1);
     private void MoveBack_Click(object sender, RoutedEventArgs e) => MoveSelected(-1);
     private void CompleteSelected_Click(object sender, RoutedEventArgs e) => CompleteSelectedJob("Completed from Production Board.");
+
+    private void OpenPayments_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selected == null)
+        {
+            MessageBox.Show("Select a job card first.", "Production Board", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (OpenPaymentsRequested != null)
+        {
+            OpenPaymentsRequested.Invoke(this, _selected.Job.Id);
+            return;
+        }
+
+        var window = new PaymentCollectionWindow(_selected.Job.Id) { Owner = this };
+        window.ShowDialog();
+    }
 
     private void CapacitySnapshot_Click(object sender, RoutedEventArgs e)
     {

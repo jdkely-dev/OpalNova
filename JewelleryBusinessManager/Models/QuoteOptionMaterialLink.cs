@@ -11,5 +11,5 @@ public class QuoteOptionMaterialLink : BaseEntity
     public string UnitTypeSnapshot { get; set; } = string.Empty;
     public string ReservationStatus { get; set; } = "Proposed";
     public decimal LineCost => Quantity * UnitCost;
-    public override string ToString() => $"{MaterialCodeSnapshot} {MaterialNameSnapshot} — {Quantity:0.###} {UnitTypeSnapshot} × {UnitCost:C} = {LineCost:C} [{ReservationStatus}]".Trim();
+    public override string ToString() => $"{MaterialCodeSnapshot} {MaterialNameSnapshot} - {Quantity:0.###} {UnitTypeSnapshot} x {UnitCost:C} = {LineCost:C} [{ReservationStatus}]".Trim();
 }

@@ -16,7 +16,7 @@
             <Style TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{StaticResource AlertTextBrush}" />
             </Style>
-            <Style TargetType="Button">
+            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="Margin" Value="4" />
                 <Setter Property="Padding" Value="11,7" />
                 <Setter Property="MinHeight" Value="34" />
@@ -33,7 +33,7 @@
                 <Setter Property="Foreground" Value="#040813" />
                 <Setter Property="FontWeight" Value="Bold" />
             </Style>
-            <Style TargetType="TextBox">
+            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                 <Setter Property="Margin" Value="4" />
                 <Setter Property="Padding" Value="8,5" />
                 <Setter Property="MinHeight" Value="32" />
@@ -77,15 +77,14 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="{StaticResource AlertPanelBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
+        <Border Grid.Row="0" Background="{StaticResource AlertPanelBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="0,0,0,1" Padding="7,4">
             <DockPanel LastChildFill="True">
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Alert Centre" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,12,0" />
-                    <TextBlock Text="Next actions across quotes, jobs, payments, diamonds, inventory and follow-ups" Foreground="{StaticResource AlertMutedBrush}" VerticalAlignment="Center" />
                 </StackPanel>
                 <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <TextBox x:Name="SearchBox" Width="260" TextChanged="SearchBox_TextChanged" ToolTip="Search title, detail, risk, area or next action" />
-                    <ComboBox x:Name="FilterCombo" Width="190" SelectionChanged="FilterCombo_SelectionChanged" SelectedIndex="0">
+                    <ComboBox x:Name="FilterCombo" Width="190" SelectionChanged="FilterCombo_SelectionChanged" SelectedIndex="0" Tag="Choose alert filter">
                         <ComboBoxItem Content="Action needed" />
                         <ComboBoxItem Content="Urgent" />
                         <ComboBoxItem Content="High" />
@@ -102,47 +101,47 @@
             </DockPanel>
         </Border>
 
-        <Grid Grid.Row="1" Margin="0,6,0,0">
+        <Grid Grid.Row="1" Margin="0,4,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <UniformGrid Grid.Row="0" Columns="6" Margin="0,0,0,8">
-                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+            <UniformGrid Grid.Row="0" Columns="6" Margin="0,0,0,5">
+                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
                     <StackPanel>
                         <TextBlock Text="Action Needed" Foreground="{StaticResource AlertMutedBrush}" />
-                        <TextBlock x:Name="ActionNeededCountText" FontSize="22" FontWeight="Bold" Foreground="{StaticResource AlertGoldBrush}" />
+                        <TextBlock x:Name="ActionNeededCountText" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AlertGoldBrush}" />
                     </StackPanel>
                 </Border>
-                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
                     <StackPanel>
                         <TextBlock Text="Urgent" Foreground="{StaticResource AlertMutedBrush}" />
-                        <TextBlock x:Name="UrgentCountText" FontSize="22" FontWeight="Bold" />
+                        <TextBlock x:Name="UrgentCountText" FontSize="18" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
-                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
                     <StackPanel>
                         <TextBlock Text="Quotes" Foreground="{StaticResource AlertMutedBrush}" />
-                        <TextBlock x:Name="QuoteCountText" FontSize="22" FontWeight="Bold" />
+                        <TextBlock x:Name="QuoteCountText" FontSize="18" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
-                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
                     <StackPanel>
                         <TextBlock Text="Production" Foreground="{StaticResource AlertMutedBrush}" />
-                        <TextBlock x:Name="ProductionCountText" FontSize="22" FontWeight="Bold" />
+                        <TextBlock x:Name="ProductionCountText" FontSize="18" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
-                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
                     <StackPanel>
                         <TextBlock Text="Payments" Foreground="{StaticResource AlertMutedBrush}" />
-                        <TextBlock x:Name="PaymentCountText" FontSize="22" FontWeight="Bold" />
+                        <TextBlock x:Name="PaymentCountText" FontSize="18" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
-                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="3">
+                <Border Background="{StaticResource AlertSoftBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="7" Margin="2">
                     <StackPanel>
                         <TextBlock Text="Follow-Ups" Foreground="{StaticResource AlertMutedBrush}" />
-                        <TextBlock x:Name="FollowUpCountText" FontSize="22" FontWeight="Bold" />
+                        <TextBlock x:Name="FollowUpCountText" FontSize="18" FontWeight="Bold" />
                     </StackPanel>
                 </Border>
             </UniformGrid>
@@ -167,11 +166,11 @@
                     </DataGrid>
                 </Border>
 
-                <Border Grid.Column="2" Background="{StaticResource AlertPanelBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="14">
+                <Border Grid.Column="2" Background="{StaticResource AlertPanelBrush}" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <TextBlock x:Name="SelectedTitleText" Text="Select an alert" FontSize="22" FontWeight="Bold" TextWrapping="Wrap" />
-                            <TextBlock x:Name="SelectedSubtitleText" Text="Choose a row to see the recommended next action." Foreground="{StaticResource AlertMutedBrush}" Margin="0,4,0,12" TextWrapping="Wrap" />
+                            <TextBlock x:Name="SelectedTitleText" Text="Select an alert" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" />
+                            <TextBlock x:Name="SelectedSubtitleText" Text="Choose a row to see the recommended next action." Foreground="{StaticResource AlertMutedBrush}" Margin="0,3,0,8" TextWrapping="Wrap" />
 
                             <Border Background="#040813" BorderBrush="{StaticResource AlertBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,0,10">
                                 <StackPanel>

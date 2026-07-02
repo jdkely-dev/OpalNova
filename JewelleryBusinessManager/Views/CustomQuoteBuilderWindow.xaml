@@ -25,8 +25,8 @@
                                 <TextBlock x:Name="QuoteExpiryText" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,3,0,0"/>
                             </StackPanel>
                         </Border>
-                        <TextBlock Text="Existing quote"/><ComboBox x:Name="QuoteCombo" SelectionChanged="QuoteCombo_SelectionChanged" Margin="0,4,0,8"/>
-                        <TextBlock Text="Customer"/><ComboBox x:Name="CustomerCombo" SelectionChanged="QuoteField_Changed" Margin="0,4,0,6"/>
+                        <TextBlock Text="Existing quote"/><ComboBox x:Name="QuoteCombo" SelectionChanged="QuoteCombo_SelectionChanged" Tag="Choose an existing quote" Margin="0,4,0,8"/>
+                        <TextBlock Text="Customer"/><ComboBox x:Name="CustomerCombo" SelectionChanged="QuoteField_Changed" Tag="Choose a customer" Margin="0,4,0,6"/>
                         <Button Content="Use Customer Preferences" Click="UseCustomerPreferences_Click" Style="{StaticResource ToolbarButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" ToolTip="Fill blank ring size, preferred metal and preferred stone fields from the selected customer profile."/>
                         <TextBlock Text="Quote code"/><TextBox x:Name="QuoteCodeBox" TextChanged="QuoteField_TextChanged" Margin="0,4,0,8"/>
                         <TextBlock Text="Title / project"/><TextBox x:Name="TitleBox" TextChanged="QuoteField_TextChanged" Margin="0,4,0,8"/>
@@ -112,7 +112,7 @@
                         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="12"/><ColumnDefinition/></Grid.ColumnDefinitions>
                         <StackPanel>
                             <TextBlock Text="Unique stones" FontWeight="SemiBold"/>
-                            <ComboBox x:Name="StoneCombo" Margin="0,5,0,6" SelectionChanged="StoneCombo_SelectionChanged"/>
+                            <ComboBox x:Name="StoneCombo" Margin="0,5,0,6" SelectionChanged="StoneCombo_SelectionChanged" Tag="Choose a stone"/>
                             <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="8"/><ColumnDefinition/></Grid.ColumnDefinitions>
                                 <StackPanel><TextBlock Text="Stone cost"/><TextBox x:Name="LinkedStoneCostBox" Margin="0,4,0,6"/></StackPanel>
                                 <Button Grid.Column="2" Content="Link Stone" Click="LinkStone_Click" Style="{StaticResource AccentButtonStyle}" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
@@ -122,7 +122,7 @@
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Materials" FontWeight="SemiBold"/>
-                            <ComboBox x:Name="MaterialCombo" Margin="0,5,0,6" SelectionChanged="MaterialCombo_SelectionChanged"/>
+                            <ComboBox x:Name="MaterialCombo" Margin="0,5,0,6" SelectionChanged="MaterialCombo_SelectionChanged" Tag="Choose a material"/>
                             <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="8"/><ColumnDefinition/><ColumnDefinition Width="8"/><ColumnDefinition/></Grid.ColumnDefinitions>
                                 <StackPanel><TextBlock Text="Quantity"/><TextBox x:Name="MaterialQuantityBox" Text="1" Margin="0,4,0,6"/></StackPanel>
                                 <StackPanel Grid.Column="2"><TextBlock Text="Unit cost"/><TextBox x:Name="MaterialUnitCostBox" Margin="0,4,0,6"/></StackPanel>
@@ -140,9 +140,9 @@
                     <TextBlock Text="Link saved Nivoda / external supplier diamonds to this quote option. Supplier cost is added to stone cost and marked up through the option total." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,10"/>
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="120"/><ColumnDefinition Width="10"/><ColumnDefinition Width="170"/><ColumnDefinition Width="10"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                        <StackPanel><TextBlock Text="Saved external diamond"/><ComboBox x:Name="ExternalDiamondCombo" Margin="0,4,0,6" SelectionChanged="ExternalDiamondCombo_SelectionChanged"/></StackPanel>
+                        <StackPanel><TextBlock Text="Saved external diamond"/><ComboBox x:Name="ExternalDiamondCombo" Margin="0,4,0,6" SelectionChanged="ExternalDiamondCombo_SelectionChanged" Tag="Choose a supplier diamond"/></StackPanel>
                         <StackPanel Grid.Column="2"><TextBlock Text="Supplier cost"/><TextBox x:Name="ExternalDiamondSupplierCostBox" Margin="0,4,0,6"/></StackPanel>
-                        <StackPanel Grid.Column="4"><TextBlock Text="Status"/><ComboBox x:Name="ExternalDiamondStatusCombo" Margin="0,4,0,6"/></StackPanel>
+                        <StackPanel Grid.Column="4"><TextBlock Text="Status"/><ComboBox x:Name="ExternalDiamondStatusCombo" Margin="0,4,0,6" Tag="Choose a link status"/></StackPanel>
                         <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,6"><Button Content="Link External Diamond" Click="LinkExternalDiamond_Click" Style="{StaticResource AccentButtonStyle}"/><Button Content="Update Status" Click="UpdateExternalDiamondStatus_Click" Style="{StaticResource ToolbarButtonStyle}"/></StackPanel>
                     </Grid>
                     <TextBlock x:Name="ExternalDiamondSummaryText" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,2,0,6"/>

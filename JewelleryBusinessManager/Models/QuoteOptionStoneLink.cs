@@ -8,5 +8,5 @@ public class QuoteOptionStoneLink : BaseEntity
     public string DescriptionSnapshot { get; set; } = string.Empty;
     public decimal UnitCost { get; set; }
     public string ReservationStatus { get; set; } = "Proposed";
-    public override string ToString() => $"{StoneCodeSnapshot} {DescriptionSnapshot} — {UnitCost:C} [{ReservationStatus}]".Trim();
+    public override string ToString() => $"{StoneCodeSnapshot} {DescriptionSnapshot} - {UnitCost:C} [{ReservationStatus}]".Trim();
 }

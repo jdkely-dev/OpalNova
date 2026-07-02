@@ -22,7 +22,7 @@
                                 <TextBlock Text="Command Centre" Style="{StaticResource PillTextStyle}" />
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Version 1.91.0 - Nivoda staging readiness" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
+                        <TextBlock Text="Version 2.6.0 - roadmap completion record" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,4,0,0" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -32,7 +32,7 @@
                             <TextBox x:Name="SearchBox" Width="250" TextChanged="SearchBox_TextChanged" KeyDown="SearchBox_KeyDown" ToolTip="Search the current page as you type. Press Enter or click Search All to search every section. Shortcut: Ctrl+F" />
                         </StackPanel>
                     </Border>
-                    <ComboBox x:Name="TopFilterCombo" Width="165" SelectionChanged="TopFilterCombo_SelectionChanged" ToolTip="Apply a quick filter from the main search bar." Margin="0,0,8,0" />
+                    <ComboBox x:Name="TopFilterCombo" Width="165" SelectionChanged="TopFilterCombo_SelectionChanged" ToolTip="Apply a quick filter from the main search bar." Tag="Choose a filter" Margin="0,0,8,0" />
                     <Button Content="Search All" Click="SearchAll_Click" Style="{StaticResource AccentButtonStyle}" ToolTip="Open global search using the current search text and filter." />
                     <Button Content="Clear" Click="ClearSearch_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Clear search text and filters." />
                     <Button Content="Refresh" Click="Refresh_Click" Style="{StaticResource ToolbarButtonStyle}" ToolTip="Reload the current page. Shortcut: F5" />

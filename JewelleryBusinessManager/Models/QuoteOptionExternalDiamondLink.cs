@@ -18,7 +18,7 @@ public class QuoteOptionExternalDiamondLink : BaseEntity
 
     public override string ToString()
     {
-        var price = SupplierPrice > 0 ? $" — supplier {SupplierPrice:C}" : string.Empty;
+        var price = SupplierPrice > 0 ? $" - supplier {SupplierPrice:C}" : string.Empty;
         var cert = string.IsNullOrWhiteSpace(CertificateNumberSnapshot) ? string.Empty : $" Cert {CertificateNumberSnapshot}";
         return $"{DiamondSummarySnapshot}{cert}{price} [{LinkStatus}]".Trim();
     }

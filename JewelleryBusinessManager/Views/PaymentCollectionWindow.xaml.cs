@@ -16,13 +16,16 @@ public partial class PaymentCollectionWindow : Window
     private int? _handoverChecklistJobId;
     private bool _loading;
 
-    public PaymentCollectionWindow()
+    public PaymentCollectionWindow(int? initialJobId = null)
     {
         InitializeComponent();
         PaymentMethodCombo.ItemsSource = Enum.GetValues(typeof(PaymentMethod));
         PaymentMethodCombo.SelectedItem = PaymentMethod.Card;
         PaymentDatePicker.SelectedDate = DateTime.Today;
         LoadJobs();
+
+        if (initialJobId.HasValue)
+            SelectJob(initialJobId.Value, expandFilterIfHidden: true);
     }
 
     private void LoadJobs()
@@ -607,14 +610,45 @@ public partial class PaymentCollectionWindow : Window
             "Kind regards";
     }
 
-    private void SelectJob(int jobId)
+    private void SelectJob(int jobId, bool expandFilterIfHidden = false)
     {
         ApplyFilters();
-        var item = JobsList.Items.Cast<JobPaymentRow>().FirstOrDefault(x => x.JobId == jobId);
+        var item = FindVisibleJob(jobId);
+        if (item == null && expandFilterIfHidden)
+        {
+            SelectFilter("All jobs");
+            ApplyFilters();
+            item = FindVisibleJob(jobId);
+        }
+
         if (item != null)
+        {
             JobsList.SelectedItem = item;
-        else
+            JobsList.ScrollIntoView(item);
+            _selectedRow = item;
             LoadSelectedJobDetails();
+            StatusMessageText.Text = $"Focused payment workflow on {item.TitleLine}.";
+        }
+        else
+        {
+            LoadSelectedJobDetails();
+            if (expandFilterIfHidden)
+                StatusMessageText.Text = "The selected production job could not be found in Payment & Collection.";
+        }
+    }
+
+    private JobPaymentRow? FindVisibleJob(int jobId) => JobsList.Items.Cast<JobPaymentRow>().FirstOrDefault(x => x.JobId == jobId);
+
+    private void SelectFilter(string filterText)
+    {
+        foreach (var item in FilterCombo.Items.OfType<ComboBoxItem>())
+        {
+            if (string.Equals(item.Content?.ToString(), filterText, StringComparison.OrdinalIgnoreCase))
+            {
+                FilterCombo.SelectedItem = item;
+                return;
+            }
+        }
     }
 
     private void Refresh_Click(object sender, RoutedEventArgs e) => LoadJobs();
@@ -625,7 +659,7 @@ public partial class PaymentCollectionWindow : Window
     {
         public string TitleLine => $"{JobCode} {JobTitle}".Trim();
         public string CustomerLine => CustomerName;
-        public string StatusLine => $"{Status} · Due {(DueDate.HasValue ? DueDate.Value.ToString("d MMM yyyy") : "not set")} · Sale {(HasSale ? "created" : "not yet")}";
-        public string MoneyLine => $"Total {Total:C} · Paid {Paid:C} · Balance {Balance:C}";
+        public string StatusLine => $"{Status} - Due {(DueDate.HasValue ? DueDate.Value.ToString("d MMM yyyy") : "not set")} - Sale {(HasSale ? "created" : "not yet")}";
+        public string MoneyLine => $"Total {Total:C} - Paid {Paid:C} - Balance {Balance:C}";
     }
 }

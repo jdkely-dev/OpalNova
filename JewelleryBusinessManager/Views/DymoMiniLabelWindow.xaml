@@ -59,7 +59,7 @@
                         <StackPanel>
                             <TextBlock Text="2. Label Format" FontSize="20" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" />
                             <TextBlock Text="Choose the closest physical label size. The preview updates instantly." Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,5,0,14" />
-                            <ComboBox x:Name="SizeBox" SelectionChanged="Input_Changed">
+                            <ComboBox x:Name="SizeBox" SelectionChanged="Input_Changed" Tag="Choose label size">
                                 <ComboBoxItem Content="Small Tag - 57 x 32 mm" IsSelected="True" />
                                 <ComboBoxItem Content="Jewellery Tag - 36 x 17 mm" />
                                 <ComboBoxItem Content="Address Label - 89 x 28 mm" />

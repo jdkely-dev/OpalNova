@@ -85,7 +85,7 @@
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Grid.ColumnSpan="9" Text="Search Filters" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="4,0,4,10" />
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Shape" Margin="4" VerticalAlignment="Center" />
-                    <ComboBox x:Name="ShapeBox" Grid.Row="1" Grid.Column="1" Margin="4" />
+                    <ComboBox x:Name="ShapeBox" Grid.Row="1" Grid.Column="1" Margin="4" Tag="Choose a shape" />
                     <TextBlock Grid.Row="1" Grid.Column="2" Text="Carat Min" Margin="4" VerticalAlignment="Center" />
                     <TextBox x:Name="MinCaratBox" Grid.Row="1" Grid.Column="3" Margin="4" />
                     <TextBlock Grid.Row="1" Grid.Column="4" Text="Carat Max" Margin="4" VerticalAlignment="Center" />
